@@ -1,0 +1,39 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32319.34
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{B0923F22-AF00-46DA-B5CE-73F4D398DE37}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+		.gitignore = .gitignore
+		dBASE.md = dBASE.md
+		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetTopologySuite.IO.Esri.Shapefile", "src\NetTopologySuite.IO.Esri.Shapefile\NetTopologySuite.IO.Esri.Shapefile.csproj", "{6E95BC91-8066-4420-B61F-854DE5F3A746}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetTopologySuite.IO.Esri.TestConsole", "test\NetTopologySuite.IO.Esri.TestConsole\NetTopologySuite.IO.Esri.TestConsole.csproj", "{AA37EFC6-737F-4E8A-A79C-2D179C1B38EC}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6E95BC91-8066-4420-B61F-854DE5F3A746}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6E95BC91-8066-4420-B61F-854DE5F3A746}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6E95BC91-8066-4420-B61F-854DE5F3A746}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6E95BC91-8066-4420-B61F-854DE5F3A746}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AA37EFC6-737F-4E8A-A79C-2D179C1B38EC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AA37EFC6-737F-4E8A-A79C-2D179C1B38EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AA37EFC6-737F-4E8A-A79C-2D179C1B38EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AA37EFC6-737F-4E8A-A79C-2D179C1B38EC}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {06DEE0C5-480C-4A70-BC80-3791D98E6A89}
+	EndGlobalSection
+EndGlobal
