@@ -1,4 +1,7 @@
-﻿using System.IO;
+﻿using NetTopologySuite.Geometries;
+using NetTopologySuite.IO.Esri.Shp.Readers;
+using System.IO;
+using System.Linq;
 
 namespace NetTopologySuite.IO.Esri.Shp
 {
@@ -36,5 +39,58 @@ namespace NetTopologySuite.IO.Esri.Shp
         {
             throw new FileLoadException(GetType().Name + $" does not support {ShapeType} shapes.");
         }
+
+        #region Static Methods
+
+        /// <summary>
+        /// Opens SHP reader.
+        /// </summary>
+        /// <param name="shpStream">SHP file stream.</param>
+        /// <param name="factory">Geometry factory.</param>
+        /// <returns>SHP reader.</returns>
+        public static ShpReader OpenRead(Stream shpStream, GeometryFactory factory = null)
+        {
+            var shapeType = Shapefile.GetShapeType(shpStream);
+
+            if (shapeType.IsPoint())
+            {
+                return new ShpPointReader(shpStream, factory);
+            }
+            else if (shapeType.IsMultiPoint())
+            {
+                return new ShpMultiPointReader(shpStream, factory);
+            }
+            else if (shapeType.IsPolyLine())
+            {
+                return new ShpPolyLineReader(shpStream, factory);
+            }
+            else if (shapeType.IsPolygon())
+            {
+                return new ShpPolygonReader(shpStream, factory);
+            }
+            else
+            {
+                throw new FileLoadException("Unsupported shapefile type: " + shapeType);
+            }
+        }
+
+
+        /// <summary>
+        /// Reads all geometries from SHP file.
+        /// </summary>
+        /// <param name="shpPath">Path to SHP file.</param>
+        /// <param name="factory">Geometry factory.</param>
+        /// <returns>Shapefile geometries.</returns>
+        public static Geometry[] ReadAllGeometries(string shpPath, GeometryFactory factory = null)
+        {
+            shpPath = Path.ChangeExtension(shpPath, ".shp");
+            using (var shpStream = File.OpenRead(shpPath))
+            {
+                var shp = OpenRead(shpStream, factory);
+                return shp.ToArray();
+            }
+        }
+
+        #endregion
     }
 }

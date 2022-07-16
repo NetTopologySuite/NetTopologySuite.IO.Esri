@@ -22,10 +22,10 @@ namespace NetTopologySuite.IO.Esri.Shapefiles.Readers
         /// <summary>
         /// Shape geometry.
         /// </summary>
-        public T Shape => ShpReader.Geometry;
+        public T Shape => ShpReader.Shape;
 
         /// <inheritdoc/>
-        public override Geometry Geometry => ShpReader.Geometry;
+        public override Geometry Geometry => ShpReader.Shape;
 
 
 

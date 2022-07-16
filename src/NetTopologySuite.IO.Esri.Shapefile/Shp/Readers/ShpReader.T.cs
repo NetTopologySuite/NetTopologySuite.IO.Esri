@@ -1,5 +1,7 @@
 ﻿using NetTopologySuite.Geometries;
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 
@@ -9,7 +11,7 @@ namespace NetTopologySuite.IO.Esri.Shp.Readers
     /// <summary>
     /// Base class class for reading a fixed-length file header and variable-length records from a *.SHP file. 
     /// </summary>
-    public abstract class ShpReader<T> : Shp where T : Geometry
+    public abstract class ShpReader<T> : ShpReader where T : Geometry
     {
         private readonly Stream ShpStream;
         private readonly int ShpEndPosition;
@@ -30,7 +32,11 @@ namespace NetTopologySuite.IO.Esri.Shp.Readers
         /// <summary>
         /// SHP geometry.
         /// </summary>
-        public T Geometry { get; private set; }
+        public T Shape { get; private set; }
+
+
+        /// <inheritdoc/>
+        public override Geometry Geometry => Shape;
 
 
         /// <summary>
@@ -55,20 +61,17 @@ namespace NetTopologySuite.IO.Esri.Shp.Readers
             ShpEndPosition = fileLength - 1;
         }
 
-        internal void Restart()
+        internal override void Restart()
         {
             ShpStream.Seek(Shapefile.FileHeaderSize, SeekOrigin.Begin);
         }
 
-        /// <summary>
-        /// Reads content of the <see cref="Geometry"/> from the underlying stream.
-        /// </summary>
-        /// <returns>Value indicating if reading next record was successful.</returns>
-        public bool Read()
+        /// <inheritdoc/>
+        public override bool Read()
         {
             if (ShpStream.Position >= ShpEndPosition)
             {
-                Geometry = null;
+                Shape = null;
                 return false;
             }
 
@@ -80,7 +83,7 @@ namespace NetTopologySuite.IO.Esri.Shp.Readers
             var type = Buffer.ReadShapeType();
             if (type == ShapeType.NullShape)
             {
-                Geometry = GetEmptyGeometry();
+                Shape = GetEmptyGeometry();
                 return true;
             }
             else if (type != ShapeType)
@@ -88,7 +91,7 @@ namespace NetTopologySuite.IO.Esri.Shp.Readers
                 ThrowInvalidRecordTypeException(type);
             }
 
-            Geometry = ReadGeometry(Buffer);
+            Shape = ReadGeometry(Buffer);
             return true;
         }
 
@@ -111,7 +114,6 @@ namespace NetTopologySuite.IO.Esri.Shp.Readers
         {
             throw new FileLoadException(message);
         }
-
     }
 
 
