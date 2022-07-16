@@ -3,7 +3,7 @@ using NUnit.Framework;
 using System;
 using System.IO;
 
-namespace NetTopologySuite.IO.Esri.Test
+namespace NetTopologySuite.IO.Esri.Test.Issues
 {
     [TestFixture]
     public class Issue178Fixture

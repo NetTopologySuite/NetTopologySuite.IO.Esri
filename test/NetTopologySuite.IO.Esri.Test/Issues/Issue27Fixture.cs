@@ -5,7 +5,7 @@ using NetTopologySuite.IO.ShapeFile.Extended;
 using NetTopologySuite.IO.ShapeFile.Extended.Entities;
 using System.IO;
 
-namespace NetTopologySuite.IO.Esri.Test
+namespace NetTopologySuite.IO.Esri.Test.Issues
 {
     [TestFixture]
     [ShapeFileIssueNumber(27)]

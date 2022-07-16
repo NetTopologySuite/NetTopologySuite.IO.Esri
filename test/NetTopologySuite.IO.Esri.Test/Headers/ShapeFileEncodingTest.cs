@@ -4,7 +4,7 @@ using NUnit.Framework;
 using System.Collections.Generic;
 using System.Text;
 
-namespace NetTopologySuite.IO.Esri.Test
+namespace NetTopologySuite.IO.Esri.Test.Headers
 {
     [TestFixture]
     public class ShapeFileEncodingTest

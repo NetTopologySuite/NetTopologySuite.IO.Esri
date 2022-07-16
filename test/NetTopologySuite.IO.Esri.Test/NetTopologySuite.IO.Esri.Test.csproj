@@ -20,11 +20,4 @@
     <ProjectReference Include="..\..\src\NetTopologySuite.IO.Esri.Shapefile\NetTopologySuite.IO.Esri.Shapefile.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Headers\" />
-    <Folder Include="Issues\" />
-    <Folder Include="Readers\" />
-    <Folder Include="Writers\" />
-  </ItemGroup>
-
 </Project>

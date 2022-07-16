@@ -1,7 +1,7 @@
 ﻿using NUnit.Framework;
 using System.IO;
 
-namespace NetTopologySuite.IO.Esri.Test
+namespace NetTopologySuite.IO.Esri.Test.Headers
 {
     [TestFixture]
     [Ignore("Sample file(s) not published")]
@@ -18,7 +18,7 @@ namespace NetTopologySuite.IO.Esri.Test
             var g = s.ReadAll();
             */
             string dbf = Path.ChangeExtension(_invalidPath, ".dbf");
-            var d = new NetTopologySuite.IO.DbaseFileReader(dbf);
+            var d = new IO.DbaseFileReader(dbf);
 
             var de = d.GetEnumerator();
             Assert.IsNull(de.Current);

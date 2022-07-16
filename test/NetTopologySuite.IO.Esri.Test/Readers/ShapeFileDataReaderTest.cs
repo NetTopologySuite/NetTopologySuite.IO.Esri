@@ -1,5 +1,6 @@
 ﻿using NetTopologySuite.Geometries;
 using NetTopologySuite.Geometries.Implementation;
+using NetTopologySuite.IO.Esri;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
@@ -9,7 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace NetTopologySuite.IO.Esri.Test
+namespace NetTopologySuite.IO.Esri.Test.Readers
 {
     [TestFixture]
     public class ShapeFileDataReaderTest
@@ -24,8 +25,8 @@ namespace NetTopologySuite.IO.Esri.Test
             // Set current dir to shapefiles dir
             Environment.CurrentDirectory = CommonHelpers.TestShapefilesDirectory;
 
-            this.Factory = new GeometryFactory();
-            this.Reader = new WKTReader();
+            Factory = new GeometryFactory();
+            Reader = new WKTReader();
         }
 
         // see https://code.google.com/p/nettopologysuite/issues/detail?id=175

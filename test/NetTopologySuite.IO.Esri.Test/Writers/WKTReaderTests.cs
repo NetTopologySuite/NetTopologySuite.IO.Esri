@@ -1,7 +1,7 @@
 ﻿using NetTopologySuite.Geometries;
 using NUnit.Framework;
 
-namespace NetTopologySuite.IO.Esri.Test
+namespace NetTopologySuite.IO.Esri.Test.Writers
 {
     public class WKTReaderTests
     {

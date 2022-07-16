@@ -4,7 +4,7 @@ using System.IO;
 
 using NetTopologySuite.IO.Streams;
 
-namespace NetTopologySuite.IO.Esri.Test
+namespace NetTopologySuite.IO.Esri.Test.Issues
 {
     [TestFixture]
     [ShapeFileIssueNumber(64)]

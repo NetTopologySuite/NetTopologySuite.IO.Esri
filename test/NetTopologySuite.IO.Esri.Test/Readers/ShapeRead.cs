@@ -2,7 +2,7 @@
 using System;
 using System.IO;
 
-namespace NetTopologySuite.IO.Esri.Test
+namespace NetTopologySuite.IO.Esri.Test.Readers
 {
     /// <summary>
     ///
@@ -21,8 +21,8 @@ namespace NetTopologySuite.IO.Esri.Test
             // Set current dir to shapefiles dir
             Environment.CurrentDirectory = CommonHelpers.TestShapefilesDirectory;
 
-            this.Factory = new GeometryFactory();
-            this.Reader = new WKTReader();
+            Factory = new GeometryFactory();
+            Reader = new WKTReader();
         }
 
         /// <summary>

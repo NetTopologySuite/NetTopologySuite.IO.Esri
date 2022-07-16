@@ -2,7 +2,7 @@
 using NUnit.Framework;
 using System.IO;
 
-namespace NetTopologySuite.IO.Esri.Test
+namespace NetTopologySuite.IO.Esri.Test.Issues
 {
     class Issue161
     {

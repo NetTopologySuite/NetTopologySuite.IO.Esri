@@ -4,7 +4,7 @@ using NUnit.Framework;
 using System.Collections.Generic;
 using System.IO;
 
-namespace NetTopologySuite.IO.Esri.Test
+namespace NetTopologySuite.IO.Esri.Test.Issues
 {
     [TestFixture]
     [ShapeFileIssueNumber(60)]
@@ -26,7 +26,8 @@ namespace NetTopologySuite.IO.Esri.Test
             writer.Header = ShapefileDataWriter.GetHeader(feature, 1);
             writer.Write(new[] { feature });
 
-            using (var reader = new ShapefileDataReader(test56, factory)) {
+            using (var reader = new ShapefileDataReader(test56, factory))
+            {
 
                 if (reader.RecordCount > 0)
                 {

@@ -9,8 +9,9 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Text;
 using System.Collections.Generic;
+using NetTopologySuite.IO.Esri;
 
-namespace NetTopologySuite.IO.Esri.Test
+namespace NetTopologySuite.IO.Esri.Test.Writers
 {
 
     [TestFixture]
@@ -25,8 +26,8 @@ namespace NetTopologySuite.IO.Esri.Test
             // Set current dir to shapefiles dir
             Environment.CurrentDirectory = CommonHelpers.TestShapefilesDirectory;
 
-            this.Factory = new GeometryFactory();
-            this.Reader = new WKTReader();
+            Factory = new GeometryFactory();
+            Reader = new WKTReader();
         }
 
         [Test]
@@ -207,8 +208,8 @@ namespace NetTopologySuite.IO.Esri.Test
                         var gr = geomsRead.GetGeometryN(i);
                         if (gw.IsEmpty && gr.IsEmpty)
                         {
-                            if ((gw is ILineal && gr is ILineal) ||
-                                (gw is IPolygonal && gr is IPolygonal))
+                            if (gw is ILineal && gr is ILineal ||
+                                gw is IPolygonal && gr is IPolygonal)
                             {
                                 // suppose these are equal
                             }
@@ -226,7 +227,7 @@ namespace NetTopologySuite.IO.Esri.Test
                             double hsm = new HausdorffSimilarityMeasure().Measure(gw, gr);
                             double asm = new AreaSimilarityMeasure().Measure(gw, gr);
                             double smc = SimilarityMeasureCombiner.Combine(hsm, asm);
-                            if (!gw.EqualsNormalized(gr) || (1d - smc) > 1e-7)
+                            if (!gw.EqualsNormalized(gr) || 1d - smc > 1e-7)
                             {
                                 Console.WriteLine(string.Format("Geometries don't match at index {0}", i));
                                 Console.WriteLine(string.Format("  written: {0}", gw.AsText()));
