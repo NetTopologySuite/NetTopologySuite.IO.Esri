@@ -3,7 +3,6 @@ using NetTopologySuite.Operation.Union;
 using NetTopologySuite.Operation.Valid;
 using NUnit.Framework;
 using System.Collections.Generic;
-using System.IO;
 
 namespace NetTopologySuite.IO.Esri.Test.Issues
 {
@@ -46,8 +45,8 @@ namespace NetTopologySuite.IO.Esri.Test.Issues
         [Test]
         public void CascadedUnionError2()
         {
-            var sf = new ShapefileReader(Path.Combine(CommonHelpers.TestShapefilesDirectory, "error_union.shp"));
-            var geoms = sf.ReadAll();
+            var geomArr = Shapefile.ReadAllGeometries(TestShapefiles.PathTo("error_union.shp"));
+            var geoms = new GeometryCollection(geomArr);
 
             var isValidOp = new IsValidOp(geoms);
             Assert.That(!isValidOp.IsValid);
