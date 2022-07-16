@@ -132,6 +132,23 @@ namespace NetTopologySuite.IO.Esri
 
 
         /// <summary>
+        /// Reads all geometries from SHP file.
+        /// </summary>
+        /// <param name="shpPath">Path to SHP file.</param>
+        /// <param name="factory">Geometry factory.</param>
+        /// <returns>Shapefile geometries.</returns>
+        public static Geometry[] ReadAllGeometries(string shpPath, GeometryFactory factory = null)
+        {
+            shpPath = Path.ChangeExtension(shpPath, ".shp");
+            using (var shpStream = File.OpenRead(shpPath))
+            {
+                var shp = Shp.Shp.OpenRead(shpStream, factory);
+                return shp.ToArray();
+            }
+        }
+
+
+        /// <summary>
         /// Opens shapefile writer.
         /// </summary>
         /// <param name="shpPath">Path to shapefile.</param>
