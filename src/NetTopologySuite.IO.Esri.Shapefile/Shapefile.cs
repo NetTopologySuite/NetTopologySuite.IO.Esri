@@ -73,9 +73,7 @@ namespace NetTopologySuite.IO.Esri
         /// <returns>Shape type.</returns>
         public static ShapeType GetShapeType(string shpPath)
         {
-            if (Path.GetExtension(shpPath).ToLowerInvariant() != ".shp")
-                throw new FileLoadException("Specified file must have .shp extension.");
-
+            shpPath = Path.ChangeExtension(shpPath, ".shp");
             using (var shpStream = new FileStream(shpPath, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
                 return GetShapeType(shpStream);
