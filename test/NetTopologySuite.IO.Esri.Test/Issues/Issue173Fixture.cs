@@ -25,15 +25,11 @@ namespace NetTopologySuite.IO.Esri.Test.Issues
 
             string fileName = Path.GetTempFileName();
             fileName = fileName.Substring(0, fileName.Length - 4);
-            var shpWriter = new ShapefileDataWriter(fileName, features[0].Geometry.Factory)
-            {
-                Header = ShapefileDataWriter.GetHeader(features[0], features.Count)
-            };
-            shpWriter.Write(features);
+            Shapefile.WriteAllFeatures(features, fileName);
 
-            bool isTrue;
-            using (var reader = new ShapefileDataReader(fileName, pt.Factory))
-                @isTrue = reader.ShapeHeader.ShapeType.ToString() == "Point";
+            bool isTrue = true;
+            using (var reader = Shapefile.OpenRead(fileName, pt.Factory))
+                isTrue = isTrue && reader.ShapeType.ToString() == "Point";
 
             foreach (string file in Directory.GetFiles(Path.GetTempPath(), Path.GetFileName(fileName) + ".*"))
             {
