@@ -52,8 +52,7 @@ namespace NetTopologySuite.IO.Esri.Shp
             var version = stream.ReadInt32LittleEndian();
             type = stream.ReadShapeType();
 
-            var bbox = stream.ReadXYBoundingBox();
-            boundingBox = new Envelope(bbox.minX, bbox.maxX, bbox.minY, bbox.maxY);
+            boundingBox = stream.ReadXYBoundingBox();
             stream.ReadZRange();
             stream.ReadMRange();
 
@@ -210,11 +209,11 @@ namespace NetTopologySuite.IO.Esri.Shp
             }
         }
 
-        public static (double minX, double maxX, double minY, double maxY) ReadXYBoundingBox(this Stream stream)
+        public static Envelope ReadXYBoundingBox(this Stream stream)
         {
             var (minX, minY) = stream.ReadXYCoordinates();
             var (maxX, maxY) = stream.ReadXYCoordinates();
-            return (minX, maxX, minY, maxY);
+            return new Envelope(minX, maxX, minY, maxY);
         }
         public static void WriteXYBoundingBox(this Stream stream, ShpExtent shpExtent)
         {

@@ -7,14 +7,15 @@ namespace NetTopologySuite.IO.Esri.Shp.Readers
 {
     internal class ShpPolygonReader : ShpReader<MultiPolygon>
     {
-        internal ShpPolygonReader(Stream shpStream, GeometryFactory factory, int dbfRecrodCount) : base(shpStream, factory, dbfRecrodCount)
+        internal ShpPolygonReader(Stream shpStream, GeometryFactory factory, Envelope mbrFilter, int dbfRecrodCount)
+            : base(shpStream, factory, mbrFilter, dbfRecrodCount)
         {
             if (!ShapeType.IsPolygon())
                 ThrowUnsupportedShapeTypeException();
         }
 
         /// <inheritdoc/>
-        public ShpPolygonReader(Stream shpStream, GeometryFactory factory) : this(shpStream, factory, int.MaxValue)
+        public ShpPolygonReader(Stream shpStream, GeometryFactory factory, Envelope mbrFilter) : this(shpStream, factory, mbrFilter, int.MaxValue)
         {
         }
 
@@ -23,11 +24,18 @@ namespace NetTopologySuite.IO.Esri.Shp.Readers
             return MultiPolygon.Empty;
         }
 
-        internal override MultiPolygon ReadGeometry(Stream shapeBinary)
+        internal override bool ReadGeometry(Stream stream, out MultiPolygon geometry)
         {
+            var bbox = stream.ReadXYBoundingBox();
+            if (!IsInMbr(bbox))
+            {
+                geometry = null;
+                return false;
+            }
+
             // SHP Docs: A ring is a connected sequence of four or more points (page 8)
             var partsBuilder = new ShpMultiPartBuilder(1, 4);
-            partsBuilder.ReadParts(shapeBinary, HasZ, HasM, CreateCoordinateSequence);
+            partsBuilder.ReadParts(stream, HasZ, HasM, CreateCoordinateSequence);
 
             var polygons = new List<Polygon>();
             var holes = new List<LinearRing>();
@@ -58,7 +66,13 @@ namespace NetTopologySuite.IO.Esri.Shp.Readers
                 }
             }
             polygons.AddRange(CreatePolygons(shell, holes));
-            return Factory.CreateMultiPolygon(polygons.ToArray());
+
+            geometry = Factory.CreateMultiPolygon(polygons.ToArray());
+            if (!IsInMbr(geometry))
+            {
+                return false;
+            }
+            return true;
         }
 
         private IEnumerable<Polygon> CreatePolygons(LinearRing shell, List<LinearRing> innerRings)

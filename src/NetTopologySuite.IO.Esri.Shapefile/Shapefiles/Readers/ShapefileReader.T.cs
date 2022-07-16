@@ -30,12 +30,8 @@ namespace NetTopologySuite.IO.Esri.Shapefiles.Readers
         /// <inheritdoc/>
         public override Geometry Geometry => ShpReader.Shape;
 
-
-
         /// <inheritdoc/>
         public override string Projection { get; } = null;
-
-
 
 
         /// <summary>
@@ -45,10 +41,11 @@ namespace NetTopologySuite.IO.Esri.Shapefiles.Readers
         /// <param name="dbfStream">DBF file stream.</param>
         /// <param name="factory">Geometry factory.</param>
         /// <param name="encoding">DBF file encoding. If null encoding will be guess from related .CPG file or from reserved DBF bytes.</param>
-        public ShapefileReader(Stream shpStream, Stream dbfStream, GeometryFactory factory, Encoding encoding)
+        /// <param name="mbrFilter">The minimum bounding rectangle (BMR) used to filter out shapes located outside it.</param>
+        public ShapefileReader(Stream shpStream, Stream dbfStream, GeometryFactory factory, Encoding encoding, Envelope mbrFilter)
             : base(new DbfReader(dbfStream, encoding))
         {
-            ShpReader = CreateShpReader(shpStream, factory, DbfReader.RecordCount);
+            ShpReader = CreateShpReader(shpStream, factory, mbrFilter, DbfReader.RecordCount);
         }
 
         /// <summary>
@@ -57,13 +54,14 @@ namespace NetTopologySuite.IO.Esri.Shapefiles.Readers
         /// <param name="shpPath">Path to SHP file.</param>
         /// <param name="factory">Geometry factory.</param>
         /// <param name="encoding">DBF file encoding. If null encoding will be guess from related .CPG file or from reserved DBF bytes.</param>
-        public ShapefileReader(string shpPath, GeometryFactory factory, Encoding encoding = null)
+        /// <param name="mbrFilter">The minimum bounding rectangle (BMR) used to filter out shapes located outside it.</param>
+        public ShapefileReader(string shpPath, GeometryFactory factory, Encoding encoding, Envelope mbrFilter)
             : base(new DbfReader(Path.ChangeExtension(shpPath, ".dbf"), encoding))
         {
             try
             {
                 var shpStream = OpenManagedFileStream(shpPath, ".shp", FileMode.Open);
-                ShpReader = CreateShpReader(shpStream, factory, DbfReader.RecordCount);
+                ShpReader = CreateShpReader(shpStream, factory, mbrFilter, DbfReader.RecordCount);
 
                 var prjFile = Path.ChangeExtension(shpPath, ".prj");
                 if (File.Exists(prjFile))
@@ -88,14 +86,19 @@ namespace NetTopologySuite.IO.Esri.Shapefiles.Readers
         /// </returns>
         public override bool Read(out bool deleted)
         {
-            var readShpSucceed = ShpReader.Read();
+            var readShpSucceed = ShpReader.Read(out var skippedCount);
+            for (int i = 0; i < skippedCount; i++)
+            {
+                if (!DbfReader.Read(out _))
+                {
+                    ThrowCorruptedShapefileDataException();
+                }
+            }
             var readDbfSucceed = DbfReader.Read(out deleted);
 
             if (readDbfSucceed != readShpSucceed)
             {
-                throw new FileLoadException("Corrupted shapefile data. "
-                    + "The dBASE table must contain feature attributes with one record per feature. "
-                    + "There must be one-to-one relationship between geometry and attributes.");
+                ThrowCorruptedShapefileDataException();
             }
             return readDbfSucceed;
         }
@@ -125,7 +128,14 @@ namespace NetTopologySuite.IO.Esri.Shapefiles.Readers
             base.DisposeManagedResources(); // This will dispose streams used by ShpReader and DbfReader. Do it at the end.
         }
 
-        internal abstract ShpReader<T> CreateShpReader(Stream shpStream, GeometryFactory factory, int dbfRecordCount);
+        internal abstract ShpReader<T> CreateShpReader(Stream shpStream, GeometryFactory factory, Envelope mbrFilter, int dbfRecordCount);
+
+        private static void ThrowCorruptedShapefileDataException()
+        {
+            throw new ShapefileException("Corrupted shapefile data. "
+                    + "The dBASE table must contain feature attributes with one record per feature. "
+                    + "There must be one-to-one relationship between geometry and attributes.");
+        }
     }
 
 

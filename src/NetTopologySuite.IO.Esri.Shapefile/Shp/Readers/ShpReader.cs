@@ -11,7 +11,11 @@ namespace NetTopologySuite.IO.Esri.Shp.Readers
     /// </summary>
     public abstract class ShpReader : Shp, IEnumerable<Geometry>
     {
-        /// <inheritdoc/>
+
+        /// <summary>
+        /// Initializes a new instance of the ShpReader class.
+        /// </summary>
+        /// <param name="shapeType">Shape type.</param>
         internal ShpReader(ShapeType shapeType) : base(shapeType)
         {
         }

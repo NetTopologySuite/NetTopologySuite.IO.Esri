@@ -9,14 +9,15 @@ namespace NetTopologySuite.IO.Esri.Shp.Readers
     /// </summary>
     public class ShpMultiPointReader : ShpReader<MultiPoint>
     {
-        internal ShpMultiPointReader(Stream shpStream, GeometryFactory factory, int dbfRecrodCount) : base(shpStream, factory, dbfRecrodCount)
+        internal ShpMultiPointReader(Stream shpStream, GeometryFactory factory, Envelope mbrFilter, int dbfRecrodCount)
+            : base(shpStream, factory, mbrFilter, dbfRecrodCount)
         {
             if (!ShapeType.IsMultiPoint())
                 ThrowUnsupportedShapeTypeException();
         }
 
         /// <inheritdoc/>
-        public ShpMultiPointReader(Stream shpStream, GeometryFactory factory) : this(shpStream, factory, int.MaxValue)
+        public ShpMultiPointReader(Stream shpStream, GeometryFactory factory, Envelope mbrFilter) : this(shpStream, factory, mbrFilter, int.MaxValue)
         {
         }
 
@@ -25,9 +26,14 @@ namespace NetTopologySuite.IO.Esri.Shp.Readers
             return MultiPoint.Empty;
         }
 
-        internal override MultiPoint ReadGeometry(Stream stream)
+        internal override bool ReadGeometry(Stream stream, out MultiPoint geometry)
         {
-            stream.ReadXYBoundingBox();
+            var bbox = stream.ReadXYBoundingBox();
+            if (!IsInMbr(bbox))
+            {
+                geometry = null;
+                return false;
+            }
 
             var pointCount = stream.ReadPointCount();
             var coordinateSequence = CreateCoordinateSequence(pointCount);
@@ -45,7 +51,12 @@ namespace NetTopologySuite.IO.Esri.Shp.Readers
                 stream.ReadMValues(coordinateSequence);
             }
 
-            return Factory.CreateMultiPoint(coordinateSequence);
+            geometry = Factory.CreateMultiPoint(coordinateSequence);
+            if (!IsInMbr(geometry))
+            {
+                return false;
+            }
+            return true;
         }
     }
 

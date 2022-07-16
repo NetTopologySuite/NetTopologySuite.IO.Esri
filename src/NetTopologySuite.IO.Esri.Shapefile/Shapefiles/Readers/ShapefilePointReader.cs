@@ -13,19 +13,19 @@ namespace NetTopologySuite.IO.Esri.Shapefiles.Readers
     public class ShapefilePointReader : ShapefileReader<Point>
     {
         /// <inheritdoc/>
-        public ShapefilePointReader(Stream shpStream, Stream dbfStream, GeometryFactory factory, Encoding encoding = null)
-            : base(shpStream, dbfStream, factory, encoding)
+        public ShapefilePointReader(Stream shpStream, Stream dbfStream, GeometryFactory factory, Encoding encoding = null, Envelope mbrFilter = null)
+            : base(shpStream, dbfStream, factory, encoding, mbrFilter)
         { }
 
         /// <inheritdoc/>
-        public ShapefilePointReader(string shpPath, GeometryFactory factory = null, Encoding encoding = null)
-            : base(shpPath, factory, encoding)
+        public ShapefilePointReader(string shpPath, GeometryFactory factory = null, Encoding encoding = null, Envelope mbrFilter = null)
+            : base(shpPath, factory, encoding, mbrFilter)
         { }
 
 
-        internal override ShpReader<Point> CreateShpReader(Stream shpStream, GeometryFactory factory, int dbfRecordCount)
+        internal override ShpReader<Point> CreateShpReader(Stream shpStream, GeometryFactory factory, Envelope mbrFilter, int dbfRecordCount)
         {
-            return new ShpPointReader(shpStream, factory, dbfRecordCount);
+            return new ShpPointReader(shpStream, factory, mbrFilter, dbfRecordCount);
         }
     }
 

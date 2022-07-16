@@ -16,6 +16,8 @@ namespace NetTopologySuite.IO.Esri.Shp.Readers
         private readonly Stream ShpStream;
         private readonly int ShpEndPosition;
         private readonly MemoryStream Buffer;
+        private readonly Envelope MbrEnvelope = null;
+        private readonly Geometry MbrGeometry = null;
 
         /// <summary>
         /// Shapefile Spec: <br/>
@@ -47,12 +49,23 @@ namespace NetTopologySuite.IO.Esri.Shp.Readers
         /// </summary>
         /// <param name="shpStream">SHP file stream.</param>
         /// <param name="factory">Geometry factory.</param>
+        /// <param name="mbrFilter">The minimum bounding rectangle (BMR) used to filter out shapes located outside it.</param>
         /// <param name="dbfRecordCount">DBF record count.</param>
-        internal ShpReader(Stream shpStream, GeometryFactory factory, int dbfRecordCount)
+        internal ShpReader(Stream shpStream, GeometryFactory factory, Envelope mbrFilter, int dbfRecordCount)
             : base(Shapefile.GetShapeType(shpStream))
         {
             ShpStream = shpStream ?? throw new ArgumentNullException("Uninitialized SHP stream.", nameof(shpStream));
-            Factory = factory ?? NtsGeometryServices.Instance.CreateGeometryFactory();
+            Factory = factory ?? Geometry.DefaultFactory;
+
+            if (mbrFilter?.IsNull == false)
+            {
+                MbrEnvelope = mbrFilter.Copy(); // Envelope is not immutable
+            }
+            if (MbrEnvelope != null)
+            {
+                MbrGeometry = Factory.ToGeometry(MbrEnvelope);
+            }
+
             if (dbfRecordCount < 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(dbfRecordCount));
@@ -78,6 +91,19 @@ namespace NetTopologySuite.IO.Esri.Shp.Readers
         /// <inheritdoc/>
         public override bool Read()
         {
+            return Read(out var _);
+        }
+
+        /// <inheritdoc/>
+        internal bool Read(out int skippedCount)
+        {
+            skippedCount = 0;
+            return ReadCore(ref skippedCount);
+        }
+
+        /// <inheritdoc/>
+        internal bool ReadCore(ref int skippedCount)
+        {
             if (ShpStream.Position >= ShpEndPosition)
             {
                 Shape = null;
@@ -94,6 +120,7 @@ namespace NetTopologySuite.IO.Esri.Shp.Readers
             Debug.Assert(contentLength >= sizeof(int), "Shapefile record", $"Unexpected SHP record content size: {contentLength} (expected >= {sizeof(int)}).");
 
             Buffer.AssignFrom(ShpStream, contentLength);
+            RecordNumber++;
 
             var type = Buffer.ReadShapeType();
             if (type == ShapeType.NullShape)
@@ -106,20 +133,42 @@ namespace NetTopologySuite.IO.Esri.Shp.Readers
                 ThrowInvalidRecordTypeException(type);
             }
 
-            Shape = ReadGeometry(Buffer);
-            RecordNumber++;
+            if (!ReadGeometry(Buffer, out var geometry))
+            {
+                skippedCount++;
+                return ReadCore(ref skippedCount); 
+            }
+
+            Shape = geometry;
             return true;
+        }
+
+        internal bool IsInMbr(Envelope boundingBox)
+        {
+            if (MbrEnvelope == null)
+            {
+                return true;
+            }
+            return MbrEnvelope.Intersects(boundingBox);
+        }
+
+        internal bool IsInMbr(Geometry geometry)
+        {
+            if (MbrGeometry == null)
+            {
+                return true;
+            }
+            return MbrGeometry.Intersects(geometry);
         }
 
         internal abstract T GetEmptyGeometry();
 
-        internal abstract T ReadGeometry(Stream shapeBinary);
+        internal abstract bool ReadGeometry(Stream stream, out T geometry);
 
         internal CoordinateSequence CreateCoordinateSequence(int size)
         {
             return Factory.CoordinateSequenceFactory.Create(size, HasZ, HasM);
         }
-
 
         internal void ThrowInvalidRecordTypeException(ShapeType shapeType)
         {

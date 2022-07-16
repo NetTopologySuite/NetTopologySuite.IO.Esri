@@ -86,26 +86,27 @@ namespace NetTopologySuite.IO.Esri
         /// <param name="shpPath">Path to shapefile.</param>
         /// <param name="factory">Geometry factory.</param>
         /// <param name="encoding">DBF file encoding. If null encoding will be guess from related .CPG file or from reserved DBF bytes.</param>
+        /// <param name="mbrFilter">The minimum bounding rectangle (BMR) used to filter out shapes located outside it.</param>
         /// <returns>Shapefile reader.</returns>
-        public static ShapefileReader OpenRead(string shpPath, GeometryFactory factory = null, Encoding encoding = null)
+        public static ShapefileReader OpenRead(string shpPath, GeometryFactory factory = null, Encoding encoding = null, Envelope mbrFilter = null)
         {
             var shapeType = GetShapeType(shpPath);
 
             if (shapeType.IsPoint())
             {
-                return new ShapefilePointReader(shpPath, factory, encoding);
+                return new ShapefilePointReader(shpPath, factory, encoding, mbrFilter);
             }
             else if (shapeType.IsMultiPoint())
             {
-                return new ShapefileMultiPointReader(shpPath, factory, encoding);
+                return new ShapefileMultiPointReader(shpPath, factory, encoding, mbrFilter);
             }
             else if (shapeType.IsPolyLine())
             {
-                return new ShapefilePolyLineReader(shpPath, factory, encoding);
+                return new ShapefilePolyLineReader(shpPath, factory, encoding, mbrFilter);
             }
             else if (shapeType.IsPolygon())
             {
-                return new ShapefilePolygonReader(shpPath, factory, encoding);
+                return new ShapefilePolygonReader(shpPath, factory, encoding, mbrFilter);
             }
             else
             {
@@ -119,10 +120,11 @@ namespace NetTopologySuite.IO.Esri
         /// <param name="shpPath">Path to shapefile.</param>
         /// <param name="factory">Geometry factory.</param>
         /// <param name="encoding">DBF file encoding. If null encoding will be guess from related .CPG file or from reserved DBF bytes.</param>
+        /// <param name="mbrFilter">The minimum bounding rectangle (BMR) used to filter out shapes located outside it.</param>
         /// <returns>Shapefile features.</returns>
-        public static Feature[] ReadAllFeatures(string shpPath, GeometryFactory factory = null, Encoding encoding = null)
+        public static Feature[] ReadAllFeatures(string shpPath, GeometryFactory factory = null, Encoding encoding = null, Envelope mbrFilter = null)
         {
-            using (var shp = OpenRead(shpPath, factory, encoding))
+            using (var shp = OpenRead(shpPath, factory, encoding, mbrFilter))
             {
                 return shp.ToArray();
             }
@@ -134,13 +136,14 @@ namespace NetTopologySuite.IO.Esri
         /// </summary>
         /// <param name="shpPath">Path to SHP file.</param>
         /// <param name="factory">Geometry factory.</param>
+        /// <param name="mbrFilter">The minimum bounding rectangle (BMR) used to filter out shapes located outside it.</param>
         /// <returns>Shapefile geometries.</returns>
-        public static Geometry[] ReadAllGeometries(string shpPath, GeometryFactory factory = null)
+        public static Geometry[] ReadAllGeometries(string shpPath, GeometryFactory factory = null, Envelope mbrFilter = null)
         {
             shpPath = Path.ChangeExtension(shpPath, ".shp");
             using (var shpStream = File.OpenRead(shpPath))
             {
-                var shp = Shp.Shp.OpenRead(shpStream, factory);
+                var shp = Shp.Shp.OpenRead(shpStream, factory, mbrFilter);
                 return shp.ToArray();
             }
         }

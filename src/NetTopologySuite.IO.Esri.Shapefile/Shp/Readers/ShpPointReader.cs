@@ -9,14 +9,15 @@ namespace NetTopologySuite.IO.Esri.Shp.Readers
     /// </summary>
     public class ShpPointReader : ShpReader<Point>
     {
-        internal ShpPointReader(Stream shpStream, GeometryFactory factory, int dbfRecrodCount) : base(shpStream, factory, dbfRecrodCount)
+        internal ShpPointReader(Stream shpStream, GeometryFactory factory, Envelope mbrFilter, int dbfRecrodCount)
+            : base(shpStream, factory, mbrFilter, dbfRecrodCount)
         {
             if (!ShapeType.IsPoint())
                 ThrowUnsupportedShapeTypeException();
         }
 
         /// <inheritdoc/>
-        public ShpPointReader(Stream shpStream, GeometryFactory factory) : this(shpStream, factory, int.MaxValue)
+        public ShpPointReader(Stream shpStream, GeometryFactory factory, Envelope mbrFilter) : this(shpStream, factory, mbrFilter, int.MaxValue)
         {
         }
 
@@ -25,11 +26,17 @@ namespace NetTopologySuite.IO.Esri.Shp.Readers
             return Point.Empty;
         }
 
-        internal override Point ReadGeometry(Stream shapeBinary)
+        internal override bool ReadGeometry(Stream shapeBinary, out Point geometry)
         {
             var coordinateSequence = CreateCoordinateSequence(1);
             shapeBinary.ReadPoint(coordinateSequence);
-            return Factory.CreatePoint(coordinateSequence);
+
+            geometry = Factory.CreatePoint(coordinateSequence);
+            if (!IsInMbr(geometry))
+            {
+                return false;
+            }
+            return true;
         }
     }
 
