@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+
+    <IsPackable>false</IsPackable>
+
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="QuickGraph" Version="3.6.61119.7" NoWarn="NU1701" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="TestShapefiles\**" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\NetTopologySuite.IO.Esri.Shapefile\NetTopologySuite.IO.Esri.Shapefile.csproj" />
+  </ItemGroup>
+
+</Project>

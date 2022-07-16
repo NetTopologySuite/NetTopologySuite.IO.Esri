@@ -15,6 +15,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetTopologySuite.IO.Esri.Sh
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetTopologySuite.IO.Esri.TestConsole", "test\NetTopologySuite.IO.Esri.TestConsole\NetTopologySuite.IO.Esri.TestConsole.csproj", "{AA37EFC6-737F-4E8A-A79C-2D179C1B38EC}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{800A3D3F-D350-4AAF-89F2-CBA8C0D54862}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Src", "Src", "{FDC792AB-D6EB-4963-A3F5-1D7A11AA47FC}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetTopologySuite.IO.Esri.Test", "test\NetTopologySuite.IO.Esri.Test\NetTopologySuite.IO.Esri.Test.csproj", "{64B2B87A-EFA0-4BEA-B5D8-7EA989630D68}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -29,9 +35,18 @@ Global
 		{AA37EFC6-737F-4E8A-A79C-2D179C1B38EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AA37EFC6-737F-4E8A-A79C-2D179C1B38EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AA37EFC6-737F-4E8A-A79C-2D179C1B38EC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{64B2B87A-EFA0-4BEA-B5D8-7EA989630D68}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{64B2B87A-EFA0-4BEA-B5D8-7EA989630D68}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{64B2B87A-EFA0-4BEA-B5D8-7EA989630D68}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{64B2B87A-EFA0-4BEA-B5D8-7EA989630D68}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{6E95BC91-8066-4420-B61F-854DE5F3A746} = {FDC792AB-D6EB-4963-A3F5-1D7A11AA47FC}
+		{AA37EFC6-737F-4E8A-A79C-2D179C1B38EC} = {800A3D3F-D350-4AAF-89F2-CBA8C0D54862}
+		{64B2B87A-EFA0-4BEA-B5D8-7EA989630D68} = {800A3D3F-D350-4AAF-89F2-CBA8C0D54862}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {06DEE0C5-480C-4A70-BC80-3791D98E6A89}
