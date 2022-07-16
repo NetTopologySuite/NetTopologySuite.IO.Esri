@@ -13,7 +13,6 @@ namespace NetTopologySuite.IO.Esri.Shapefiles.Writers
     /// </summary>
     public abstract class ShapefileWriter : Shapefile
     {
-
         internal readonly DbfWriter DbfWriter;
 
         /// <inheritdoc/>

@@ -153,32 +153,30 @@ namespace NetTopologySuite.IO.Esri
         /// Opens shapefile writer.
         /// </summary>
         /// <param name="shpPath">Path to shapefile.</param>
-        /// <param name="type">Shape type.</param>
-        /// <param name="fields">Shapefile fields definitions.</param>
-        /// <param name="encoding">DBF file encoding. If null encoding will be guess from related .CPG file or from reserved DBF bytes.</param>
-        /// <param name="projection">Projection metadata for the shapefile (.prj file).</param>
+        /// <param name="options">Writer options.</param>
         /// <returns>Shapefile writer.</returns>
-        public static ShapefileWriter OpenWrite(string shpPath, ShapeType type, IReadOnlyList<DbfField> fields, Encoding encoding = null, string projection = null)
+        public static ShapefileWriter OpenWrite(string shpPath, ShapefileWriterOptions options)
         {
-            if (type.IsPoint())
+            options = options ?? throw new ArgumentNullException(nameof(options));
+            if (options.ShapeType.IsPoint())
             {
-                return new ShapefilePointWriter(shpPath, type, fields, encoding, projection);
+                return new ShapefilePointWriter(shpPath, options);
             }
-            else if (type.IsMultiPoint())
+            else if (options.ShapeType.IsMultiPoint())
             {
-                return new ShapefileMultiPointWriter(shpPath, type, fields, encoding, projection);
+                return new ShapefileMultiPointWriter(shpPath, options);
             }
-            else if (type.IsPolyLine())
+            else if (options.ShapeType.IsPolyLine())
             {
-                return new ShapefilePolyLineWriter(shpPath, type, fields, encoding, projection);
+                return new ShapefilePolyLineWriter(shpPath, options);
             }
-            else if (type.IsPolygon())
+            else if (options.ShapeType.IsPolygon())
             {
-                return new ShapefilePolygonWriter(shpPath, type, fields, encoding, projection);
+                return new ShapefilePolygonWriter(shpPath, options);
             }
             else
             {
-                throw new FileLoadException("Unsupported shapefile type: " + type, shpPath);
+                throw new ShapefileException("Unsupported shapefile type: " + options.ShapeType, shpPath);
             }
         }
 
@@ -188,9 +186,7 @@ namespace NetTopologySuite.IO.Esri
         /// </summary>
         /// <param name="features">Features to be written.</param>
         /// <param name="shpPath">Path to shapefile.</param>
-        /// <param name="encoding">DBF file encoding. If null encoding will be guess from related .CPG file or from reserved DBF bytes.</param>
-        /// <param name="projection">Projection metadata for the shapefile (.prj file).</param>
-        public static void WriteAllFeatures(IEnumerable<IFeature> features, string shpPath, Encoding encoding = null, string projection = null)
+        public static void WriteAllFeatures(IEnumerable<IFeature> features, string shpPath)
         {
             if (features == null)
                 throw new ArgumentNullException(nameof(features));
@@ -201,8 +197,9 @@ namespace NetTopologySuite.IO.Esri
 
             var fields = firstFeature.Attributes.GetDbfFields();
             var shapeType = features.FindNonEmptyGeometry().GetShapeType();
+            var options = new ShapefileWriterOptions(shapeType, fields);
 
-            using (var shpWriter = OpenWrite(shpPath, shapeType, fields, encoding, projection))
+            using (var shpWriter = OpenWrite(shpPath, options))
             {
                 shpWriter.Write(features);
             }
