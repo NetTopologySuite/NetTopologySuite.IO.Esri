@@ -19,6 +19,9 @@ namespace NetTopologySuite.IO.Esri.Shapefiles.Readers
         /// <inheritdoc/>
         public override ShapeType ShapeType => ShpReader.ShapeType;
 
+        /// <inheritdoc/>
+        public override Envelope BoundingBox => ShpReader.BoundingBox;
+
         /// <summary>
         /// Shape geometry.
         /// </summary>

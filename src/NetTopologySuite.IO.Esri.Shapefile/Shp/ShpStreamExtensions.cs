@@ -40,7 +40,7 @@ namespace NetTopologySuite.IO.Esri.Shp
             }
         }
 
-        public static void ReadShpFileHeader(this Stream stream, out ShapeType type, out int fileLength)
+        public static void ReadShpFileHeader(this Stream stream, out ShapeType type, out int fileLength, out Envelope boundingBox)
         {
             var fileCode = stream.ReadInt32BigEndian();
             if (fileCode != Shapefile.FileCode)
@@ -52,7 +52,8 @@ namespace NetTopologySuite.IO.Esri.Shp
             var version = stream.ReadInt32LittleEndian();
             type = stream.ReadShapeType();
 
-            stream.ReadXYBoundingBox();
+            var bbox = stream.ReadXYBoundingBox();
+            boundingBox = new Envelope(bbox.minX, bbox.maxX, bbox.minY, bbox.maxY);
             stream.ReadZRange();
             stream.ReadMRange();
 

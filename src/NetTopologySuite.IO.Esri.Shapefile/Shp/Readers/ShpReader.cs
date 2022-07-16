@@ -17,6 +17,12 @@ namespace NetTopologySuite.IO.Esri.Shp.Readers
         }
 
         /// <summary>
+        /// The Bounding Box stored in the SHP file header representing the actual extent of the shapes in the file.
+        /// If the shapefile is empty (that is, has no records), the Bounding Box values are unspecified.
+        /// </summary>
+        public abstract Envelope BoundingBox { get; }
+
+        /// <summary>
         /// Shape geometry.
         /// </summary>
         public abstract Geometry Geometry { get; }

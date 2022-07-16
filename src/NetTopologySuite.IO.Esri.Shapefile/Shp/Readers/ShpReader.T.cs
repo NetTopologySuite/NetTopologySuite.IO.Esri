@@ -30,6 +30,10 @@ namespace NetTopologySuite.IO.Esri.Shp.Readers
 
         internal GeometryFactory Factory { get; }
 
+        private readonly Envelope _boundingBox;
+        /// <inheritdoc/>
+        public override Envelope BoundingBox => _boundingBox.Copy(); // Envelope is not immutable
+
         /// <summary>
         /// SHP geometry.
         /// </summary>
@@ -62,7 +66,7 @@ namespace NetTopologySuite.IO.Esri.Shp.Readers
             AddManagedResource(Buffer);
 
             Buffer.AssignFrom(ShpStream, Shapefile.FileHeaderSize);
-            Buffer.ReadShpFileHeader(out _, out var fileLength);
+            Buffer.ReadShpFileHeader(out _, out var fileLength, out _boundingBox);
             ShpEndPosition = fileLength - 1;
         }
 
