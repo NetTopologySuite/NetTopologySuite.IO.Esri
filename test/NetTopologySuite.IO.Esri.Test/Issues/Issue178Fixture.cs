@@ -12,7 +12,7 @@ namespace NetTopologySuite.IO.Esri.Test.Issues
         public void SetUp()
         {
             // Set current dir to shapefiles dir
-            Environment.CurrentDirectory = CommonHelpers.TestShapefilesDirectory;
+            Environment.CurrentDirectory = TestShapefiles.Directory;
         }
 
         [Test]
@@ -22,13 +22,13 @@ namespace NetTopologySuite.IO.Esri.Test.Issues
             const string filename = "christchurch-canterbury-h.shp";
             Assert.Throws<ShapefileException>(() =>
             {
-                var reader = new ShapefileReader(filename, factory);
+                var reader = Shapefile.OpenRead(filename, factory);
                 Assert.Fail("Invalid file: code should be unreachable");
             });
 
             // ensure file isn't locked
             string path = Path.Combine(Environment.CurrentDirectory, filename);
-            bool ok;
+            bool ok = false;
             using (var file = File.OpenRead(path))
             {
                 using (var reader = new BinaryReader(file))
