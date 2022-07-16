@@ -3,7 +3,7 @@ using System;
 using System.Collections;
 using System.IO;
 
-namespace NetTopologySuite.IO.Esri.Test
+namespace NetTopologySuite.IO.Esri.Test.Attributes
 {
     /// <summary>
     ///
