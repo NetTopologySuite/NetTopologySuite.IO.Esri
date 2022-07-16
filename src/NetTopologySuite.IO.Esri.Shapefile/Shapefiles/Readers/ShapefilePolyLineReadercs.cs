@@ -12,18 +12,18 @@ namespace NetTopologySuite.IO.Esri.Shapefiles.Readers
     public class ShapefilePolyLineReader : ShapefileReader<MultiLineString>
     {
         /// <inheritdoc/>
-        public ShapefilePolyLineReader(Stream shpStream, Stream dbfStream, GeometryFactory factory, Encoding encoding = null, Envelope mbrFilter = null)
-            : base(shpStream, dbfStream, factory, encoding, mbrFilter)
+        public ShapefilePolyLineReader(Stream shpStream, Stream dbfStream, ShapefileReaderOptions options)
+            : base(shpStream, dbfStream, options)
         { }
 
         /// <inheritdoc/>
-        public ShapefilePolyLineReader(string shpPath, GeometryFactory factory, Encoding encoding = null, Envelope mbrFilter = null)
-            : base(shpPath, factory, encoding, mbrFilter)
+        public ShapefilePolyLineReader(string shpPath, ShapefileReaderOptions options)
+            : base(shpPath, options)
         { }
 
-        internal override ShpReader<MultiLineString> CreateShpReader(Stream shpStream, GeometryFactory factory, Envelope mbrFilter, int dbfRecordCount)
+        internal override ShpReader<MultiLineString> CreateShpReader(Stream shpStream, ShapefileReaderOptions options)
         {
-            return new ShpPolyLineReader(shpStream, factory, mbrFilter, dbfRecordCount);
+            return new ShpPolyLineReader(shpStream, options);
         }
     }
 

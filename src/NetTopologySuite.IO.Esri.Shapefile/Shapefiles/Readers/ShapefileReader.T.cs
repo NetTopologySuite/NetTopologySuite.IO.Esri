@@ -3,6 +3,7 @@ using NetTopologySuite.Geometries;
 using NetTopologySuite.IO.Esri.Dbf;
 using NetTopologySuite.IO.Esri.Dbf.Fields;
 using NetTopologySuite.IO.Esri.Shp.Readers;
+using System;
 using System.IO;
 using System.Text;
 
@@ -39,29 +40,37 @@ namespace NetTopologySuite.IO.Esri.Shapefiles.Readers
         /// </summary>
         /// <param name="shpStream">SHP file stream.</param>
         /// <param name="dbfStream">DBF file stream.</param>
-        /// <param name="factory">Geometry factory.</param>
-        /// <param name="encoding">DBF file encoding. If null encoding will be guess from related .CPG file or from reserved DBF bytes.</param>
-        /// <param name="mbrFilter">The minimum bounding rectangle (BMR) used to filter out shapes located outside it.</param>
-        public ShapefileReader(Stream shpStream, Stream dbfStream, GeometryFactory factory, Encoding encoding, Envelope mbrFilter)
-            : base(new DbfReader(dbfStream, encoding))
+        /// <param name="options">Reader options.</param>
+        public ShapefileReader(Stream shpStream, Stream dbfStream, ShapefileReaderOptions options)
+            : base(new DbfReader(dbfStream, options?.Encoding))
         {
-            ShpReader = CreateShpReader(shpStream, factory, mbrFilter, DbfReader.RecordCount);
+            try
+            {
+                options = options ?? new ShapefileReaderOptions();
+                options.DbfRecordCount = DbfReader.RecordCount;
+                ShpReader = CreateShpReader(shpStream, options);
+            }
+            catch
+            {
+                DisposeManagedResources();
+                throw;
+            }
         }
 
         /// <summary>
         /// Initializes a new instance of the reader class.
         /// </summary>
         /// <param name="shpPath">Path to SHP file.</param>
-        /// <param name="factory">Geometry factory.</param>
-        /// <param name="encoding">DBF file encoding. If null encoding will be guess from related .CPG file or from reserved DBF bytes.</param>
-        /// <param name="mbrFilter">The minimum bounding rectangle (BMR) used to filter out shapes located outside it.</param>
-        public ShapefileReader(string shpPath, GeometryFactory factory, Encoding encoding, Envelope mbrFilter)
-            : base(new DbfReader(Path.ChangeExtension(shpPath, ".dbf"), encoding))
+        /// <param name="options">Reader options.</param>
+        public ShapefileReader(string shpPath, ShapefileReaderOptions options)
+            : base(new DbfReader(Path.ChangeExtension(shpPath, ".dbf"), options?.Encoding))
         {
             try
             {
+                options = options ?? new ShapefileReaderOptions();
+                options.DbfRecordCount = DbfReader.RecordCount;
                 var shpStream = OpenManagedFileStream(shpPath, ".shp", FileMode.Open);
-                ShpReader = CreateShpReader(shpStream, factory, mbrFilter, DbfReader.RecordCount);
+                ShpReader = CreateShpReader(shpStream, options);
 
                 var prjFile = Path.ChangeExtension(shpPath, ".prj");
                 if (File.Exists(prjFile))
@@ -128,7 +137,7 @@ namespace NetTopologySuite.IO.Esri.Shapefiles.Readers
             base.DisposeManagedResources(); // This will dispose streams used by ShpReader and DbfReader. Do it at the end.
         }
 
-        internal abstract ShpReader<T> CreateShpReader(Stream shpStream, GeometryFactory factory, Envelope mbrFilter, int dbfRecordCount);
+        internal abstract ShpReader<T> CreateShpReader(Stream shpStream, ShapefileReaderOptions options);
 
         private static void ThrowCorruptedShapefileDataException()
         {

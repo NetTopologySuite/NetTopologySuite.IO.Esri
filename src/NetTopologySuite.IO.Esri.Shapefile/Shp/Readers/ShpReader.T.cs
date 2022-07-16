@@ -48,29 +48,27 @@ namespace NetTopologySuite.IO.Esri.Shp.Readers
         /// Initializes a new instance of the reader class.
         /// </summary>
         /// <param name="shpStream">SHP file stream.</param>
-        /// <param name="factory">Geometry factory.</param>
-        /// <param name="mbrFilter">The minimum bounding rectangle (BMR) used to filter out shapes located outside it.</param>
-        /// <param name="dbfRecordCount">DBF record count.</param>
-        internal ShpReader(Stream shpStream, GeometryFactory factory, Envelope mbrFilter, int dbfRecordCount)
+        /// <param name="options">Reader options.</param>
+        internal ShpReader(Stream shpStream, ShapefileReaderOptions options)
             : base(Shapefile.GetShapeType(shpStream))
         {
             ShpStream = shpStream ?? throw new ArgumentNullException("Uninitialized SHP stream.", nameof(shpStream));
-            Factory = factory ?? Geometry.DefaultFactory;
+            Factory = options?.Factory ?? Geometry.DefaultFactory;
 
-            if (mbrFilter?.IsNull == false)
+            if (options?.MbrFilter?.IsNull == false)
             {
-                MbrEnvelope = mbrFilter.Copy(); // Envelope is not immutable
+                MbrEnvelope = options.MbrFilter.Copy(); // Envelope is not immutable
             }
             if (MbrEnvelope != null)
             {
                 MbrGeometry = Factory.ToGeometry(MbrEnvelope);
             }
 
-            if (dbfRecordCount < 0)
+            DbfRecordCount = options?.DbfRecordCount ?? int.MaxValue;
+            if (DbfRecordCount < 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(dbfRecordCount));
+                throw new ArgumentOutOfRangeException(nameof(DbfRecordCount));
             }
-            DbfRecordCount = dbfRecordCount;
 
             if (ShpStream.Position != 0)
                 ShpStream.Seek(0, SeekOrigin.Begin);

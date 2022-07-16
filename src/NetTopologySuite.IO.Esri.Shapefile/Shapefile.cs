@@ -84,29 +84,27 @@ namespace NetTopologySuite.IO.Esri
         /// Opens shapefile reader.
         /// </summary>
         /// <param name="shpPath">Path to shapefile.</param>
-        /// <param name="factory">Geometry factory.</param>
-        /// <param name="encoding">DBF file encoding. If null encoding will be guess from related .CPG file or from reserved DBF bytes.</param>
-        /// <param name="mbrFilter">The minimum bounding rectangle (BMR) used to filter out shapes located outside it.</param>
+        /// <param name="options">Reader options.</param>
         /// <returns>Shapefile reader.</returns>
-        public static ShapefileReader OpenRead(string shpPath, GeometryFactory factory = null, Encoding encoding = null, Envelope mbrFilter = null)
+        public static ShapefileReader OpenRead(string shpPath, ShapefileReaderOptions options = null)
         {
             var shapeType = GetShapeType(shpPath);
 
             if (shapeType.IsPoint())
             {
-                return new ShapefilePointReader(shpPath, factory, encoding, mbrFilter);
+                return new ShapefilePointReader(shpPath, options);
             }
             else if (shapeType.IsMultiPoint())
             {
-                return new ShapefileMultiPointReader(shpPath, factory, encoding, mbrFilter);
+                return new ShapefileMultiPointReader(shpPath, options);
             }
             else if (shapeType.IsPolyLine())
             {
-                return new ShapefilePolyLineReader(shpPath, factory, encoding, mbrFilter);
+                return new ShapefilePolyLineReader(shpPath, options);
             }
             else if (shapeType.IsPolygon())
             {
-                return new ShapefilePolygonReader(shpPath, factory, encoding, mbrFilter);
+                return new ShapefilePolygonReader(shpPath, options);
             }
             else
             {
@@ -118,13 +116,11 @@ namespace NetTopologySuite.IO.Esri
         /// Reads all features from shapefile.
         /// </summary>
         /// <param name="shpPath">Path to shapefile.</param>
-        /// <param name="factory">Geometry factory.</param>
-        /// <param name="encoding">DBF file encoding. If null encoding will be guess from related .CPG file or from reserved DBF bytes.</param>
-        /// <param name="mbrFilter">The minimum bounding rectangle (BMR) used to filter out shapes located outside it.</param>
+        /// <param name="options">Reader options.</param>
         /// <returns>Shapefile features.</returns>
-        public static Feature[] ReadAllFeatures(string shpPath, GeometryFactory factory = null, Encoding encoding = null, Envelope mbrFilter = null)
+        public static Feature[] ReadAllFeatures(string shpPath, ShapefileReaderOptions options)
         {
-            using (var shp = OpenRead(shpPath, factory, encoding, mbrFilter))
+            using (var shp = OpenRead(shpPath, options))
             {
                 return shp.ToArray();
             }
@@ -135,15 +131,14 @@ namespace NetTopologySuite.IO.Esri
         /// Reads all geometries from SHP file.
         /// </summary>
         /// <param name="shpPath">Path to SHP file.</param>
-        /// <param name="factory">Geometry factory.</param>
-        /// <param name="mbrFilter">The minimum bounding rectangle (BMR) used to filter out shapes located outside it.</param>
+        /// <param name="options">Reader options.</param>
         /// <returns>Shapefile geometries.</returns>
-        public static Geometry[] ReadAllGeometries(string shpPath, GeometryFactory factory = null, Envelope mbrFilter = null)
+        public static Geometry[] ReadAllGeometries(string shpPath, ShapefileReaderOptions options = null)
         {
             shpPath = Path.ChangeExtension(shpPath, ".shp");
             using (var shpStream = File.OpenRead(shpPath))
             {
-                var shp = Shp.Shp.OpenRead(shpStream, factory, mbrFilter);
+                var shp = Shp.Shp.OpenRead(shpStream, options);
                 return shp.ToArray();
             }
         }

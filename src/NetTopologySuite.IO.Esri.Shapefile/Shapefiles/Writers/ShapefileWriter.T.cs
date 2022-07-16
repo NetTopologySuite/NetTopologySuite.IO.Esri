@@ -49,9 +49,17 @@ namespace NetTopologySuite.IO.Esri.Shapefiles.Writers
         internal ShapefileWriter(Stream shpStream, Stream shxStream, Stream dbfStream, ShapefileWriterOptions options)
             : base(new DbfWriter(dbfStream, options?.Fields, options?.Encoding))
         {
-            options = options ?? throw new ArgumentNullException(nameof(options));
-            ShapeType = options.ShapeType;
-            ShpWriter = CreateShpWriter(shpStream, shxStream);
+            try
+            {
+                options = options ?? throw new ArgumentNullException(nameof(options));
+                ShapeType = options.ShapeType;
+                ShpWriter = CreateShpWriter(shpStream, shxStream);
+            }
+            catch
+            {
+                DisposeManagedResources();
+                throw;
+            }
         }
 
 

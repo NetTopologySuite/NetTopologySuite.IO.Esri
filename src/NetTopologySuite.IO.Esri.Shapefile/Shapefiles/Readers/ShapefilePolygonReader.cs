@@ -12,18 +12,18 @@ namespace NetTopologySuite.IO.Esri.Shapefiles.Readers
     public class ShapefilePolygonReader : ShapefileReader<MultiPolygon>
     {
         /// <inheritdoc/>
-        public ShapefilePolygonReader(Stream shpStream, Stream dbfStream, GeometryFactory factory, Encoding encoding = null, Envelope mbrFilter = null)
-            : base(shpStream, dbfStream, factory, encoding, mbrFilter)
+        public ShapefilePolygonReader(Stream shpStream, Stream dbfStream, ShapefileReaderOptions options)
+            : base(shpStream, dbfStream, options)
         { }
 
         /// <inheritdoc/>
-        public ShapefilePolygonReader(string shpPath, GeometryFactory factory, Encoding encoding = null, Envelope mbrFilter = null)
-            : base(shpPath, factory, encoding, mbrFilter)
+        public ShapefilePolygonReader(string shpPath, ShapefileReaderOptions options)
+            : base(shpPath, options)
         { }
 
-        internal override ShpReader<MultiPolygon> CreateShpReader(Stream shpStream, GeometryFactory factory, Envelope mbrFilter, int dbfRecordCount)
+        internal override ShpReader<MultiPolygon> CreateShpReader(Stream shpStream, ShapefileReaderOptions options)
         {
-            return new ShpPolygonReader(shpStream, factory, mbrFilter, dbfRecordCount);
+            return new ShpPolygonReader(shpStream, options);
         }
     }
 

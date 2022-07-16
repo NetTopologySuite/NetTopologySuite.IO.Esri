@@ -13,20 +13,20 @@ namespace NetTopologySuite.IO.Esri.Shapefiles.Readers
     {
 
         /// <inheritdoc/>
-        public ShapefileMultiPointReader(Stream shpStream, Stream dbfStream, GeometryFactory factory, Encoding encoding = null, Envelope mbrFilter = null)
-            : base(shpStream, dbfStream, factory, encoding, mbrFilter)
+        public ShapefileMultiPointReader(Stream shpStream, Stream dbfStream, ShapefileReaderOptions options)
+            : base(shpStream, dbfStream, options)
         { }
 
 
         /// <inheritdoc/>
-        public ShapefileMultiPointReader(string shpPath, GeometryFactory factory, Encoding encoding = null, Envelope mbrFilter = null)
-            : base(shpPath, factory, encoding, mbrFilter)
+        public ShapefileMultiPointReader(string shpPath, ShapefileReaderOptions options)
+            : base(shpPath, options)
         { }
 
 
-        internal override ShpReader<MultiPoint> CreateShpReader(Stream shpStream, GeometryFactory factory, Envelope mbrFilter, int dbfRecordCount)
+        internal override ShpReader<MultiPoint> CreateShpReader(Stream shpStream, ShapefileReaderOptions options)
         {
-            return new ShpMultiPointReader(shpStream, factory, mbrFilter, dbfRecordCount);
+            return new ShpMultiPointReader(shpStream, options);
         }
     }
 

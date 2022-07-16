@@ -9,16 +9,12 @@ namespace NetTopologySuite.IO.Esri.Shp.Readers
     /// </summary>
     public class ShpPointReader : ShpReader<Point>
     {
-        internal ShpPointReader(Stream shpStream, GeometryFactory factory, Envelope mbrFilter, int dbfRecrodCount)
-            : base(shpStream, factory, mbrFilter, dbfRecrodCount)
+        /// <inheritdoc/>
+        public ShpPointReader(Stream shpStream, ShapefileReaderOptions options)
+            : base(shpStream, options)
         {
             if (!ShapeType.IsPoint())
                 ThrowUnsupportedShapeTypeException();
-        }
-
-        /// <inheritdoc/>
-        public ShpPointReader(Stream shpStream, GeometryFactory factory, Envelope mbrFilter) : this(shpStream, factory, mbrFilter, int.MaxValue)
-        {
         }
 
         internal override Point GetEmptyGeometry()

@@ -7,16 +7,12 @@ namespace NetTopologySuite.IO.Esri.Shp.Readers
 {
     internal class ShpPolygonReader : ShpReader<MultiPolygon>
     {
-        internal ShpPolygonReader(Stream shpStream, GeometryFactory factory, Envelope mbrFilter, int dbfRecrodCount)
-            : base(shpStream, factory, mbrFilter, dbfRecrodCount)
+        /// <inheritdoc/>
+        public ShpPolygonReader(Stream shpStream, ShapefileReaderOptions options)
+            : base(shpStream, options)
         {
             if (!ShapeType.IsPolygon())
                 ThrowUnsupportedShapeTypeException();
-        }
-
-        /// <inheritdoc/>
-        public ShpPolygonReader(Stream shpStream, GeometryFactory factory, Envelope mbrFilter) : this(shpStream, factory, mbrFilter, int.MaxValue)
-        {
         }
 
         internal override MultiPolygon GetEmptyGeometry()

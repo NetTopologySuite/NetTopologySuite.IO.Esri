@@ -46,28 +46,27 @@ namespace NetTopologySuite.IO.Esri.Shp
         /// Opens SHP reader.
         /// </summary>
         /// <param name="shpStream">SHP file stream.</param>
-        /// <param name="factory">Geometry factory.</param>
-        /// <param name="mbrFilter">The minimum bounding rectangle (BMR) used to filter out shapes located outside it.</param>
+        /// <param name="options">Reader options.</param>
         /// <returns>SHP reader.</returns>
-        public static ShpReader OpenRead(Stream shpStream, GeometryFactory factory = null, Envelope mbrFilter = null)
+        public static ShpReader OpenRead(Stream shpStream, ShapefileReaderOptions options)
         {
             var shapeType = Shapefile.GetShapeType(shpStream);
 
             if (shapeType.IsPoint())
             {
-                return new ShpPointReader(shpStream, factory, mbrFilter);
+                return new ShpPointReader(shpStream, options);
             }
             else if (shapeType.IsMultiPoint())
             {
-                return new ShpMultiPointReader(shpStream, factory, mbrFilter);
+                return new ShpMultiPointReader(shpStream, options);
             }
             else if (shapeType.IsPolyLine())
             {
-                return new ShpPolyLineReader(shpStream, factory, mbrFilter);
+                return new ShpPolyLineReader(shpStream, options);
             }
             else if (shapeType.IsPolygon())
             {
-                return new ShpPolygonReader(shpStream, factory, mbrFilter);
+                return new ShpPolygonReader(shpStream, options);
             }
             else
             {
