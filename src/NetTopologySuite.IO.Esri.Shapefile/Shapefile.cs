@@ -60,7 +60,7 @@ namespace NetTopologySuite.IO.Esri
             shpStream.Position = 0;
             var fileCode = shpStream.ReadInt32BigEndian();
             if (fileCode != Shapefile.FileCode)
-                throw new FileLoadException("Invalid shapefile format.");
+                throw new ShapefileException("Invalid shapefile format.");
 
             shpStream.Advance(28);
             return shpStream.ReadShapeType();
