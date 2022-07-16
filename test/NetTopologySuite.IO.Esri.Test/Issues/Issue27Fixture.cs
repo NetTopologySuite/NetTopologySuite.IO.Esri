@@ -1,9 +1,9 @@
 ﻿using NUnit.Framework;
 using System.Collections.Generic;
 using System.Linq;
-using NetTopologySuite.IO.ShapeFile.Extended;
-using NetTopologySuite.IO.ShapeFile.Extended.Entities;
 using System.IO;
+using NetTopologySuite.Features;
+using NetTopologySuite.Geometries;
 
 namespace NetTopologySuite.IO.Esri.Test.Issues
 {
@@ -17,14 +17,19 @@ namespace NetTopologySuite.IO.Esri.Test.Issues
         [Test]
         public void Data_should_be_readable_after_reader_dispose()
         {
-            var crustal_test = Path.Combine(CommonHelpers.TestShapefilesDirectory, "crustal_test.shp");
+            var crustal_test = TestShapefiles.PathTo("crustal_test.shp");
             Assert.True(File.Exists(crustal_test));
 
-            List<IShapefileFeature> data = null;
-            using (var reader = new ShapeDataReader(crustal_test))
+            Envelope mbr;
+            using (var reader = Shapefile.OpenRead(crustal_test))
             {
-                var mbr = reader.ShapefileBounds;
-                data = reader.ReadByMBRFilter(mbr).ToList();
+                mbr = reader.BoundingBox;
+            }
+
+            List<Feature> data = null;
+            using (var reader = Shapefile.OpenRead(crustal_test, mbrFilter: mbr))
+            {
+                data = reader.ToList();
             }
             Assert.IsNotNull(data);
             Assert.IsNotEmpty(data);
@@ -34,6 +39,15 @@ namespace NetTopologySuite.IO.Esri.Test.Issues
                 Assert.IsNotNull(item.Geometry);
                 Assert.IsNotNull(item.Attributes["ID_GTR"]);
             }
+
+
+            Envelope filterMbr = new Envelope(mbr.MinX, mbr.Centre.X, mbr.MinY, mbr.Centre.Y);
+            List<Feature> filteredData = null;
+            using (var reader = Shapefile.OpenRead(crustal_test, mbrFilter: filterMbr))
+            {
+                filteredData = reader.ToList();
+            }
+            Assert.IsTrue(filteredData.Count < data.Count, "Filtering by MBR failed");
         }
     }
 }
