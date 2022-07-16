@@ -3,7 +3,7 @@ using NetTopologySuite.IO.Handlers;
 using NUnit.Framework;
 using System.IO;
 
-namespace NetTopologySuite.IO.ShapeFile.Test
+namespace NetTopologySuite.IO.Esri.Test
 {
     [NtsIssueNumber(74)]
     public class Issue74Fixture

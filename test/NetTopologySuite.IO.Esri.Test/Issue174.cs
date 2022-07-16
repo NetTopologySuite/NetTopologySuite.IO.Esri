@@ -1,7 +1,7 @@
 ﻿using NUnit.Framework;
 using System;
 
-namespace NetTopologySuite.IO.ShapeFile.Test
+namespace NetTopologySuite.IO.Esri.Test
 {
     [NtsIssueNumber(174)]
     class Issue174

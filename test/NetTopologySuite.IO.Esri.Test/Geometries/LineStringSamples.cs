@@ -2,7 +2,7 @@
 using System;
 using NetTopologySuite.Operation.Buffer;
 
-namespace NetTopologySuite.IO.ShapeFile.Test.Geometries
+namespace NetTopologySuite.IO.Esri.Test.Geometries
 {
     /// <summary>
     ///

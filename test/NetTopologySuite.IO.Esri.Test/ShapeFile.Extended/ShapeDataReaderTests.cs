@@ -6,7 +6,7 @@ using NetTopologySuite.Index.Strtree;
 using NetTopologySuite.IO.Handlers;
 using NetTopologySuite.IO.ShapeFile.Extended;
 using NetTopologySuite.IO.ShapeFile.Extended.Entities;
-using NetTopologySuite.IO.ShapeFile.Test;
+using NetTopologySuite.IO.Esri.Test;
 using NUnit.Framework;
 
 namespace NetTopologySuite.IO.Tests.ShapeFile.Extended

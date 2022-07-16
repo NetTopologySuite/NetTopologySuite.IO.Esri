@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace NetTopologySuite.IO.ShapeFile.Test.Various
+namespace NetTopologySuite.IO.Esri.Test.Various
 {
     [TestFixture]
     public class PathFinderTest

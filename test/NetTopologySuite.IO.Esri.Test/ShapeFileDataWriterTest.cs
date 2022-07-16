@@ -10,7 +10,7 @@ using System.IO;
 using System.Text;
 using System.Collections.Generic;
 
-namespace NetTopologySuite.IO.ShapeFile.Test
+namespace NetTopologySuite.IO.Esri.Test
 {
 
     [TestFixture]

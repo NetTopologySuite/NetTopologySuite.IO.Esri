@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics.Contracts;
 
-namespace NetTopologySuite.IO.ShapeFile.Test.Features
+namespace NetTopologySuite.IO.Esri.Test.Features
 {
 
     public class UseOfIndexAndPreparedGeometry

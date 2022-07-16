@@ -6,7 +6,7 @@ using NUnit.Framework;
 using System;
 using System.Linq;
 
-namespace NetTopologySuite.IO.ShapeFile.Test.Various
+namespace NetTopologySuite.IO.Esri.Test.Various
 {
     [TestFixture]
     public class CascadedPolygonUnionFixture

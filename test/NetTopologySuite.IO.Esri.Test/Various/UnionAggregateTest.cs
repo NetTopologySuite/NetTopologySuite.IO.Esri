@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 
-namespace NetTopologySuite.IO.ShapeFile.Test.Various
+namespace NetTopologySuite.IO.Esri.Test.Various
 {
     /// <summary>
     ///

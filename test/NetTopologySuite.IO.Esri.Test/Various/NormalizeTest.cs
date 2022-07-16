@@ -1,7 +1,7 @@
 ﻿using NetTopologySuite.Geometries;
 using NUnit.Framework;
 
-namespace NetTopologySuite.IO.ShapeFile.Test.Various
+namespace NetTopologySuite.IO.Esri.Test.Various
 {
     /// <summary>
     ///

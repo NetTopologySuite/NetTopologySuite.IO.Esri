@@ -6,7 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 
-namespace NetTopologySuite.IO.ShapeFile.Test.Attributes
+namespace NetTopologySuite.IO.Esri.Test.Attributes
 {
     public class AttributesTest
     {

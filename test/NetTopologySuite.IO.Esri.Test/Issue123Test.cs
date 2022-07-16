@@ -5,7 +5,7 @@ using NUnit.Framework;
 using System.Collections.Generic;
 using System.IO;
 
-namespace NetTopologySuite.IO.ShapeFile.Test
+namespace NetTopologySuite.IO.Esri.Test
 {
     [TestFixture]
     [NtsIssueNumber(123)]

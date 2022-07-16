@@ -1,7 +1,7 @@
 ﻿using System;
 using NUnit.Framework;
 
-namespace NetTopologySuite.IO.ShapeFile.Test
+namespace NetTopologySuite.IO.Esri.Test
 {
     /// <summary>
     /// The issue number used in this test (or fixture) refers to an issue on

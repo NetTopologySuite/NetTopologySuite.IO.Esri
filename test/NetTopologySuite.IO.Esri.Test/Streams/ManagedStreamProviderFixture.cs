@@ -4,7 +4,7 @@ using System.Text;
 using NetTopologySuite.IO.Streams;
 using NUnit.Framework;
 
-namespace NetTopologySuite.IO.ShapeFile.Test.Streams
+namespace NetTopologySuite.IO.Esri.Test.Streams
 {
     [TestFixture]
     public class ManagedStreamProviderFixture

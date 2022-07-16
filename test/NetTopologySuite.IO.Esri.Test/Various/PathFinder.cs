@@ -6,7 +6,7 @@ using QuickGraph.Algorithms.ShortestPath;
 using System;
 using System.Collections.Generic;
 
-namespace NetTopologySuite.IO.ShapeFile.Test.Various
+namespace NetTopologySuite.IO.Esri.Test.Various
 {
     /// <summary>
     /// A class that manages shortest path computation.

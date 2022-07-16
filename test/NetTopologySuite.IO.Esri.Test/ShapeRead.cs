@@ -2,7 +2,7 @@
 using System;
 using System.IO;
 
-namespace NetTopologySuite.IO.ShapeFile.Test
+namespace NetTopologySuite.IO.Esri.Test
 {
     /// <summary>
     ///
