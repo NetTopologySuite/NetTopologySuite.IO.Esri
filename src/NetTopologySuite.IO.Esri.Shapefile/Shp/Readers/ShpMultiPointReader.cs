@@ -9,12 +9,17 @@ namespace NetTopologySuite.IO.Esri.Shp.Readers
     /// </summary>
     public class ShpMultiPointReader : ShpReader<MultiPoint>
     {
-        /// <inheritdoc/>
-        public ShpMultiPointReader(Stream shpStream, GeometryFactory factory) : base(shpStream, factory)
+        internal ShpMultiPointReader(Stream shpStream, GeometryFactory factory, int dbfRecrodCount) : base(shpStream, factory, dbfRecrodCount)
         {
             if (!ShapeType.IsMultiPoint())
                 ThrowUnsupportedShapeTypeException();
         }
+
+        /// <inheritdoc/>
+        public ShpMultiPointReader(Stream shpStream, GeometryFactory factory) : this(shpStream, factory, int.MaxValue)
+        {
+        }
+
         internal override MultiPoint GetEmptyGeometry()
         {
             return MultiPoint.Empty;

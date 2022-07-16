@@ -26,6 +26,7 @@ namespace NetTopologySuite.IO.Esri.Shp.Readers
         /// DBF does not have recor number attribute.
         /// </remarks>
         private int RecordNumber = 1;
+        private readonly int DbfRecordCount;
 
         internal GeometryFactory Factory { get; }
 
@@ -34,21 +35,25 @@ namespace NetTopologySuite.IO.Esri.Shp.Readers
         /// </summary>
         public T Shape { get; private set; }
 
-
         /// <inheritdoc/>
         public override Geometry Geometry => Shape;
-
 
         /// <summary>
         /// Initializes a new instance of the reader class.
         /// </summary>
         /// <param name="shpStream">SHP file stream.</param>
         /// <param name="factory">Geometry factory.</param>
-        public ShpReader(Stream shpStream, GeometryFactory factory)
+        /// <param name="dbfRecordCount">DBF record count.</param>
+        internal ShpReader(Stream shpStream, GeometryFactory factory, int dbfRecordCount)
             : base(Shapefile.GetShapeType(shpStream))
         {
             ShpStream = shpStream ?? throw new ArgumentNullException("Uninitialized SHP stream.", nameof(shpStream));
             Factory = factory ?? NtsGeometryServices.Instance.CreateGeometryFactory();
+            if (dbfRecordCount < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(dbfRecordCount));
+            }
+            DbfRecordCount = dbfRecordCount;
 
             if (ShpStream.Position != 0)
                 ShpStream.Seek(0, SeekOrigin.Begin);
@@ -74,9 +79,15 @@ namespace NetTopologySuite.IO.Esri.Shp.Readers
                 Shape = null;
                 return false;
             }
+            if (RecordNumber > DbfRecordCount)
+            {
+                Shape = null;
+                return false;
+            }
 
             (var recordNumber, var contentLength) = ShpStream.ReadShpRecordHeader();
-            Debug.Assert(recordNumber == RecordNumber++, "Shapefile record", $"Unexpected SHP record number: {recordNumber} (expected {RecordNumber}).");
+            Debug.Assert(recordNumber == RecordNumber, "Shapefile record", $"Unexpected SHP record number: {recordNumber} (expected {RecordNumber}).");
+            Debug.Assert(contentLength >= sizeof(int), "Shapefile record", $"Unexpected SHP record content size: {contentLength} (expected >= {sizeof(int)}).");
 
             Buffer.AssignFrom(ShpStream, contentLength);
 
@@ -92,6 +103,7 @@ namespace NetTopologySuite.IO.Esri.Shp.Readers
             }
 
             Shape = ReadGeometry(Buffer);
+            RecordNumber++;
             return true;
         }
 

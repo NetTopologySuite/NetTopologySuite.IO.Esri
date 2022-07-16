@@ -45,8 +45,7 @@ namespace NetTopologySuite.IO.Esri.Shapefiles.Readers
         public ShapefileReader(Stream shpStream, Stream dbfStream, GeometryFactory factory, Encoding encoding)
             : base(new DbfReader(dbfStream, encoding))
         {
-            ShpReader = CreateShpReader(shpStream, factory);
-
+            ShpReader = CreateShpReader(shpStream, factory, DbfReader.RecordCount);
         }
 
         /// <summary>
@@ -61,7 +60,7 @@ namespace NetTopologySuite.IO.Esri.Shapefiles.Readers
             try
             {
                 var shpStream = OpenManagedFileStream(shpPath, ".shp", FileMode.Open);
-                ShpReader = CreateShpReader(shpStream, factory);
+                ShpReader = CreateShpReader(shpStream, factory, DbfReader.RecordCount);
 
                 var prjFile = Path.ChangeExtension(shpPath, ".prj");
                 if (File.Exists(prjFile))
@@ -123,7 +122,7 @@ namespace NetTopologySuite.IO.Esri.Shapefiles.Readers
             base.DisposeManagedResources(); // This will dispose streams used by ShpReader and DbfReader. Do it at the end.
         }
 
-        internal abstract ShpReader<T> CreateShpReader(Stream shpStream, GeometryFactory factory);
+        internal abstract ShpReader<T> CreateShpReader(Stream shpStream, GeometryFactory factory, int dbfRecordCount);
     }
 
 

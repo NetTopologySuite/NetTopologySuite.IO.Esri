@@ -24,9 +24,9 @@ namespace NetTopologySuite.IO.Esri.Shapefiles.Readers
         { }
 
 
-        internal override ShpReader<MultiPoint> CreateShpReader(Stream shpStream, GeometryFactory factory)
+        internal override ShpReader<MultiPoint> CreateShpReader(Stream shpStream, GeometryFactory factory, int dbfRecordCount)
         {
-            return new ShpMultiPointReader(shpStream, factory);
+            return new ShpMultiPointReader(shpStream, factory, dbfRecordCount);
         }
     }
 

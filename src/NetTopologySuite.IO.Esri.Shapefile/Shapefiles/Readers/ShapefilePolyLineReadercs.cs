@@ -21,9 +21,9 @@ namespace NetTopologySuite.IO.Esri.Shapefiles.Readers
             : base(shpPath, factory, encoding)
         { }
 
-        internal override ShpReader<MultiLineString> CreateShpReader(Stream shpStream, GeometryFactory factory)
+        internal override ShpReader<MultiLineString> CreateShpReader(Stream shpStream, GeometryFactory factory, int dbfRecordCount)
         {
-            return new ShpPolyLineReader(shpStream, factory);
+            return new ShpPolyLineReader(shpStream, factory, dbfRecordCount);
         }
     }
 

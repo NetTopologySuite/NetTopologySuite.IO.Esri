@@ -23,9 +23,9 @@ namespace NetTopologySuite.IO.Esri.Shapefiles.Readers
         { }
 
 
-        internal override ShpReader<Point> CreateShpReader(Stream shpStream, GeometryFactory factory)
+        internal override ShpReader<Point> CreateShpReader(Stream shpStream, GeometryFactory factory, int dbfRecordCount)
         {
-            return new ShpPointReader(shpStream, factory);
+            return new ShpPointReader(shpStream, factory, dbfRecordCount);
         }
     }
 

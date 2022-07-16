@@ -5,10 +5,15 @@ namespace NetTopologySuite.IO.Esri.Shp.Readers
 {
     internal class ShpPolyLineReader : ShpReader<MultiLineString>
     {
-        public ShpPolyLineReader(Stream shpStream, GeometryFactory factory) : base(shpStream, factory)
+        internal ShpPolyLineReader(Stream shpStream, GeometryFactory factory, int dbfRecrodCount) : base(shpStream, factory, dbfRecrodCount)
         {
             if (!ShapeType.IsPolyLine())
                 ThrowUnsupportedShapeTypeException();
+        }
+
+        /// <inheritdoc/>
+        public ShpPolyLineReader(Stream shpStream, GeometryFactory factory) : this(shpStream, factory, int.MaxValue)
+        {
         }
 
         internal override MultiLineString GetEmptyGeometry()
