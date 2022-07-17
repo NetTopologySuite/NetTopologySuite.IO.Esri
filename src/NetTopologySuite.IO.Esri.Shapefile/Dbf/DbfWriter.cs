@@ -15,6 +15,8 @@ namespace NetTopologySuite.IO.Esri.Dbf
     public class DbfWriter : ManagedDisposable
     {
         private Stream DbfStream;
+        private int Id = 1;
+        private DbfNumericField IdField;
 
         /// <summary>
         /// Returns the fields in the dbase file.
@@ -80,18 +82,39 @@ namespace NetTopologySuite.IO.Esri.Dbf
         private void IntializeFields(IReadOnlyList<DbfField> fields)
         {
             if (fields == null || fields.Count < 1)
-                throw new ArgumentException("dBASE file must contain at least one field.", nameof(fields));
+            {
+                // https://desktop.arcgis.com/en/arcmap/latest/manage-data/shapefiles/geoprocessing-considerations-for-shapefile-output.htm
+                // # Attribute limitations
+                // The dBASE file must contain at least one field.
+                // When you create a shapefile or dBASE table, an integer ID field is created as a default.
+                fields = new List<DbfField>() { new DbfNumericField("ID") };
+            }
 
             if (fields.Count > Dbf.MaxFieldCount)
+            {
                 throw new ArgumentException($"dBASE file must contain no more than {Dbf.MaxFieldCount} fields.", nameof(fields));
+            }
 
             Fields = new DbfFieldCollection(fields.Count);
-            for (int i = 0; i < fields.Count; i++)
+            foreach (var field in fields)
             {
-                if (fields[i] is DbfCharacterField textField)
-                    textField.Encoding = Encoding;
-                Fields.Add(fields[i]);
+                InitializeField(field);
             }
+        }
+
+        private void InitializeField(DbfField field)
+        {
+            if (field is DbfCharacterField textField)
+            {
+                textField.Encoding = Encoding;
+            }
+
+            if (field.Name.Equals("Id", StringComparison.OrdinalIgnoreCase) && field is DbfNumericField idField)
+            {
+                IdField = idField;
+            }
+
+            Fields.Add(field);
         }
 
         private void WriteHeader(Stream stream)
@@ -148,6 +171,7 @@ namespace NetTopologySuite.IO.Esri.Dbf
         /// </returns>
         public void Write()
         {
+            UpdateIdField();
             DbfStream.WriteByte(Dbf.ValidRecordMark);
 
             for (int i = 0; i < Fields.Count; i++)
@@ -187,6 +211,18 @@ namespace NetTopologySuite.IO.Esri.Dbf
         {
             FinalizeWriting();
             base.DisposeManagedResources(); // FinalizeWriting() is using underlying file streams. Dispose them at the end.
+        }
+
+        private void UpdateIdField()
+        {
+            if (IdField == null)
+            {
+                return;
+            }
+            if (IdField.IsNull)
+            {
+                IdField.Int32Value = Id++;
+            }
         }
     }
 

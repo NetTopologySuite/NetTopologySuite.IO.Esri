@@ -109,7 +109,10 @@ namespace NetTopologySuite.IO.Esri.Shapefiles.Writers
         {
             foreach (var field in DbfWriter.Fields)
             {
-                field.Value = feature.Attributes[field.Name];
+                if (feature.Attributes.Exists(field.Name))
+                {
+                    field.Value = feature.Attributes[field.Name];
+                }
             }
             Geometry = (T)feature.Geometry;
             Write();
