@@ -36,6 +36,9 @@ namespace NetTopologySuite.IO.Esri.Dbf.Fields
         /// </summary>
         public T? NumericValue { get; set; }
 
+        /// <inheritdoc/>
+        public override bool IsNull => NumericValue.HasValue;
+
         internal static int GetProperLength(int length)
         {
             if (length < 1)

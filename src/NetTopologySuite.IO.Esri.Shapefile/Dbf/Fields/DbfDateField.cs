@@ -35,6 +35,9 @@ namespace NetTopologySuite.IO.Esri.Dbf.Fields
             set { DateValue = (DateTime?)value; }
         }
 
+        /// <inheritdoc/>
+        public override bool IsNull => DateValue.HasValue;
+
 
         internal override void ReadValue(Stream stream)
         {

@@ -39,6 +39,9 @@ namespace NetTopologySuite.IO.Esri.Dbf.Fields
             set { LogicalValue = (bool?)value; }
         }
 
+        /// <inheritdoc/>
+        public override bool IsNull => LogicalValue.HasValue;
+
         internal override void ReadValue(Stream stream)
         {
             var logicalValue = stream.ReadByteChar();

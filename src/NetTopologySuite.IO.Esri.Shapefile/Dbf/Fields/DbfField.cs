@@ -103,6 +103,11 @@ namespace NetTopologySuite.IO.Esri.Dbf.Fields
         /// </remarks>
         public abstract object Value { get; set; }
 
+        /// <summary>
+        /// Determines if the field currently does not contain any value.
+        /// </summary>
+        public virtual bool IsNull => Value == null;
+
 
 
         internal static readonly IReadOnlyDictionary<string, object> EmptyFieldValues = new ReadOnlyDictionary<string, object>(new Dictionary<string, object>());
