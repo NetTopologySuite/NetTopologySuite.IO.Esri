@@ -1,5 +1,4 @@
-﻿using System;
-using System.Globalization;
+﻿using System.Globalization;
 
 namespace NetTopologySuite.IO.Esri.Dbf.Fields
 {
@@ -17,19 +16,10 @@ namespace NetTopologySuite.IO.Esri.Dbf.Fields
         // -1.2346e+004 => Length: 12, DecimalDigits: 4   => 12 - 4 = 8
         private static readonly int ExponentialNotationDigitCount = 8;
 
-        private static readonly int DefaultFieldLength = 19;    // That uses ArcMap 10.6 when creates 'Double' field. 
-        private static readonly int DefaultFieldPrecision = 11; // That uses ArcMap 10.6 when creates 'Double' field.       
+        internal static readonly int DefaultFieldLength = 19;    // That uses ArcMap 10.6 when creates 'Double' field. 
+        internal static readonly int DefaultFieldPrecision = 11; // That uses ArcMap 10.6 when creates 'Double' field.
 
         private readonly string NumberFormat;
-
-
-        /// <summary>
-        ///  Initializes a new instance of the field class.
-        /// </summary>
-        /// <param name="name">Field name.</param>
-        public DbfFloatField(string name) : this(name, DefaultFieldLength, DefaultFieldPrecision)
-        {
-        }
 
         internal DbfFloatField(string name, int length, int precision)
             : base(name, DbfType.Float, length, precision)
@@ -43,27 +33,18 @@ namespace NetTopologySuite.IO.Esri.Dbf.Fields
             NumberFormat = "e" + (Length - ExponentialNotationDigitCount).ToString();
         }
 
-        /// <inheritdoc/>
-        public override object Value
+        /// <summary>
+        ///  Initializes a new instance of the field class.
+        /// </summary>
+        /// <param name="name">Field name.</param>
+        public DbfFloatField(string name) : this(name, DefaultFieldLength, DefaultFieldPrecision)
         {
-            get { return NumericValue; }
-            set
-            {
-                if (value == null)
-                {
-                    NumericValue = null;
-                }
-                else
-                {
-                    NumericValue = Convert.ToDouble(value);
-                }
-            }
         }
 
         /// <inheritdoc/>
-        protected override double StringToNumber(string number)
+        protected override double StringToNumber(string s)
         {
-            return double.Parse(number, CultureInfo.InvariantCulture);
+            return double.Parse(s, CultureInfo.InvariantCulture);
         }
 
         /// <inheritdoc/>

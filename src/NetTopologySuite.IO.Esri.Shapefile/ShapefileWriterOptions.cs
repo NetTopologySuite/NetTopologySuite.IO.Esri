@@ -126,27 +126,37 @@ namespace NetTopologySuite.IO.Esri
         }
 
         /// <summary>
-        /// Adds a numeric field (feature attribute).
+        /// Adds an Int32 field (feature attribute).
         /// </summary>
         /// <param name="name">Field name.</param>
-        /// <param name="length">Field lenght.</param>
-        /// <param name="precision">Field precision.</param>
         /// <returns></returns>
-        public DbfNumericField AddNumericField(string name, int length, int precision)
+        public DbfNumericInt32Field AddNumericInt32Field<T>(string name) where T : struct, IConvertible, IFormattable
         {
-            var field = new DbfNumericField(name, length, precision);
+            var field = new DbfNumericInt32Field(name);
             Fields.Add(field);
             return field;
         }
 
         /// <summary>
-        /// Adds an integer field (feature attribute).
+        /// Adds an Int64 field (feature attribute).
         /// </summary>
         /// <param name="name">Field name.</param>
         /// <returns></returns>
-        public DbfNumericField AddIntField(string name)
+        public DbfNumericInt64Field AddNumericInt64Field<T>(string name) where T : struct, IConvertible, IFormattable
         {
-            var field = new DbfNumericField(name);
+            var field = new DbfNumericInt64Field(name);
+            Fields.Add(field);
+            return field;
+        }
+
+        /// <summary>
+        /// Adds a Double field (feature attribute).
+        /// </summary>
+        /// <param name="name">Field name.</param>
+        /// <returns></returns>
+        public DbfNumericDoubleField AddNumericDoubleField<T>(string name) where T : struct, IConvertible, IFormattable
+        {
+            var field = new DbfNumericDoubleField(name);
             Fields.Add(field);
             return field;
         }

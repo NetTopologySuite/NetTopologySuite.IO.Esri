@@ -36,7 +36,7 @@ namespace NetTopologySuite.IO.Esri.Dbf.Fields
         }
 
         /// <inheritdoc/>
-        public override bool IsNull => DateValue.HasValue;
+        public override bool IsNull => DateValue == null;
 
 
         internal override void ReadValue(Stream stream)

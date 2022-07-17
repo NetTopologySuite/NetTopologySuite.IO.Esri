@@ -16,7 +16,7 @@ namespace NetTopologySuite.IO.Esri.Dbf
     {
         private Stream DbfStream;
         private int Id = 1;
-        private DbfNumericField IdField;
+        private DbfField IdField;
 
         /// <summary>
         /// Returns the fields in the dbase file.
@@ -87,7 +87,7 @@ namespace NetTopologySuite.IO.Esri.Dbf
                 // # Attribute limitations
                 // The dBASE file must contain at least one field.
                 // When you create a shapefile or dBASE table, an integer ID field is created as a default.
-                fields = new List<DbfField>() { new DbfNumericField("ID") };
+                fields = new List<DbfField>() { new DbfNumericInt32Field("Id") };
             }
 
             if (fields.Count > Dbf.MaxFieldCount)
@@ -109,9 +109,9 @@ namespace NetTopologySuite.IO.Esri.Dbf
                 textField.Encoding = Encoding;
             }
 
-            if (field.Name.Equals("Id", StringComparison.OrdinalIgnoreCase) && field is DbfNumericField idField)
+            if (field.Name.Equals("Id", StringComparison.OrdinalIgnoreCase))
             {
-                IdField = idField;
+                IdField = field;
             }
 
             Fields.Add(field);
@@ -221,7 +221,7 @@ namespace NetTopologySuite.IO.Esri.Dbf
             }
             if (IdField.IsNull)
             {
-                IdField.Int32Value = Id++;
+                IdField.Value = Id++;
             }
         }
     }

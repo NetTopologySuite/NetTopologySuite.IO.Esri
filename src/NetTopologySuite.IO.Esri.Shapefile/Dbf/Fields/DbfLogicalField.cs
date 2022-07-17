@@ -40,7 +40,7 @@ namespace NetTopologySuite.IO.Esri.Dbf.Fields
         }
 
         /// <inheritdoc/>
-        public override bool IsNull => LogicalValue.HasValue;
+        public override bool IsNull => LogicalValue == null;
 
         internal override void ReadValue(Stream stream)
         {
