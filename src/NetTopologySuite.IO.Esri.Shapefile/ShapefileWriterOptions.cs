@@ -1,4 +1,5 @@
 ﻿using NetTopologySuite.IO.Esri.Dbf.Fields;
+using NetTopologySuite.IO.Esri.Shapefiles.Readers;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -47,6 +48,19 @@ namespace NetTopologySuite.IO.Esri
             {
                 Fields.AddRange(fields);
             }
+        }
+
+        /// <summary>
+        /// Creates new instance of ShapefileWriterOptions class based on existing ShapefileReader.
+        /// </summary>
+        /// <param name="reader">Shape reader.</param>
+        public ShapefileWriterOptions(ShapefileReader reader)
+        {
+            reader = reader ?? throw new ArgumentNullException(nameof(reader));
+            ShapeType = reader.ShapeType;
+            Fields.AddRange(reader.Fields);
+            Encoding = reader.Encoding;
+            Projection = reader.Projection;
         }
 
         /// <summary>
