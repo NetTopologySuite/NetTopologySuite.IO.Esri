@@ -11,13 +11,12 @@ with `Dbf` (eg. `DbfReader`) provide direct access to dBASE files.
 ```c#
 using (var dbf = new DbfReader(dbfPath))
 {
-    foreach (var fields in dbf)
+    foreach (var record in dbf)
     {
-        Console.WriteLine("Record ID: " + fields["Id"]);
-        var fieldNames = fields.Keys;
+        var fieldNames = record.Keys;
         foreach (var fieldName in fieldNames)
         {
-            Console.WriteLine($"{fieldName, 10} {fields[fieldName]}");
+            Console.WriteLine($"{fieldName,10} {record[fieldName]}");
         }
         Console.WriteLine();
     }
@@ -32,7 +31,7 @@ provide direct access to main file.
 
 ```c#
 using (var shpStream = File.OpenRead(shpPath))
-using (var shp = new ShpPointReader(shpStream, GeometryFactory.Default))
+using (var shp = new ShpPointReader(shpStream))
 {
     while (shp.Read())
     {
@@ -58,7 +57,6 @@ Under the hood they are decorators wrapping `Dbf` and `Shp` classes.
 ```c#
 foreach (var feature in Shapefile.ReadAllFeatures(shpPath))
 {
-    Console.WriteLine(" Record ID: " + feature.Attributes["Id"]);
     foreach (var attrName in feature.Attributes.GetNames())
     {
         Console.WriteLine($"{attrName,10}: {feature.Attributes[attrName]}");
