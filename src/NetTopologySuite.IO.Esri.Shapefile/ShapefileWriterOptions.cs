@@ -130,7 +130,7 @@ namespace NetTopologySuite.IO.Esri
         /// </summary>
         /// <param name="name">Field name.</param>
         /// <returns></returns>
-        public DbfNumericInt32Field AddNumericInt32Field<T>(string name) where T : struct, IConvertible, IFormattable
+        public DbfNumericInt32Field AddNumericInt32Field(string name) 
         {
             var field = new DbfNumericInt32Field(name);
             Fields.Add(field);
@@ -142,7 +142,7 @@ namespace NetTopologySuite.IO.Esri
         /// </summary>
         /// <param name="name">Field name.</param>
         /// <returns></returns>
-        public DbfNumericInt64Field AddNumericInt64Field<T>(string name) where T : struct, IConvertible, IFormattable
+        public DbfNumericInt64Field AddNumericInt64Field(string name) 
         {
             var field = new DbfNumericInt64Field(name);
             Fields.Add(field);
@@ -154,7 +154,7 @@ namespace NetTopologySuite.IO.Esri
         /// </summary>
         /// <param name="name">Field name.</param>
         /// <returns></returns>
-        public DbfNumericDoubleField AddNumericDoubleField<T>(string name) where T : struct, IConvertible, IFormattable
+        public DbfNumericDoubleField AddNumericDoubleField(string name) 
         {
             var field = new DbfNumericDoubleField(name);
             Fields.Add(field);
