@@ -4,7 +4,7 @@ This library provides forward-only readers and writers for [Esri shapefiles](htt
 
 ## DBF
 
-Shapefile feature attributes are held in a dBASE format file (.dbf extension). Each attribute record
+Shapefile feature attributes are held in a [dBASE format file](dBASE.md) (.dbf extension). Each attribute record
 has a one-to-one relationship with the associated shape record. Classes whose name starts
 with `Dbf` (eg. `DbfReader`) provide direct access to dBASE files.
 
