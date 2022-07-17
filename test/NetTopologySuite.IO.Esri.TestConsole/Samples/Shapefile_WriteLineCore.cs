@@ -14,7 +14,7 @@ namespace NetTopologySuite.IO.Esri.TestConsole.Tests
             var options = new ShapefileWriterOptions(ShapeType.PolyLine);
             var dateField = options.AddDateField("date");
             var floatField = options.AddFloatField("float");
-            var intField = options.AddIntField("int");
+            var intField = options.AddNumericInt32Field("int");
             var LogicalField = options.AddLogicalField("logical");
             var textField = options.AddCharacterField("text");
 
