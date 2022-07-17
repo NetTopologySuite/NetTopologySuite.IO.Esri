@@ -37,7 +37,7 @@ namespace NetTopologySuite.IO.Esri.TestConsole.Tests
             //srcPath = GetTestFilePath(srcPath);
 
             using (var src = Shapefile.OpenRead(srcPath))
-            using (var copy = Shapefile.OpenWrite(destPath, src.ShapeType, src.Fields, src.Encoding, src.Projection))
+            using (var copy = Shapefile.OpenWrite(destPath, new ShapefileWriterOptions(src)))
             {
                 var srcFeatures = src.ToArray();
                 copy.Write(srcFeatures);

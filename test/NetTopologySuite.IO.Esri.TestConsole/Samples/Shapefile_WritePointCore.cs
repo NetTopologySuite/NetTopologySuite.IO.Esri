@@ -17,7 +17,8 @@ namespace NetTopologySuite.IO.Esri.TestConsole.Tests
             var LogicalField = new DbfLogicalField("logical");
             var textField = new DbfCharacterField("text");
 
-            using (var shp = new ShapefilePointWriter(shpPath, ShapeType.Point, dateField, floatField, intField, LogicalField, textField))
+            var options = new ShapefileWriterOptions(ShapeType.Point, dateField, floatField, intField, LogicalField, textField);
+            using (var shp = new ShapefilePointWriter(shpPath, options))
             {
                 for (int i = 1; i < 5; i++)
                 {
