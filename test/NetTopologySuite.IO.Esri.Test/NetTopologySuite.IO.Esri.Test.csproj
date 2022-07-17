@@ -7,9 +7,13 @@
 
     <SignAssembly>true</SignAssembly>
   </PropertyGroup>
-
+  
   <ItemGroup>
-    <PackageReference Include="QuickGraph" Version="3.6.61119.7" NoWarn="NU1701" />
+    <Content Include="../TestData/TestShapefiles/**">
+      <Link>TestShapefiles/%(RecursiveDir)/%(Filename)%(Extension)</Link>
+      <TargetPath>TestShapefiles/%(RecursiveDir)/%(Filename)%(Extension)</TargetPath>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
@@ -21,7 +25,6 @@
     <Compile Remove="Readers\**" />
     <Compile Remove="ShapeFile.Extended\**" />
     <Compile Remove="Streams\**" />
-    <Compile Remove="TestShapefiles\**" />
     <Compile Remove="Various\**" />
     <Compile Remove="Writers\**" />
     <EmbeddedResource Remove="Attributes\**" />
@@ -32,7 +35,6 @@
     <EmbeddedResource Remove="Readers\**" />
     <EmbeddedResource Remove="ShapeFile.Extended\**" />
     <EmbeddedResource Remove="Streams\**" />
-    <EmbeddedResource Remove="TestShapefiles\**" />
     <EmbeddedResource Remove="Various\**" />
     <EmbeddedResource Remove="Writers\**" />
     <None Remove="Attributes\**" />
@@ -43,9 +45,27 @@
     <None Remove="Readers\**" />
     <None Remove="ShapeFile.Extended\**" />
     <None Remove="Streams\**" />
-    <None Remove="TestShapefiles\**" />
     <None Remove="Various\**" />
     <None Remove="Writers\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="Issues\Issue123Test.cs" />
+    <Compile Include="Issues\Issue161.cs" />
+    <Compile Include="Issues\Issue173Fixture.cs" />
+    <Compile Include="Issues\Issue174.cs" />
+    <Compile Include="Issues\Issue178Fixture.cs" />
+    <Compile Include="Issues\Issue27Fixture.cs" />
+    <Compile Include="Issues\Issue36Tests.cs" />
+    <Compile Include="Issues\Issue46Fixture.cs" />
+    <Compile Include="Issues\Issue4Fixture.cs" />
+    <Compile Include="Issues\Issue56Fixture.cs" />
+    <Compile Include="Issues\Issue60Fixture.cs" />
+    <Compile Include="Various\ReadmeSamples.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="QuickGraph" Version="3.6.61119.7" NoWarn="NU1701" />
   </ItemGroup>
 
   <ItemGroup>
