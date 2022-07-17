@@ -12,12 +12,12 @@ namespace NetTopologySuite.IO.Esri.Shapefiles.Readers
     public class ShapefilePolygonReader : ShapefileReader<MultiPolygon>
     {
         /// <inheritdoc/>
-        public ShapefilePolygonReader(Stream shpStream, Stream dbfStream, ShapefileReaderOptions options)
+        public ShapefilePolygonReader(Stream shpStream, Stream dbfStream, ShapefileReaderOptions options = null)
             : base(shpStream, dbfStream, options)
         { }
 
         /// <inheritdoc/>
-        public ShapefilePolygonReader(string shpPath, ShapefileReaderOptions options)
+        public ShapefilePolygonReader(string shpPath, ShapefileReaderOptions options = null)
             : base(shpPath, options)
         { }
 

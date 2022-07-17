@@ -10,7 +10,7 @@ namespace NetTopologySuite.IO.Esri.Shp.Readers
     public class ShpPointReader : ShpReader<Point>
     {
         /// <inheritdoc/>
-        public ShpPointReader(Stream shpStream, ShapefileReaderOptions options)
+        public ShpPointReader(Stream shpStream, ShapefileReaderOptions options = null)
             : base(shpStream, options)
         {
             if (!ShapeType.IsPoint())

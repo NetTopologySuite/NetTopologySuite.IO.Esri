@@ -118,7 +118,7 @@ namespace NetTopologySuite.IO.Esri
         /// <param name="shpPath">Path to shapefile.</param>
         /// <param name="options">Reader options.</param>
         /// <returns>Shapefile features.</returns>
-        public static Feature[] ReadAllFeatures(string shpPath, ShapefileReaderOptions options)
+        public static Feature[] ReadAllFeatures(string shpPath, ShapefileReaderOptions options = null)
         {
             using (var shp = OpenRead(shpPath, options))
             {

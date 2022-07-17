@@ -13,12 +13,12 @@ namespace NetTopologySuite.IO.Esri.Shapefiles.Readers
     public class ShapefilePointReader : ShapefileReader<Point>
     {
         /// <inheritdoc/>
-        public ShapefilePointReader(Stream shpStream, Stream dbfStream, ShapefileReaderOptions options)
+        public ShapefilePointReader(Stream shpStream, Stream dbfStream, ShapefileReaderOptions options = null)
             : base(shpStream, dbfStream, options)
         { }
 
         /// <inheritdoc/>
-        public ShapefilePointReader(string shpPath, ShapefileReaderOptions options)
+        public ShapefilePointReader(string shpPath, ShapefileReaderOptions options = null)
             : base(shpPath, options)
         { }
 

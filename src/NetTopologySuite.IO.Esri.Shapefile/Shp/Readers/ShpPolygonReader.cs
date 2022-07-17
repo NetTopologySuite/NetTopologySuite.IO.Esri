@@ -8,7 +8,7 @@ namespace NetTopologySuite.IO.Esri.Shp.Readers
     internal class ShpPolygonReader : ShpReader<MultiPolygon>
     {
         /// <inheritdoc/>
-        public ShpPolygonReader(Stream shpStream, ShapefileReaderOptions options)
+        public ShpPolygonReader(Stream shpStream, ShapefileReaderOptions options = null)
             : base(shpStream, options)
         {
             if (!ShapeType.IsPolygon())

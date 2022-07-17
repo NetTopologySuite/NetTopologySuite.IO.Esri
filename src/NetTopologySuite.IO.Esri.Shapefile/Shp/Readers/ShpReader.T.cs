@@ -16,6 +16,7 @@ namespace NetTopologySuite.IO.Esri.Shp.Readers
         private readonly Stream ShpStream;
         private readonly int ShpEndPosition;
         private readonly MemoryStream Buffer;
+        private readonly bool SkipFailures;
         private readonly Envelope MbrEnvelope = null;
         private readonly Geometry MbrGeometry = null;
 
@@ -33,8 +34,16 @@ namespace NetTopologySuite.IO.Esri.Shp.Readers
         internal GeometryFactory Factory { get; }
 
         private readonly Envelope _boundingBox;
+
         /// <inheritdoc/>
         public override Envelope BoundingBox => _boundingBox.Copy(); // Envelope is not immutable
+
+
+        private readonly List<Exception> _errors = new List<Exception>();
+        /// <summary>
+        /// Errors which occured during reading process. Valid only if ShapefileReaderOptions.SkipFailures option is set to true.
+        /// </summary>
+        public IReadOnlyList<Exception> Errors => _errors;
 
         /// <summary>
         /// SHP geometry.
@@ -63,6 +72,8 @@ namespace NetTopologySuite.IO.Esri.Shp.Readers
             {
                 MbrGeometry = Factory.ToGeometry(MbrEnvelope);
             }
+
+            SkipFailures = options?.SkipFailures ?? false;
 
             DbfRecordCount = options?.DbfRecordCount ?? int.MaxValue;
             if (DbfRecordCount < 0)
@@ -96,7 +107,20 @@ namespace NetTopologySuite.IO.Esri.Shp.Readers
         internal bool Read(out int skippedCount)
         {
             skippedCount = 0;
-            return ReadCore(ref skippedCount);
+            try
+            {
+                return ReadCore(ref skippedCount);
+            }
+            catch (Exception ex)
+            {
+                if (SkipFailures)
+                {
+                    _errors.Add(ex);
+                    Shape = GetEmptyGeometry();
+                    return true;
+                }
+                throw;
+            }
         }
 
         /// <inheritdoc/>

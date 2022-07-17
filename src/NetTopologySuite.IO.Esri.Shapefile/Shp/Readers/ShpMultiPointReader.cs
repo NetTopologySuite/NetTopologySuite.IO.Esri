@@ -11,7 +11,7 @@ namespace NetTopologySuite.IO.Esri.Shp.Readers
     {
 
         /// <inheritdoc/>
-        public ShpMultiPointReader(Stream shpStream, ShapefileReaderOptions options)
+        public ShpMultiPointReader(Stream shpStream, ShapefileReaderOptions options = null)
             : base(shpStream, options)
         {
             if (!ShapeType.IsMultiPoint())

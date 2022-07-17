@@ -6,7 +6,7 @@ namespace NetTopologySuite.IO.Esri.Shp.Readers
     internal class ShpPolyLineReader : ShpReader<MultiLineString>
     {
         /// <inheritdoc/>
-        public ShpPolyLineReader(Stream shpStream, ShapefileReaderOptions options)
+        public ShpPolyLineReader(Stream shpStream, ShapefileReaderOptions options = null)
             : base(shpStream, options)
         {
             if (!ShapeType.IsPolyLine())
