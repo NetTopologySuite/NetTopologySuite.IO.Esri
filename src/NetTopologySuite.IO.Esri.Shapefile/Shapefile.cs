@@ -108,7 +108,7 @@ namespace NetTopologySuite.IO.Esri
             }
             else
             {
-                throw new FileLoadException("Unsupported shapefile type: " + shapeType, shpPath);
+                throw new ShapefileException("Unsupported shapefile type: " + shapeType, shpPath);
             }
         }
 
