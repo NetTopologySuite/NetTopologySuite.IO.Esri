@@ -29,10 +29,10 @@ namespace NetTopologySuite.IO.Esri.Test.Issues
         [Test]
         public void ok_when_writing_shapefile_with_features()
         {
-            var fields = new List<DbfField>();
-            fields.Add(new DbfCharacterField("X", 10));
+            var options = new ShapefileWriterOptions(ShapeType.Point);
+            options.AddCharacterField("X", 10);
 
-            using (var writer = Shapefile.OpenWrite(@"issue36", ShapeType.Point, fields))
+            using (var writer = Shapefile.OpenWrite(@"issue36", options))
             {
                 IAttributesTable attributesTable = new AttributesTable();
                 attributesTable.Add("X", "y");
@@ -50,9 +50,9 @@ namespace NetTopologySuite.IO.Esri.Test.Issues
         [Test]
         public void ok_when_writing_shapefile_with_no_features()
         {
-            var fields = new List<DbfField>();
-            fields.Add(new DbfCharacterField("X", 10));
-            using (var writer = Shapefile.OpenWrite(@"issue36", ShapeType.Point, fields))
+            var options = new ShapefileWriterOptions(ShapeType.Point);
+            options.AddCharacterField("X", 10);
+            using (var writer = Shapefile.OpenWrite(@"issue36", options))
             {
                 IList<IFeature> features = new List<IFeature>();
                 Assert.DoesNotThrow(() => writer.Write(features));
