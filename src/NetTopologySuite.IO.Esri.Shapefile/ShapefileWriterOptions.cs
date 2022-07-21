@@ -71,9 +71,18 @@ namespace NetTopologySuite.IO.Esri
         /// <returns></returns>
         public DbfField AddField(string name, Type type)
         {
-            var field = DbfField.Create(name, type);
-            Fields.Add(field);
-            return field;
+            return Fields.AddField(name, type);
+        }
+
+        /// <summary>
+        /// Adds a DBF field.
+        /// </summary>
+        /// <param name="name">Field name.</param>
+        /// <returns></returns>
+        public DbfField AddField<T>(string name)
+            where T : struct, IComparable, IConvertible, IFormattable
+        {
+            return Fields.AddField<T>(name);
         }
 
         /// <summary>
@@ -84,9 +93,7 @@ namespace NetTopologySuite.IO.Esri
         /// <returns></returns>
         public DbfCharacterField AddCharacterField(string name, int length = 254)
         {
-            var field = new DbfCharacterField(name, length);
-            Fields.Add(field);
-            return field;
+            return Fields.AddCharacterField(name, length);
         }
 
         /// <summary>
@@ -96,9 +103,7 @@ namespace NetTopologySuite.IO.Esri
         /// <returns></returns>
         public DbfDateField AddDateField(string name)
         {
-            var field = new DbfDateField(name);
-            Fields.Add(field);
-            return field;
+            return Fields.AddDateField(name);
         }
 
         /// <summary>
@@ -108,9 +113,7 @@ namespace NetTopologySuite.IO.Esri
         /// <returns></returns>
         public DbfFloatField AddFloatField(string name)
         {
-            var field = new DbfFloatField(name);
-            Fields.Add(field);
-            return field;
+            return Fields.AddFloatField(name);
         }
 
         /// <summary>
@@ -120,9 +123,7 @@ namespace NetTopologySuite.IO.Esri
         /// <returns></returns>
         public DbfLogicalField AddLogicalField(string name)
         {
-            var field = new DbfLogicalField(name);
-            Fields.Add(field);
-            return field;
+            return Fields.AddLogicalField(name);
         }
 
         /// <summary>
@@ -130,11 +131,9 @@ namespace NetTopologySuite.IO.Esri
         /// </summary>
         /// <param name="name">Field name.</param>
         /// <returns></returns>
-        public DbfNumericInt32Field AddNumericInt32Field(string name) 
+        public DbfNumericInt32Field AddNumericInt32Field(string name)
         {
-            var field = new DbfNumericInt32Field(name);
-            Fields.Add(field);
-            return field;
+            return Fields.AddNumericInt32Field(name);
         }
 
         /// <summary>
@@ -142,11 +141,9 @@ namespace NetTopologySuite.IO.Esri
         /// </summary>
         /// <param name="name">Field name.</param>
         /// <returns></returns>
-        public DbfNumericInt64Field AddNumericInt64Field(string name) 
+        public DbfNumericInt64Field AddNumericInt64Field(string name)
         {
-            var field = new DbfNumericInt64Field(name);
-            Fields.Add(field);
-            return field;
+            return Fields.AddNumericInt64Field(name);
         }
 
         /// <summary>
@@ -154,11 +151,9 @@ namespace NetTopologySuite.IO.Esri
         /// </summary>
         /// <param name="name">Field name.</param>
         /// <returns></returns>
-        public DbfNumericDoubleField AddNumericDoubleField(string name) 
+        public DbfNumericDoubleField AddNumericDoubleField(string name)
         {
-            var field = new DbfNumericDoubleField(name);
-            Fields.Add(field);
-            return field;
+            return Fields.AddNumericDoubleField(name);
         }
     }
 }
