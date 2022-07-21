@@ -20,14 +20,14 @@ namespace NetTopologySuite.IO.Esri.Test.Issues
             var crustal_test = TestShapefiles.PathTo("crustal_test.shp");
             Assert.True(File.Exists(crustal_test));
 
-            Envelope mbr;
+            var options = new ShapefileReaderOptions();
             using (var reader = Shapefile.OpenRead(crustal_test))
             {
-                mbr = reader.BoundingBox;
+                options.MbrFilter = reader.BoundingBox;
             }
 
             List<Feature> data = null;
-            using (var reader = Shapefile.OpenRead(crustal_test, mbrFilter: mbr))
+            using (var reader = Shapefile.OpenRead(crustal_test, options))
             {
                 data = reader.ToList();
             }
@@ -41,9 +41,10 @@ namespace NetTopologySuite.IO.Esri.Test.Issues
             }
 
 
-            Envelope filterMbr = new Envelope(mbr.MinX, mbr.Centre.X, mbr.MinY, mbr.Centre.Y);
+            var mbr = options.MbrFilter;
+            options.MbrFilter = new Envelope(mbr.MinX, mbr.Centre.X, mbr.MinY, mbr.Centre.Y);
             List<Feature> filteredData = null;
-            using (var reader = Shapefile.OpenRead(crustal_test, mbrFilter: filterMbr))
+            using (var reader = Shapefile.OpenRead(crustal_test, options))
             {
                 filteredData = reader.ToList();
             }
