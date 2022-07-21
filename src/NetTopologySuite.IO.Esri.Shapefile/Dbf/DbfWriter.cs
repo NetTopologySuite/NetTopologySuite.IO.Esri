@@ -1,5 +1,6 @@
 using NetTopologySuite.IO.Esri.Dbf.Fields;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -48,8 +49,8 @@ namespace NetTopologySuite.IO.Esri.Dbf
         /// </summary>
         /// <param name="stream">Stream of source DBF file.</param>
         /// <param name="fields">dBASE field definitions.</param>
-        /// <param name="encoding">DBF file encoding or null if encoding should be resolved from DBF reserved bytes.</param>
-        public DbfWriter(Stream stream, IReadOnlyList<DbfField> fields, Encoding encoding)
+        /// <param name="encoding">DBF file encoding. Defaults to UTF8.</param>
+        public DbfWriter(Stream stream, IReadOnlyList<DbfField> fields, Encoding encoding = null)
         {
             Encoding = encoding ?? Encoding.UTF8;
             IntializeFields(fields);
@@ -62,8 +63,8 @@ namespace NetTopologySuite.IO.Esri.Dbf
         /// </summary>
         /// <param name="dbfPath">Path to DBF file.</param>
         /// <param name="fields">dBASE field definitions.</param>
-        /// <param name="encoding">DBF file encoding or null if encoding should be resolved from DBF reserved bytes.</param>
-        public DbfWriter(string dbfPath, IReadOnlyList<DbfField> fields, Encoding encoding)
+        /// <param name="encoding">DBF file encoding. Defaults to UTF8.</param>
+        public DbfWriter(string dbfPath, IReadOnlyList<DbfField> fields, Encoding encoding = null)
         {
             Encoding = encoding ?? Encoding.UTF8;
             IntializeFields(fields);

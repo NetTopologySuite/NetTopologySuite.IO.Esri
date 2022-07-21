@@ -221,7 +221,6 @@ namespace NetTopologySuite.IO.Esri.Dbf
         {
             if (!Read(out deleted))
             {
-                //values = null; // This would cause recreating array in next iteration
                 values = DbfField.EmptyFieldValues;
                 return false;
             }
