@@ -28,7 +28,7 @@ namespace NetTopologySuite.IO.Esri.Test.Issues
             Shapefile.WriteAllFeatures(features, fileName);
 
             bool isTrue = true;
-            using (var reader = Shapefile.OpenRead(fileName, pt.Factory))
+            using (var reader = Shapefile.OpenRead(fileName))
                 isTrue = isTrue && reader.ShapeType.ToString() == "Point";
 
             foreach (string file in Directory.GetFiles(Path.GetTempPath(), Path.GetFileName(fileName) + ".*"))

@@ -16,7 +16,7 @@ namespace NetTopologySuite.IO.Esri.Test.Issues
             if (!File.Exists(filePath)) Assert.Ignore("File '{0}' not present", filePath);
 
             //ATTEMPT
-            using (var reader = Shapefile.OpenRead(filePath, GeometryFactory.Default))
+            using (var reader = Shapefile.OpenRead(filePath))
             {
                 while (reader.Read(out bool deleted))//&& count++ < 3)
                 {

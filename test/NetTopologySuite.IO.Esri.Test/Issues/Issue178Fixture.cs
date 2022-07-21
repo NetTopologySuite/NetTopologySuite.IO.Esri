@@ -18,11 +18,10 @@ namespace NetTopologySuite.IO.Esri.Test.Issues
         [Test]
         public void TestCorruptedShapeFile()
         {
-            var factory = GeometryFactory.Default;
             const string filename = "christchurch-canterbury-h.shp";
             Assert.Throws<ShapefileException>(() =>
             {
-                var reader = Shapefile.OpenRead(filename, factory);
+                var reader = Shapefile.OpenRead(filename);
                 Assert.Fail("Invalid file: code should be unreachable");
             });
 
