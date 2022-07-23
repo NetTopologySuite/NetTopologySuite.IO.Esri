@@ -10,6 +10,21 @@ internal sealed class TestShapefiles
         return Path.Combine(Directory, shpName);
     }
 
+    public static string PathToCountriesPt(string ext = ".shp")
+    {
+        return PathTo(Path.Combine("eurostat", "countries_pt" + ext));
+    }
+
+    public static string PathToCountriesLn(string ext = ".shp")
+    {
+        return PathTo(Path.Combine("eurostat", "countries_ln" + ext));
+    }
+
+    public static string PathToCountriesPg(string ext = ".shp")
+    {
+        return PathTo(Path.Combine("eurostat", "countries_pg" + ext));
+    }
+
     /// <summary>
     /// Creates a uniquely named, temporary shapefile name and returns the full path of that file.
     /// </summary>
