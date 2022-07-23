@@ -29,7 +29,7 @@ namespace NetTopologySuite.IO.Esri.Test.Issues
                 bool success = shpReader.Read(out var deleted);
                 Assert.That(success, Is.False);
 
-                // Empty Shapefiles with specified ShapeType (Point, Polygon, ...) can be read whithout problem.
+                // Empty Shapefiles with specified ShapeType (Point, Polygon, ...) can be read without any problem.
             });
         }
     }
