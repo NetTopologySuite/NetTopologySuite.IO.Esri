@@ -1,6 +1,7 @@
 ﻿using NetTopologySuite.Algorithm;
 using NetTopologySuite.Geometries;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 
 namespace NetTopologySuite.IO.Esri.Shp.Readers
@@ -39,8 +40,14 @@ namespace NetTopologySuite.IO.Esri.Shp.Readers
             var shell = Factory.CreateLinearRing(partsBuilder[0]);
             if (shell.IsCCW)
             {
-                ThrowInvalidRecordException("Invalid Shapefile polygon - shell coordinates are not in in clockwise order.");
+                if (partsBuilder.Count > 1)
+                {
+                    ThrowInvalidRecordException("Invalid Shapefile polygon - shell coordinates are not in in clockwise order.");
+                }
+                Debug.Assert(!shell.IsCCW, "Invalid Shapefile polygon - shell coordinates are not in in clockwise order.");
+                shell = Factory.CreateLinearRing(partsBuilder[0].Reversed());
             }
+
             for (int partIndex = 1; partIndex < partsBuilder.Count; partIndex++)
             {
                 // SHP Docs: Vertices of rings defining holes in polygons are in a counterclockwise direction.
