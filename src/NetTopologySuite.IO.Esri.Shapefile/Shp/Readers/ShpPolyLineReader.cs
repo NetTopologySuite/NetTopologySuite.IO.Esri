@@ -20,7 +20,6 @@ namespace NetTopologySuite.IO.Esri.Shp.Readers
 
         internal override bool ReadGeometry(Stream stream, out MultiLineString geometry)
         {
-            stream.ReadXYBoundingBox();
             var bbox = stream.ReadXYBoundingBox();
             if (!IsInMbr(bbox))
             {
