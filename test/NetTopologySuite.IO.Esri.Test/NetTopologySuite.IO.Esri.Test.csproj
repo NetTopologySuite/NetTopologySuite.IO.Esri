@@ -20,7 +20,6 @@
     <Compile Remove="Features\**" />
     <Compile Remove="Geometries\**" />
     <Compile Remove="Headers\**" />
-    <Compile Remove="Readers\**" />
     <Compile Remove="ShapeFile.Extended\**" />
     <Compile Remove="Streams\**" />
     <Compile Remove="Various\**" />
@@ -28,7 +27,6 @@
     <EmbeddedResource Remove="Features\**" />
     <EmbeddedResource Remove="Geometries\**" />
     <EmbeddedResource Remove="Headers\**" />
-    <EmbeddedResource Remove="Readers\**" />
     <EmbeddedResource Remove="ShapeFile.Extended\**" />
     <EmbeddedResource Remove="Streams\**" />
     <EmbeddedResource Remove="Various\**" />
@@ -36,7 +34,6 @@
     <None Remove="Features\**" />
     <None Remove="Geometries\**" />
     <None Remove="Headers\**" />
-    <None Remove="Readers\**" />
     <None Remove="ShapeFile.Extended\**" />
     <None Remove="Streams\**" />
     <None Remove="Various\**" />
