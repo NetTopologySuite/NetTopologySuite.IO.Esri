@@ -17,7 +17,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Remove="Attributes\**" />
     <Compile Remove="Features\**" />
     <Compile Remove="Geometries\**" />
     <Compile Remove="Headers\**" />
@@ -26,7 +25,6 @@
     <Compile Remove="Streams\**" />
     <Compile Remove="Various\**" />
     <Compile Remove="Writers\**" />
-    <EmbeddedResource Remove="Attributes\**" />
     <EmbeddedResource Remove="Features\**" />
     <EmbeddedResource Remove="Geometries\**" />
     <EmbeddedResource Remove="Headers\**" />
@@ -35,7 +33,6 @@
     <EmbeddedResource Remove="Streams\**" />
     <EmbeddedResource Remove="Various\**" />
     <EmbeddedResource Remove="Writers\**" />
-    <None Remove="Attributes\**" />
     <None Remove="Features\**" />
     <None Remove="Geometries\**" />
     <None Remove="Headers\**" />
