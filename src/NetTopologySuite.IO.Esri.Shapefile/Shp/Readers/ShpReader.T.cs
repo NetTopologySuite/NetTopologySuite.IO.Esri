@@ -194,7 +194,7 @@ namespace NetTopologySuite.IO.Esri.Shp.Readers
 
         internal void ThrowInvalidRecordTypeException(ShapeType shapeType)
         {
-            throw new FileLoadException($"Ivalid shapefile record type. {GetType().Name} does not support {shapeType} shapes.");
+            throw new FileLoadException($"Ivalid shapefile record type. {GetType().Name} does not support {shapeType} shape type.");
         }
 
         internal void ThrowInvalidRecordException(string message)
