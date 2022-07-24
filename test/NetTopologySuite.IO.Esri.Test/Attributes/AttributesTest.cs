@@ -9,28 +9,9 @@ using System.IO;
 namespace NetTopologySuite.IO.Esri.Test.Attributes
 {
     public class AttributesTest
-    {
-        protected GeometryFactory Factory { get; private set; }
-
-        protected WKTReader Reader { get; private set; }
-
-        /// <summary>
-        ///
-        /// </summary>
-        public void Start()
-        {
-            // Set current dir to shapefiles dir
-            Environment.CurrentDirectory = CommonHelpers.TestShapefilesDirectory;
-
-            this.Factory = new GeometryFactory();
-            this.Reader = new WKTReader();
-
-            // ReadFromShapeFile();
-            // TestSharcDbf();
-            TestShapeCreation();
-        }
-
-        private void TestShapeCreation()
+    { 
+        [Test]
+        public void TestShapeCreation()
         {
             var points = new Coordinate[3];
             points[0] = new Coordinate(0, 0);
@@ -42,15 +23,13 @@ namespace NetTopologySuite.IO.Esri.Test.Attributes
             var attributes = new AttributesTable();
             attributes.Add("FOO", "FOO");
 
-            var feature = new Feature(Factory.CreateMultiLineString(new LineString[] { line_string }), attributes);
+            var factory = GeometryFactory.Default;
+            var feature = new Feature(factory.CreateMultiLineString(new LineString[] { line_string }), attributes);
             var features = new Feature[1];
             features[0] = feature;
 
-            var shp_writer = new ShapefileDataWriter("line_string")
-            {
-                Header = ShapefileDataWriter.GetHeader(features[0], features.Length)
-            };
-            shp_writer.Write(features);
+            Shapefile.WriteAllFeatures(features, "line_string");
+            Assert.That(File.Exists("line_string.shp"));
         }
 
         [Test]
@@ -76,59 +55,57 @@ namespace NetTopologySuite.IO.Esri.Test.Attributes
             Assert.That(at.Exists("key2"), Is.True);
         }
 
-        private void TestSharcDbf()
+        [Test]
+        public void TestSharcDbf()
         {
-            const string filename = @"Strade.dbf";
+            string filename = TestShapefiles.PathToCountriesPt(".dbf");
             if (!File.Exists(filename))
                 throw new FileNotFoundException(filename + " not found at " + Environment.CurrentDirectory);
 
-            var reader = new DbaseFileReader(filename);
-            var header = reader.GetHeader();
-            Console.WriteLine("HeaderLength: " + header.HeaderLength);
-            Console.WriteLine("RecordLength: " + header.RecordLength);
-            Console.WriteLine("NumFields: " + header.NumFields);
-            Console.WriteLine("NumRecords: " + header.NumRecords);
-            Console.WriteLine("LastUpdateDate: " + header.LastUpdateDate);
-            foreach (var descr in header.Fields)
+            using var reader = new Dbf.DbfReader(filename);
+            Console.WriteLine("RecordLength: " + reader.RecordSize);
+            Console.WriteLine("NumFields: " + reader.Fields.Count);
+            Console.WriteLine("NumRecords: " + reader.RecordCount);
+            Console.WriteLine("LastUpdateDate: " + reader.LastUpdateDate);
+            foreach (var descr in reader.Fields)
             {
                 Console.WriteLine("FieldName: " + descr.Name);
-                Console.WriteLine("DBF Type: " + descr.DbaseType);
-                Console.WriteLine("CLR Type: " + descr.Type);
+                Console.WriteLine("DBF Type: " + descr.FieldType);
                 Console.WriteLine("Length: " + descr.Length);
-                Console.WriteLine("DecimalCount: " + descr.DecimalCount);
-                Console.WriteLine("DataAddress: " + descr.DataAddress);
+                Console.WriteLine("DecimalCount: " + descr.NumericScale);
             }
 
-            var ienum = reader.GetEnumerator();
-            while (ienum.MoveNext())
+            foreach (var record in reader)
             {
-                var objs = (ArrayList)ienum.Current;
-                foreach (object obj in objs)
-                    Console.WriteLine(obj);
+                foreach (var kv in record)
+                {
+                    Console.WriteLine(kv.Key + ": " + kv.Value);
+                }
             }
             Console.WriteLine();
         }
 
-        private void ReadFromShapeFile()
+        [Test]
+        public void ReadFromShapeFile()
         {
             var featureCollection = new List<IFeature>();
-            const string filename = @"country";
-            if (!File.Exists(filename + ".dbf"))
-                throw new FileNotFoundException(filename + " not found at " + Environment.CurrentDirectory);
-            var dataReader = new ShapefileDataReader(filename, new GeometryFactory());
+            string filename = TestShapefiles.PathToCountriesPt();
+            if (!File.Exists(filename))
+                throw new FileNotFoundException(filename + " not found");
+            using var dataReader = Shapefile.OpenRead(filename);
             while (dataReader.Read())
             {
                 var feature = new Feature { Geometry = dataReader.Geometry };
 
-                int length = dataReader.DbaseHeader.NumFields;
+                int length = dataReader.Fields.Count;
                 string[] keys = new string[length];
                 for (int i = 0; i < length; i++)
-                    keys[i] = dataReader.DbaseHeader.Fields[i].Name;
+                    keys[i] = dataReader.Fields[i].Name;
 
                 feature.Attributes = new AttributesTable();
                 for (int i = 0; i < length; i++)
                 {
-                    object val = dataReader.GetValue(i);
+                    object val = dataReader.Fields[i].Value;
                     feature.Attributes.Add(keys[i], val);
                 }
 
@@ -145,29 +122,18 @@ namespace NetTopologySuite.IO.Esri.Test.Attributes
                     Console.WriteLine(name + ": " + table[name]);
             }
 
-            //Directory
-            string dir = CommonHelpers.TestShapefilesDirectory + Path.DirectorySeparatorChar;
             // Test write with stub header
-            string file = dir + "testWriteStubHeader";
-            if (File.Exists(file + ".shp")) File.Delete(file + ".shp");
-            if (File.Exists(file + ".shx")) File.Delete(file + ".shx");
-            if (File.Exists(file + ".dbf")) File.Delete(file + ".dbf");
-
-            var dataWriter = new ShapefileDataWriter(file);
-            dataWriter.Header = ShapefileDataWriter.GetHeader(featureCollection[0] as IFeature, featureCollection.Count);
-            dataWriter.Write(featureCollection);
+            string stubHeaderFile = TestShapefiles.PathTo("testWriteStubHeader");
+            TestShapefiles.DeleteShp(stubHeaderFile);
+            Shapefile.WriteAllFeatures(featureCollection, stubHeaderFile);
 
             // Test write with header from a existing shapefile
-            file = dir + "testWriteShapefileHeader";
-            if (File.Exists(file + ".shp")) File.Delete(file + ".shp");
-            if (File.Exists(file + ".shx")) File.Delete(file + ".shx");
-            if (File.Exists(file + ".dbf")) File.Delete(file + ".dbf");
+            string shpHeaderFile = TestShapefiles.PathTo("testWriteShapefileHeader");
+            TestShapefiles.DeleteShp(shpHeaderFile);
 
-            dataWriter = new ShapefileDataWriter(file)
-            {
-                Header =
-                    ShapefileDataWriter.GetHeader(dir + "country.dbf")
-            };
+            using var stubHeaderReader = Shapefile.OpenRead(stubHeaderFile);
+            var options = new ShapefileWriterOptions(stubHeaderReader);
+            using var dataWriter = Shapefile.OpenWrite(shpHeaderFile, options); 
             dataWriter.Write(featureCollection);
         }
     }
