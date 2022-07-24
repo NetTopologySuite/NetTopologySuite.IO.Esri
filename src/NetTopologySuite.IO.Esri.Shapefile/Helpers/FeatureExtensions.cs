@@ -50,7 +50,7 @@ namespace NetTopologySuite.IO.Esri
 
         internal static AttributesTable GetAttributesTable(this DbfFieldCollection fields)
         {
-            return new AttributesTable(fields.GetValues());
+            return new AttributesTable(fields.ToDictionary());
         }
 
 

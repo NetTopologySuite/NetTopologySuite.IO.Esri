@@ -225,7 +225,7 @@ namespace NetTopologySuite.IO.Esri.Dbf
                 return false;
             }
 
-            values = Fields.GetValues();
+            values = Fields.ToDictionary();
             return true;
         }
 
