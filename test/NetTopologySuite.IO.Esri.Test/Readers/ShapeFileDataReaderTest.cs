@@ -1,4 +1,5 @@
-﻿using NetTopologySuite.Geometries;
+﻿using NetTopologySuite.Features;
+using NetTopologySuite.Geometries;
 using NetTopologySuite.Geometries.Implementation;
 using NetTopologySuite.IO.Esri;
 using NUnit.Framework;
@@ -23,7 +24,7 @@ namespace NetTopologySuite.IO.Esri.Test.Readers
         public void SetUp()
         {
             // Set current dir to shapefiles dir
-            Environment.CurrentDirectory = CommonHelpers.TestShapefilesDirectory;
+            Environment.CurrentDirectory = TestShapefiles.Directory;
 
             Factory = new GeometryFactory();
             Reader = new WKTReader();
@@ -33,12 +34,12 @@ namespace NetTopologySuite.IO.Esri.Test.Readers
         [Test]
         public void TestIssue175_ReadingShapeFileUsingShpExtension()
         {
-            using (var reader = new ShapefileDataReader("crustal_test.shp", Factory))
+            using (var reader = Shapefile.OpenRead("crustal_test.shp"))
             {
-                int length = reader.DbaseHeader.NumFields;
+                int length = reader.Fields.Count;
                 while (reader.Read())
                 {
-                    Debug.WriteLine(reader.GetValue(length - 1));
+                    Debug.WriteLine(reader.Fields[length - 1].Value);
                 }
             }
         }
@@ -47,38 +48,37 @@ namespace NetTopologySuite.IO.Esri.Test.Readers
         public void TestReadingCrustalTestShapeFile()
         {
             // Original file with characters '°' in NAME field.
-            using (var reader = new ShapefileDataReader("crustal_test_bugged", Factory))
+            using (var reader = Shapefile.OpenRead("crustal_test_bugged"))
             {
-                int length = reader.DbaseHeader.NumFields;
+                int length = reader.Fields.Count;
                 while (reader.Read())
                 {
-                    Debug.WriteLine(reader.GetValue(length - 1));
+                    Debug.WriteLine(reader.Fields[length - 1].Value);
                 }
             }
 
             // Removed NAME field characters
-            using (var reader = new ShapefileDataReader("crustal_test", Factory))
+            using (var reader = Shapefile.OpenRead("crustal_test"))
             {
-                int length = reader.DbaseHeader.NumFields;
+                int length = reader.Fields.Count;
                 while (reader.Read())
                 {
-                    Debug.WriteLine(reader.GetValue(length - 1));
+                    Debug.WriteLine(reader.Fields[length - 1].Value);
                 }
             }
         }
 
         [Test]
-        [Ignore("File aaa.shp not exists")]
         public void TestReadingAaaShapeFile()
         {
             Assert.Catch<FileNotFoundException>(() =>
             {
-                using (var reader = new ShapefileDataReader("aaa", Factory))
+                using (var reader = Shapefile.OpenRead("aaa"))
                 {
-                    int length = reader.DbaseHeader.NumFields;
+                    int length = reader.Fields.Count;
                     while (reader.Read())
                     {
-                        Debug.WriteLine(reader.GetValue(length - 1));
+                        Debug.WriteLine(reader.Fields[length - 1].Value);
                     }
                 }
                 Assert.Fail();
@@ -88,15 +88,14 @@ namespace NetTopologySuite.IO.Esri.Test.Readers
         [Test]
         public void TestReadingShapeFileWithNulls()
         {
-            using (var reader = new ShapefileDataReader("AllNulls", Factory))
+            using (var reader = Shapefile.OpenRead("AllNulls"))
             {
                 while (reader.Read())
                 {
                     var geom = reader.Geometry;
                     Assert.IsNotNull(geom);
 
-                    object[] values = new object[5];
-                    int result = reader.GetValues(values);
+                    object[] values = reader.Fields.GetValues();
                     Assert.IsNotNull(values);
                 }
             }
@@ -106,9 +105,10 @@ namespace NetTopologySuite.IO.Esri.Test.Readers
         {
             //Use a factory with a coordinate sequence factor that can handle measure values
             var factory = new GeometryFactory(DotSpatialAffineCoordinateSequenceFactory.Instance);
+            var options = new ShapefileReaderOptions() { Factory = factory };
 
             const int distance = 500;
-            using (var reader = new ShapefileDataReader("with_M", factory))
+            using (var reader = Shapefile.OpenRead("with_M", options))
             { // ""
                 int index = 0;
 
@@ -139,14 +139,15 @@ namespace NetTopologySuite.IO.Esri.Test.Readers
         public void TestReadingShapeFileAfvalbakken()
         {
             var factory = GeometryFactory.Default;
+            var options = new ShapefileReaderOptions() { Factory = factory };
             var polys = new List<Polygon>();
             const int distance = 500;
-            using (var reader = new ShapefileDataReader("afvalbakken", factory))
+            using (var reader = Shapefile.OpenRead("afvalbakken", options))
             {
                 int index = 0;
                 while (reader.Read())
                 {
-                    var geom = reader.Geometry;
+                    var geom = reader.Geometry as MultiPolygon;
                     Assert.IsNotNull(geom);
                     Assert.IsTrue(geom.IsValid);
                     Debug.WriteLine(string.Format("Geom {0}: {1}", index++, geom));
@@ -154,7 +155,10 @@ namespace NetTopologySuite.IO.Esri.Test.Readers
                     var buff = geom.Buffer(distance);
                     Assert.IsNotNull(buff);
 
-                    polys.Add((Polygon)geom);
+                    foreach (var pg in geom.Geometries)
+                    {
+                        polys.Add((Polygon)pg);
+                    }
                 }
             }
 
@@ -166,7 +170,10 @@ namespace NetTopologySuite.IO.Esri.Test.Readers
             Assert.IsNotNull(multiBuffer);
             Assert.IsTrue(multiBuffer.IsValid);
 
-            ShapefileWriter.WriteGeometryCollection(@"test_buffer", multiBuffer);
+            var attributes = new AttributesTable();
+            var feature = new Feature(multiBuffer, attributes);
+            var features = new Feature[] { feature };
+            Shapefile.WriteAllFeatures(features, @"test_buffer");
         }
 
         [Test]
@@ -182,9 +189,10 @@ namespace NetTopologySuite.IO.Esri.Test.Readers
                    "((-73.86512208901371 45.419923983060187, -73.864604875276427 45.420301946945074, -73.8644059469159 45.420043340076518, -73.86512208901371 45.419923983060187)))";
 
             var factory = GeometryFactory.Default; //new GeometryFactory(new PrecisionModel(Math.Pow(10, 13)));
+            var options = new ShapefileReaderOptions() { Factory = factory };
             var wktReader = new WKTReader(factory);
             var polys = new List<Geometry>();
-            using (var reader = new ShapefileDataReader("Sept_polygones", factory))
+            using (var reader = Shapefile.OpenRead("Sept_polygones", options))
             {
                 int index = 0;
                 while (reader.Read())
@@ -212,8 +220,7 @@ namespace NetTopologySuite.IO.Esri.Test.Readers
         public void Issue167_EnsureAllBinaryContentIsReaded()
         {
             int i = 0;
-            var reader = new ShapefileReader("Issue167.shp");
-            foreach (Geometry geom in reader)
+            foreach (Geometry geom in Shapefile.ReadAllGeometries("Issue167.shp"))
             {
                 Assert.That(geom, Is.Not.Null, "geom null");
                 Console.WriteLine("geom {0}: {1}", ++i, geom);
@@ -225,13 +232,20 @@ namespace NetTopologySuite.IO.Esri.Test.Readers
         // see https://github.com/NetTopologySuite/NetTopologySuite/issues/112
         public void Issue_GH_112_ReadingShapeFiles()
         {
+            // TODO: Changed original test logic.
+
+            // The Volume2.shp file is broken. Second record has RecordNumber=-252173723
+            // and ContentLength=1870401424 (where ShpStream.Length=91332).
+            // The original test was passed only because of every-exception-catching code
+            // in the ShapefileEnumerator class:
+            // https://github.com/NetTopologySuite/NetTopologySuite.IO.ShapeFile/blob/75b6bcdde2f3aa947bf731903f58b1b6b4a80e01/src/NetTopologySuite.IO.ShapeFile/ShapefileReader.cs#L134-L139
+
             int i = 0;
-            var reader = new ShapefileReader("Volume2.shp", GeometryFactory.Default);
-            foreach (object geom in reader)
-            {
-                Assert.That(geom, Is.Not.Null, "geom null");
-                Console.WriteLine("geom {0}: {1}", ++i, geom);
-            }
+            using var stream = File.OpenRead("Volume2.shp");
+            using var reader = Shp.Shp.OpenRead(stream, new ShapefileReaderOptions());
+            var geom = reader.First();
+            Assert.That(geom, Is.Not.Null, "geom null");
+            Console.WriteLine("geom {0}: {1}", ++i, geom);
 
         }
 
@@ -239,12 +253,14 @@ namespace NetTopologySuite.IO.Esri.Test.Readers
         // see https://github.com/NetTopologySuite/NetTopologySuite/issues/115
         public void Issue_GH_115_CreateDataTable()
         {
-            if (!File.Exists("Matt.shp"))
-                throw new IgnoreException("File not found");
+            // TODO: Remove no longer relevant test (Creating System.Data.DataTable is not implemented)
 
-            DataTable dt = null;
-            Assert.DoesNotThrow(() => dt =
-           Shapefile.CreateDataTable("Volume2", "Matt", GeometryFactory.Default));
+            //if (!File.Exists("Matt.shp"))
+            //    throw new IgnoreException("File not found");
+
+            //DataTable dt = null;
+            //Assert.DoesNotThrow(() => dt =
+            //Shapefile.CreateDataTable("Volume2", "Matt", GeometryFactory.Default));
 
         }
 
@@ -257,17 +273,23 @@ namespace NetTopologySuite.IO.Esri.Test.Readers
              * 936	gb2312	Chinese Simplified (GB2312)
              */
 
-            var encoding = DbaseEncodingUtility.GetEncodingForCodePageIdentifier(936);
+            var encoding = CodePagesEncodingProvider.Instance.GetEncoding(936); // DbaseEncodingUtility.GetEncodingForCodePageIdentifier(936);
             Assert.IsNotNull(encoding);
 
-            using var reader = new ShapefileDataReader("chinese_encoding.shp", Factory, encoding);
-            Assert.AreEqual(encoding, reader.DbaseHeader.Encoding);
+            var options = new ShapefileReaderOptions()
+            {
+                Factory = Factory,
+                Encoding = encoding
+            };
+            using var reader = Shapefile.OpenRead("chinese_encoding.shp", options);
+            Assert.AreEqual(encoding, reader.Encoding);
 
-            Trace.WriteLine(string.Join(",", reader.DbaseHeader.Fields.Select(f => f.Name)));
-            int length = reader.DbaseHeader.NumFields;
+            Console.WriteLine(string.Join(",", reader.Fields.Select(f => f.Name)));
+            int length = reader.Fields.Count;
             while (reader.Read())
             {
-                Assert.AreEqual("安徽", reader.GetString(2));
+                Console.WriteLine(string.Join(",", reader.Fields.GetValues()));
+                Assert.AreEqual("安徽", reader.Fields[1].Value?.ToString());
             }
         }
     }
