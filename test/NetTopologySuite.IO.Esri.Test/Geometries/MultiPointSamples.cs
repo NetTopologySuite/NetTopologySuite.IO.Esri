@@ -1,6 +1,8 @@
 ﻿using NetTopologySuite.Geometries;
 using System;
+using NUnit.Framework;
 using NetTopologySuite.Operation.Buffer;
+using NetTopologySuite.Features;
 
 namespace NetTopologySuite.IO.Esri.Test.Geometries
 {
@@ -34,51 +36,51 @@ namespace NetTopologySuite.IO.Esri.Test.Geometries
             multiPoint = Factory.CreateMultiPointFromCoords(coordinates);
         }
 
-        /// <summary>
-        ///
-        /// </summary>
+        [Test]
         public void Start()
         {
-            try
+            Write(multiPoint.Area);
+            Write(multiPoint.Boundary);
+            Write(multiPoint.BoundaryDimension);
+            Write(multiPoint.Centroid);
+            Write(multiPoint.Coordinate);
+            Write(multiPoint.Coordinates);
+            Write(multiPoint.Dimension);
+            Write(multiPoint.Envelope);
+            Write(multiPoint.EnvelopeInternal);
+            Write(multiPoint.Geometries.Length);
+            Write(multiPoint.InteriorPoint);
+            Write(multiPoint.IsEmpty);
+            Write(multiPoint.IsSimple);
+            Write(multiPoint.IsValid);
+            Write(multiPoint.Length);
+            Write(multiPoint.NumGeometries);
+            Write(multiPoint.NumPoints);
+
+            Write(multiPoint.Buffer(10));
+            Write(multiPoint.Buffer(10, new BufferParameters {EndCapStyle = EndCapStyle.Flat }));
+            Write(multiPoint.Buffer(10, new BufferParameters { EndCapStyle = EndCapStyle.Square }));
+            Write(multiPoint.Buffer(10, 20));
+            Write(multiPoint.Buffer(10, new BufferParameters(20) { EndCapStyle = EndCapStyle.Flat }));
+            Write(multiPoint.Buffer(10, new BufferParameters(20) { EndCapStyle = EndCapStyle.Square }));
+            Write(multiPoint.ConvexHull());
+
+            byte[] bytes = multiPoint.AsBinary();
+            var test1 = new WKBReader().Read(bytes);
+            Write(test1.ToString());
+
+            var features = new Feature[]
             {
-                Write(multiPoint.Area);
-                Write(multiPoint.Boundary);
-                Write(multiPoint.BoundaryDimension);
-                Write(multiPoint.Centroid);
-                Write(multiPoint.Coordinate);
-                Write(multiPoint.Coordinates);
-                Write(multiPoint.Dimension);
-                Write(multiPoint.Envelope);
-                Write(multiPoint.EnvelopeInternal);
-                Write(multiPoint.Geometries.Length);
-                Write(multiPoint.InteriorPoint);
-                Write(multiPoint.IsEmpty);
-                Write(multiPoint.IsSimple);
-                Write(multiPoint.IsValid);
-                Write(multiPoint.Length);
-                Write(multiPoint.NumGeometries);
-                Write(multiPoint.NumPoints);
+                CreateFeature(multiPoint),
+                CreateFeature((MultiPoint)test1)
+            };
+            Shapefile.WriteAllFeatures(features, GetType().Name);
+            Shapefile.ReadAllFeatures(GetType().Name);
+        }
 
-                Write(multiPoint.Buffer(10));
-                Write(multiPoint.Buffer(10, new BufferParameters {EndCapStyle = EndCapStyle.Flat }));
-                Write(multiPoint.Buffer(10, new BufferParameters { EndCapStyle = EndCapStyle.Square }));
-                Write(multiPoint.Buffer(10, 20));
-                Write(multiPoint.Buffer(10, new BufferParameters(20) { EndCapStyle = EndCapStyle.Flat }));
-                Write(multiPoint.Buffer(10, new BufferParameters(20) { EndCapStyle = EndCapStyle.Square }));
-                Write(multiPoint.ConvexHull());
-
-                byte[] bytes = multiPoint.AsBinary();
-                var test1 = new WKBReader().Read(bytes);
-                Write(test1.ToString());
-
-                bytes = new GDBWriter().Write(multiPoint);
-                test1 = new GDBReader().Read(bytes);
-                Write(test1.ToString());
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
+        private Feature CreateFeature(MultiPoint multiPoint)
+        {
+            return new Feature(multiPoint, null);
         }
 
         protected void Write(object o)
