@@ -56,6 +56,10 @@ namespace NetTopologySuite.IO.Esri
 
         internal static DbfField[] GetDbfFields(this IAttributesTable attributes)
         {
+            if (attributes == null)
+            {
+                return null;
+            }
             var names = attributes.GetNames();
             var fields = new DbfField[names.Length];
 
