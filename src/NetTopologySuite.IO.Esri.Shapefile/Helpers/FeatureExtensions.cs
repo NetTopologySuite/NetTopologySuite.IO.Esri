@@ -3,6 +3,7 @@ using NetTopologySuite.Geometries;
 using NetTopologySuite.IO.Esri.Dbf.Fields;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace NetTopologySuite.IO.Esri
 {
@@ -124,6 +125,11 @@ namespace NetTopologySuite.IO.Esri
 
             if (geometry is Point point)
                 return point.CoordinateSequence.Ordinates;
+
+            if (geometry is MultiPoint multiPoint)
+            {
+                return GetOrdinates(multiPoint.Geometries.FirstOrDefault());
+            }
 
             if (geometry is LineString line)
                 return line.CoordinateSequence.Ordinates;
