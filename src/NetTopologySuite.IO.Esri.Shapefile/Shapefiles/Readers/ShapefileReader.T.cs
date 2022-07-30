@@ -116,9 +116,16 @@ namespace NetTopologySuite.IO.Esri.Shapefiles.Readers
         public override bool Read(out bool deleted, out Feature feature)
         {
             var readSucceed = Read(out deleted);
+            if (!readSucceed)
+            {
+                feature = null;
+                return false;
+            }
+
             var attributes = new AttributesTable(Fields.ToDictionary());
             feature = new Feature(Shape, attributes);
-            return readSucceed;
+            feature.BoundingBox = Shape.EnvelopeInternal;
+            return true;
         }
 
         /// <inheritdoc/>
