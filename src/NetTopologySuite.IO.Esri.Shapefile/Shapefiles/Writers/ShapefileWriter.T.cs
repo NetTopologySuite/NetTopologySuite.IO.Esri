@@ -98,7 +98,7 @@ namespace NetTopologySuite.IO.Esri.Shapefiles.Writers
         /// Wrties geometry and attributes into underlying SHP and DBF files.
         /// Attribute values must be set using Value property of DbfFiled(s) provided during initialization.
         /// </summary>
-        public void Write()
+        public override void Write()
         {
             ShpWriter.Write();
             DbfWriter.Write();
