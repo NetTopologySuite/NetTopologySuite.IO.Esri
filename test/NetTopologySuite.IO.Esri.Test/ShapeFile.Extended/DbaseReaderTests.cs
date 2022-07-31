@@ -2,7 +2,7 @@
 using System.IO;
 using System.Linq;
 using NetTopologySuite.Features;
-using NetTopologySuite.IO.ShapeFile.Extended;
+using NetTopologySuite.IO.Esri.Dbf;
 using NUnit.Framework;
 
 namespace NetTopologySuite.IO.Tests.ShapeFile.Extended
@@ -11,20 +11,20 @@ namespace NetTopologySuite.IO.Tests.ShapeFile.Extended
     /// Summary description for DbfFileReaderTests
     /// </summary>
     [TestFixture]
-    public class DbaseReaderTests
+    public class DbfReaderTests
     {
         private static readonly DateTime DATE_SAVED_IN_DBF = new DateTime(1990, 1, 1);
 
-        private DbaseReader m_Reader;
+        private DbfReader m_Reader;
         private TempFileWriter m_TmpFile;
 
         [Test]
         public void Ctor_SendNullPath_ShouldThrowException()
         {
             // Act.
-            Assert.Catch<ArgumentNullException>(() =>
+            Assert.Catch<FileNotFoundException>(() =>
             {
-                m_Reader = new DbaseReader((string)null);
+                m_Reader = new DbfReader((string)null);
             });
         }
 
@@ -32,9 +32,9 @@ namespace NetTopologySuite.IO.Tests.ShapeFile.Extended
         public void Ctor_SendEmptyString_ShouldThrowException()
         {
             // Act.
-            Assert.Catch<ArgumentException>(() =>
+            Assert.Catch<FileNotFoundException>(() =>
             {
-                m_Reader = new DbaseReader(string.Empty);
+                m_Reader = new DbfReader(string.Empty);
             });
         }
 
@@ -42,9 +42,9 @@ namespace NetTopologySuite.IO.Tests.ShapeFile.Extended
         public void Ctor_SendWhitespaceString_ShouldThrowException()
         {
             // Act.
-            Assert.Catch<ArgumentException>(() =>
+            Assert.Catch<FileNotFoundException>(() =>
             {
-                m_Reader = new DbaseReader("    \t  ");
+                m_Reader = new DbfReader("    \t  ");
             });
         }
 
@@ -54,7 +54,7 @@ namespace NetTopologySuite.IO.Tests.ShapeFile.Extended
             // Act.
             Assert.Catch<FileNotFoundException>(() =>
             {
-                m_Reader = new DbaseReader(@"C:\this\is\sheker\path\should\never\exist\on\ur\pc");
+                m_Reader = new DbfReader(@"C:\this\is\sheker\path\should\never\exist\on\ur\pc");
             });
         }
 
@@ -65,7 +65,7 @@ namespace NetTopologySuite.IO.Tests.ShapeFile.Extended
             m_TmpFile = new TempFileWriter(".dbf", DbfFiles.Read("line_ed50_geo"));
 
             // Act.
-            m_Reader = new DbaseReader(m_TmpFile.Path);
+            m_Reader = new DbfReader(m_TmpFile.Path);
 
             // Assert.
             Assert.IsNotNull(m_Reader);
@@ -76,7 +76,7 @@ namespace NetTopologySuite.IO.Tests.ShapeFile.Extended
         {
             // Arrange
             m_TmpFile = new TempFileWriter(".dbf", DbfFiles.Read("point_ed50_geo"));
-            m_Reader = new DbaseReader(m_TmpFile.Path);
+            m_Reader = new DbfReader(m_TmpFile.Path);
 
             // Act.
             Assert.Catch<ArgumentException>(() =>
@@ -90,7 +90,7 @@ namespace NetTopologySuite.IO.Tests.ShapeFile.Extended
         {
             // Arrange
             m_TmpFile = new TempFileWriter(".dbf", DbfFiles.Read("point_ed50_geo"));
-            m_Reader = new DbaseReader(m_TmpFile.Path);
+            m_Reader = new DbfReader(m_TmpFile.Path);
 
             // Act.
             Assert.Catch<ArgumentOutOfRangeException>(() =>
@@ -104,7 +104,7 @@ namespace NetTopologySuite.IO.Tests.ShapeFile.Extended
         {
             // Arrange
             m_TmpFile = new TempFileWriter(".dbf", DbfFiles.Read("point_ed50_geo"));
-            m_Reader = new DbaseReader(m_TmpFile.Path);
+            m_Reader = new DbfReader(m_TmpFile.Path);
 
             m_Reader.Dispose();
 
@@ -120,11 +120,11 @@ namespace NetTopologySuite.IO.Tests.ShapeFile.Extended
         {
             // Arrange
             m_TmpFile = new TempFileWriter(".dbf", DbfFiles.Read("point_ed50_geo"));
-            m_Reader = new DbaseReader(m_TmpFile.Path);
+            m_Reader = new DbfReader(m_TmpFile.Path);
 
             var expectedTable = new
             {
-                Ids = new double[]
+                Ids = new int[]
                 {
                     3, 2, 1
                 },
@@ -132,11 +132,11 @@ namespace NetTopologySuite.IO.Tests.ShapeFile.Extended
                 {
                     "str3", "str2", "str1"
                 },
-                WholeNums = new double[]
+                WholeNums = new int[]
                 {
                     3, 2, 1
                 },
-                DecNums = new double[]
+                DecNums = new int[]
                 {
                     3, 2, 1
                 },
@@ -166,10 +166,10 @@ namespace NetTopologySuite.IO.Tests.ShapeFile.Extended
                 Assert.IsNotNull(decNum);
                 Assert.IsNotNull(date);
 
-                Assert.IsInstanceOf<double>(id);
+                Assert.IsInstanceOf<int>(id);
                 Assert.IsInstanceOf<string>(str);
-                Assert.IsInstanceOf<double>(wholeNum);
-                Assert.IsInstanceOf<double>(decNum);
+                Assert.IsInstanceOf<int>(wholeNum);
+                Assert.IsInstanceOf<int>(decNum);
                 Assert.IsInstanceOf<DateTime>(date);
 
                 Assert.AreEqual(id, expectedTable.Ids[currResIndex]);
@@ -187,7 +187,7 @@ namespace NetTopologySuite.IO.Tests.ShapeFile.Extended
         {
             // Arrange
             m_TmpFile = new TempFileWriter(".dbf", DbfFiles.Read("point_ed50_geo"));
-            m_Reader = new DbaseReader(m_TmpFile.Path);
+            m_Reader = new DbfReader(m_TmpFile.Path);
 
             var results = m_Reader.ReadEntry(0);
 
@@ -203,11 +203,11 @@ namespace NetTopologySuite.IO.Tests.ShapeFile.Extended
         {
             // Arrange
             m_TmpFile = new TempFileWriter(".dbf", DbfFiles.Read("point_ed50_geo"));
-            m_Reader = new DbaseReader(m_TmpFile.Path);
+            m_Reader = new DbfReader(m_TmpFile.Path);
 
             var expectedTable = new
             {
-                Ids = new double[]
+                Ids = new int[]
                 {
                     3, 2, 1
                 },
@@ -215,11 +215,11 @@ namespace NetTopologySuite.IO.Tests.ShapeFile.Extended
                 {
                     "str3", "str2", "str1"
                 },
-                WholeNums = new double[]
+                WholeNums = new int[]
                 {
                     3, 2, 1
                 },
-                DecNums = new double[]
+                DecNums = new int[]
                 {
                     3, 2, 1
                 },
@@ -246,10 +246,10 @@ namespace NetTopologySuite.IO.Tests.ShapeFile.Extended
                 Assert.IsNotNull(decNum);
                 Assert.IsNotNull(date);
 
-                Assert.IsInstanceOf<double>(id);
+                Assert.IsInstanceOf<int>(id);
                 Assert.IsInstanceOf<string>(str);
-                Assert.IsInstanceOf<double>(wholeNum);
-                Assert.IsInstanceOf<double>(decNum);
+                Assert.IsInstanceOf<int>(wholeNum);
+                Assert.IsInstanceOf<int>(decNum);
                 Assert.IsInstanceOf<DateTime>(date);
 
                 Assert.AreEqual(id, expectedTable.Ids[currResIndex]);
@@ -284,7 +284,7 @@ namespace NetTopologySuite.IO.Tests.ShapeFile.Extended
         public static byte[] Read(string filename)
         {
             string file = Path.ChangeExtension(filename, ".dbf");
-            string path = Path.Combine(CommonHelpers.TestShapefilesDirectory, file);
+            string path = TestShapefiles.PathTo(file);
             Assert.That(File.Exists(path), Is.True);
             return File.ReadAllBytes(path);
         }
