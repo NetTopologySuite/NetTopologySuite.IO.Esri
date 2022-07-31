@@ -20,19 +20,17 @@
     <Compile Remove="ShapeFile.Extended\**" />
     <Compile Remove="Streams\**" />
     <Compile Remove="Various\**" />
-    <Compile Remove="Writers\**" />
     <EmbeddedResource Remove="ShapeFile.Extended\**" />
     <EmbeddedResource Remove="Streams\**" />
     <EmbeddedResource Remove="Various\**" />
-    <EmbeddedResource Remove="Writers\**" />
     <None Remove="ShapeFile.Extended\**" />
     <None Remove="Streams\**" />
     <None Remove="Various\**" />
-    <None Remove="Writers\**" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="QuickGraph" Version="3.6.61119.7" NoWarn="NU1701" />
+    <PackageReference Include="System.Text.Encoding.CodePages" Version="6.0.0" />
   </ItemGroup>
 
   <ItemGroup>

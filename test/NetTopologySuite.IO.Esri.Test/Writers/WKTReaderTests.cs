@@ -19,7 +19,7 @@ namespace NetTopologySuite.IO.Esri.Test.Writers
             var geometry = (Polygon)_wktReader.Read(wkt);
 
             Assert.IsTrue(geometry.Shell.CoordinateSequence.Ordinates == Ordinates.XY);
-            Assert.IsTrue(Shapefile.GetShapeType(geometry) == ShapeGeometryType.Polygon);
+            Assert.IsTrue(Shapefile.GetShapeType(geometry) == ShapeType.Polygon);
         }
     }
 }
