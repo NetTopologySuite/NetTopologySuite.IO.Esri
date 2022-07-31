@@ -18,13 +18,10 @@
 
   <ItemGroup>
     <Compile Remove="ShapeFile.Extended\**" />
-    <Compile Remove="Streams\**" />
     <Compile Remove="Various\**" />
     <EmbeddedResource Remove="ShapeFile.Extended\**" />
-    <EmbeddedResource Remove="Streams\**" />
     <EmbeddedResource Remove="Various\**" />
     <None Remove="ShapeFile.Extended\**" />
-    <None Remove="Streams\**" />
     <None Remove="Various\**" />
   </ItemGroup>
 

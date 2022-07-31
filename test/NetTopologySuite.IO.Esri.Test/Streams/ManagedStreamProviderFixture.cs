@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Text;
-using NetTopologySuite.IO.Streams;
 using NUnit.Framework;
 
 namespace NetTopologySuite.IO.Esri.Test.Streams
@@ -17,71 +16,50 @@ namespace NetTopologySuite.IO.Esri.Test.Streams
         {
             var encoding = CodePagesEncodingProvider.Instance.GetEncoding(codepage);
 
-            using (var memoryStream = new MemoryStream())
-            {
-                memoryStream.Write(encoding.GetBytes(constructorText));
-                memoryStream.Position = 0;
-                var bsp = new ExternallyManagedStreamProvider("Test", memoryStream);
+            var textField = new Dbf.Fields.DbfCharacterField("test");
+            var fields = new Dbf.Fields.DbfField[] { textField };
+            using var ms = new MemoryStream();
 
-                Assert.That(bsp.UnderlyingStreamIsReadonly, Is.False);
+            using var dbfWriter = new Dbf.DbfWriter(ms, fields, encoding);
+            textField.Value = constructorText;
+            dbfWriter.Write();
 
-                using (var streamreader = new StreamReader(bsp.OpenRead(), encoding))
-                {
-                    string streamText = streamreader.ReadToEnd();
-                    Assert.That(streamText, Is.EqualTo(constructorText));
-                }
-            }
+            using var dbfReader = new Dbf.DbfReader(ms, encoding);
+            dbfReader.Read();
+            var readText = dbfReader.Fields[textField.Name].Value;
+            Assert.That(readText, Is.EqualTo(constructorText));
         }
 
         [Test]
         public void TestWithReadonlyStream()
         {
-            byte[] sourceData = CreateData(50);
+            byte[] sourceData = CreateDbfData(50);
             using var sourceStream = new MemoryStream(sourceData, 0, sourceData.Length, false);
-            var provider = new ExternallyManagedStreamProvider("Test", sourceStream);
-            Assert.That(provider.UnderlyingStreamIsReadonly);
+            Assert.That(!sourceStream.CanWrite);
 
-            TestReading(provider, sourceData);
+            using var dbfReader = new Dbf.DbfReader(sourceStream);
+            TestReading(dbfReader, sourceData);
 
-            Assert.That(() => provider.OpenWrite(false), Throws.InstanceOf<InvalidOperationException>());
-            Assert.That(() => provider.OpenWrite(true), Throws.InstanceOf<InvalidOperationException>());
+            Assert.That(() => new Dbf.DbfWriter(sourceStream, dbfReader.Fields), Throws.InstanceOf<NotSupportedException>());
         }
 
         [Test]
         public void TestWithWritableStream()
         {
-            byte[] sourceData = CreateData(50);
+            byte[] sourceData = CreateDbfData(50);
             using var sourceStream = new MemoryStream();
             sourceStream.Write(sourceData);
             sourceStream.Position = 0;
-            var provider = new ExternallyManagedStreamProvider("Test", sourceStream);
-            Assert.That(!provider.UnderlyingStreamIsReadonly);
+            Assert.That(sourceStream.CanWrite);
 
-            TestReading(provider, sourceData);
-
-            // source stream position is now at the end.
-            byte[] extraSourceData = CreateData(10);
-            using var targetStream = provider.OpenWrite(false);
-            targetStream.Write(extraSourceData);
-            Assert.That(sourceStream, Has.Length.EqualTo(sourceData.Length + extraSourceData.Length));
-            targetStream.Position = sourceData.Length;
-            byte[] extraTargetData = new byte[extraSourceData.Length];
-            int off = 0;
-            while (off < extraTargetData.Length)
-            {
-                off += sourceStream.Read(extraTargetData.AsSpan(off));
-            }
-
-            Assert.That(extraTargetData, Is.EqualTo(extraSourceData));
-
-            // original data shouldn't have been clobbered by that.
-            sourceStream.Position = 0;
-            sourceStream.SetLength(sourceData.Length);
-            TestReading(provider, sourceData);
+            using var dbfReader = new Dbf.DbfReader(sourceStream);
+            TestReading(dbfReader, sourceData);
         }
 
         [Test]
         public void TestTruncate() {
+            // TODO: Remove no longer relevant test
+            /*
             string test = "truncate string";
 
             using (var memoryStream = new MemoryStream())
@@ -93,11 +71,14 @@ namespace NetTopologySuite.IO.Esri.Test.Streams
 
                 Assert.That(stream.Length, Is.EqualTo(0));
             }
+            */
         }
 
         [Test]
         public void TestTruncateNonSeekableStream()
         {
+            // TODO: Remove no longer relevant test
+            /*
             string test = "truncate string";
 
             using (var memoryStream = new NonSeekableStream())
@@ -115,21 +96,41 @@ namespace NetTopologySuite.IO.Esri.Test.Streams
                 }
 
             }
+            */
         }
 
-        private static void TestReading(ExternallyManagedStreamProvider provider, byte[] sourceData)
+        private static void TestReading(Dbf.DbfReader dbfReader, byte[] sourceData)
         {
-            using var copyTargetStream = new MemoryStream();
-            using var copySourceStream = provider.OpenRead();
-            copySourceStream.CopyTo(copyTargetStream);
-            Assert.That(copyTargetStream.ToArray(), Is.EqualTo(sourceData));
+            using var ms = new MemoryStream();
+            using var dbfWriter = new Dbf.DbfWriter(ms, dbfReader.Fields, dbfReader.Encoding);
+            while (dbfReader.Read())
+            {
+                // We are reusing the fields from dbfReader.
+                // DbfField.Value is Read() from dbfReader and then the same value
+                // from the same field is written to dbfWriter.
+                // So bellow assignment is unnecessary:
+                // dbfWriter.Fields[0].Value = dbfReader.Fields[0].Value.
+                dbfWriter.Write();
+            }
+            dbfWriter.Dispose(); // Flush changes.
+            Assert.That(ms.ToArray(), Is.EqualTo(sourceData));
         }
 
-        private static byte[] CreateData(int length)
+        private static byte[] CreateDbfData(int length)
         {
-            byte[] res = new byte[length];
-            new Random().NextBytes(res);
-            return res;
+            var textField = new Dbf.Fields.DbfCharacterField("field_name");
+            var fields = new Dbf.Fields.DbfField[] { textField };
+            using var ms = new MemoryStream();
+
+            using var dbfWriter = new Dbf.DbfWriter(ms, fields);
+            for (int i = 0; i < length; i++)
+            {
+                textField.Value = "field_value_" + i;
+                dbfWriter.Write();
+            }
+            dbfWriter.Dispose(); // Write header to underlying stream
+
+            return ms.ToArray();
         }
 
         private class NonSeekableStream : MemoryStream
