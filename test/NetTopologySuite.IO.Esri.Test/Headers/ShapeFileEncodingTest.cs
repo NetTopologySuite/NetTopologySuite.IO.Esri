@@ -12,14 +12,15 @@ namespace NetTopologySuite.IO.Esri.Test.Headers
         [SetUp]
         public void Setup()
         {
-            var sfdr = new ShapefileDataWriter("encoding_sample");
-            var h = new DbaseFileHeader();
-            h.AddColumn("id", 'n', 8, 0);
-            h.AddColumn("Test", 'C', 15, 0);
-            h.AddColumn("Ålder", 'N', 8, 0);
-            h.AddColumn("Ödestext", 'C', 254, 0);
-            h.NumRecords = 1;
-            sfdr.Header = h;
+            var options = new ShapefileWriterOptions(ShapeType.Point)
+            {
+                Encoding = CodePagesEncodingProvider.Instance.GetEncoding(1252)
+            };
+            options.AddNumericInt32Field("id");
+            options.AddCharacterField("Test", 15);
+            options.AddNumericInt32Field("Ålder");
+            options.AddCharacterField("Ödestext");
+            using var sfdr = Shapefile.OpenWrite("encoding_sample", options);
 
             var feats = new List<IFeature>();
             var at = new AttributesTable();
@@ -34,17 +35,16 @@ namespace NetTopologySuite.IO.Esri.Test.Headers
         [Test]
         public void TestLoadShapeFileWithEncoding()
         {
-            var reader = new ShapefileDataReader("encoding_sample.shp", GeometryFactory.Default);
-            var header = reader.DbaseHeader;
-            Assert.AreEqual(header.Encoding, CodePagesEncodingProvider.Instance.GetEncoding(1252), "Invalid encoding!");
+            var reader = Shapefile.OpenRead("encoding_sample.shp");
+            Assert.AreEqual(reader.Encoding, CodePagesEncodingProvider.Instance.GetEncoding(1252), "Invalid encoding!");
 
-            Assert.AreEqual(header.Fields[1].Name, "Test");
-            Assert.AreEqual(header.Fields[2].Name, "Ålder");
-            Assert.AreEqual(header.Fields[3].Name, "Ödestext");
+            Assert.AreEqual(reader.Fields[1].Name, "Test");
+            Assert.AreEqual(reader.Fields[2].Name, "Ålder");
+            Assert.AreEqual(reader.Fields[3].Name, "Ödestext");
 
             Assert.IsTrue(reader.Read(), "Error reading file");
-            Assert.AreEqual(reader["Test"], "Testar");
-            Assert.AreEqual(reader["Ödestext"], "Lång text med åäö etc");
+            Assert.AreEqual(reader.Fields["Test"].Value, "Testar");
+            Assert.AreEqual(reader.Fields["Ödestext"].Value, "Lång text med åäö etc");
         }
     }
 }
