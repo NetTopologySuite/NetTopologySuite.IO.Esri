@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NetTopologySuite.Features;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -74,6 +75,20 @@ namespace NetTopologySuite.IO.Esri.Dbf.Fields
                 values[field.Name] = field.Value;
             }
             return new ReadOnlyDictionary<string, object>(values);
+        }
+
+        /// <summary>
+        /// Reads current fields values.
+        /// </summary>
+        /// <returns>Dictionary containging field names and values.</returns>
+        public IAttributesTable ToAttributesTable()
+        {
+            var attributes = new AttributesTable();
+            foreach (var field in Fields)
+            {
+                attributes.Add(field.Name, field.Value);
+            }
+            return attributes;
         }
 
         /// <summary>

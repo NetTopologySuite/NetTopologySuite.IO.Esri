@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NetTopologySuite.Features;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -114,7 +115,7 @@ namespace NetTopologySuite.IO.Esri.Dbf.Fields
 
 
 
-        internal static readonly IReadOnlyDictionary<string, object> EmptyFieldValues = new ReadOnlyDictionary<string, object>(new Dictionary<string, object>());
+        internal static readonly IAttributesTable EmptyFieldValues = new AttributesTable();
 
         /// <summary>
         /// Creates dBASE field determined using specified value. 
