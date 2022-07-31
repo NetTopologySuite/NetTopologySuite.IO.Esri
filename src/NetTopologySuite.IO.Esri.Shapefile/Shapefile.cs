@@ -66,6 +66,17 @@ namespace NetTopologySuite.IO.Esri
             return shpStream.ReadShapeType();
         }
 
+
+        /// <summary>
+        /// Gets default <see cref="ShapeType"/> for specified geometry.
+        /// </summary>
+        /// <param name="geometry">A Geometry object.</param>
+        /// <returns>Shape type.</returns>
+        public static ShapeType GetShapeType(Geometry geometry)
+        {
+            return geometry.GetShapeType();
+        }
+
         /// <summary>
         /// Reads shape type information from SHP file.
         /// </summary>
