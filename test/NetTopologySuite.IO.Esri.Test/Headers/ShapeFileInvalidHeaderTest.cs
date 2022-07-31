@@ -1,13 +1,14 @@
 ﻿using NUnit.Framework;
+using System.Collections;
 using System.IO;
 
 namespace NetTopologySuite.IO.Esri.Test.Headers
 {
     [TestFixture]
-    [Ignore("Sample file(s) not published")]
+    //[Ignore("Sample file(s) not published")]
     public class ShapeFileInvalidHeaderTest
     {
-        private readonly string _invalidPath = Path.Combine(CommonHelpers.TestShapefilesDirectory, "invalidheader.shp");
+        private readonly string _invalidPath = TestShapefiles.PathToCountriesPg();
 
         [Test]
         public void TestInvalidShapeFile()
@@ -18,7 +19,7 @@ namespace NetTopologySuite.IO.Esri.Test.Headers
             var g = s.ReadAll();
             */
             string dbf = Path.ChangeExtension(_invalidPath, ".dbf");
-            var d = new IO.DbaseFileReader(dbf);
+            var d = new Dbf.DbfReader(dbf) as IEnumerable;
 
             var de = d.GetEnumerator();
             Assert.IsNull(de.Current);
