@@ -12,6 +12,7 @@ namespace NetTopologySuite.IO.Esri.Test.Headers
         [SetUp]
         public void Setup()
         {
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             var options = new ShapefileWriterOptions(ShapeType.Point)
             {
                 Encoding = CodePagesEncodingProvider.Instance.GetEncoding(1252)
