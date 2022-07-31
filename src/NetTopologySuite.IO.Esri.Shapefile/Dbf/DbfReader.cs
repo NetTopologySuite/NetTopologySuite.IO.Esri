@@ -160,6 +160,10 @@ namespace NetTopologySuite.IO.Esri.Dbf
 
             try
             {
+                if (int.TryParse(cpgText, out var cpgId))
+                {
+                    return Encoding.GetEncoding(cpgId);
+                }
                 return Encoding.GetEncoding(cpgText);
             }
             catch (Exception)
