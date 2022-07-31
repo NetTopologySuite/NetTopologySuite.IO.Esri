@@ -21,7 +21,13 @@ namespace NetTopologySuite.IO.Esri.Dbf.Fields
 
         private readonly string NumberFormat;
 
-        internal DbfFloatField(string name, int length, int precision)
+        /// <summary>
+        /// Intializes new instance of the numerif field class.
+        /// </summary>
+        /// <param name="name">Field name.</param>
+        /// <param name="length">The number of significant digits (including decimal separator).</param>
+        /// <param name="precision">The number of fractional digits.</param>
+        public DbfFloatField(string name, int length, int precision)
             : base(name, DbfType.Float, length, precision)
         {
             // Esri uses exponential notation for float fields:

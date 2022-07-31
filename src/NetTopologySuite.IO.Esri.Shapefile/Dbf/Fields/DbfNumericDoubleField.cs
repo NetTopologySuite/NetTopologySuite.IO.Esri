@@ -10,7 +10,13 @@ namespace NetTopologySuite.IO.Esri.Dbf.Fields
     /// </summary>
     public class DbfNumericDoubleField : DbfNumericField<double>
     {
-        internal DbfNumericDoubleField(string name, int length, int precision)
+        /// <summary>
+        /// Intializes new instance of the numerif field class.
+        /// </summary>
+        /// <param name="name">Field name.</param>
+        /// <param name="length">The number of significant digits (including decimal separator).</param>
+        /// <param name="precision">The number of fractional digits.</param>
+        public DbfNumericDoubleField(string name, int length, int precision)
             : base(name, DbfType.Numeric, length, precision)
         {
         }

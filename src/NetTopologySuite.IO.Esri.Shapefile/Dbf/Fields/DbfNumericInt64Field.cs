@@ -10,7 +10,12 @@ namespace NetTopologySuite.IO.Esri.Dbf.Fields
     /// </summary>
     public class DbfNumericInt64Field : DbfNumericField<long>
     {
-        internal DbfNumericInt64Field(string name, int length)
+        /// <summary>
+        /// Intializes new instance of the numerif field class.
+        /// </summary>
+        /// <param name="name">Field name.</param>
+        /// <param name="length">The number of digits.</param>
+        public DbfNumericInt64Field(string name, int length)
             : base(name, DbfType.Numeric, length, 0)
         {
         }
