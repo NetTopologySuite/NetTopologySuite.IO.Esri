@@ -182,6 +182,31 @@ namespace NetTopologySuite.IO.Esri.Dbf
             return File.ReadAllText(filePath).Trim();
         }
 
+
+
+        /// <summary>
+        /// Reads field values from underlying stream and advances the enumerator to the next record.
+        /// </summary>
+        /// <returns>
+        /// true if the enumerator was successfully advanced to the next record;
+        /// false if the enumerator has passed the end of the table.
+        /// </returns>
+        public bool Read()
+        {
+            var readSucceeded = Read(out var deleted);
+            if (!readSucceeded)
+            {
+                return false;
+            }
+            if (deleted)
+            {
+                return Read();
+            }
+            return true;
+        }
+
+
+
         /// <summary>
         /// Reads field values from underlying stream and advances the enumerator to the next record.
         /// </summary>
