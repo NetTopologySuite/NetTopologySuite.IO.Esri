@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Text;
-using NetTopologySuite.IO.Streams;
 using NUnit.Framework;
 
 namespace NetTopologySuite.IO.Esri.Test.Streams
@@ -17,16 +16,19 @@ namespace NetTopologySuite.IO.Esri.Test.Streams
         {
             var encoding = CodePagesEncodingProvider.Instance.GetEncoding(codepage);
 
-            var bsp = new ByteStreamProvider("Test", constructorText, encoding);
-            Assert.That(bsp.UnderlyingStreamIsReadonly, Is.True);
-            Assert.That(bsp.Length, Is.EqualTo(constructorText.Length));
-            Assert.That(bsp.Length == bsp.MaxLength, Is.True);
+            var textField = new Dbf.Fields.DbfCharacterField("test");
+            var fields = new Dbf.Fields.DbfField[] { textField };
+            using var ms = new MemoryStream();
 
-            using (var streamreader = new StreamReader(bsp.OpenRead(), encoding))
-            {
-                string streamText = streamreader.ReadToEnd();
-                Assert.That(streamText, Is.EqualTo(constructorText));
-            }
+            using var dbfWriter = new Dbf.DbfWriter(ms, fields, encoding);
+            textField.StringValue = constructorText;
+            dbfWriter.Write();
+
+            using var dbfReader = new Dbf.DbfReader(ms, encoding);
+            dbfReader.Read();
+            var readText = dbfReader.Fields[textField.Name].Value;
+            Assert.That(readText, Is.EqualTo(constructorText));
+            
         }
 
         [TestCase(50, 50, true)]
@@ -35,6 +37,8 @@ namespace NetTopologySuite.IO.Esri.Test.Streams
         [TestCase(50, 100, false)]
         public void TestConstructor(int length, int maxLength, bool @readonly)
         {
+            // TODO: Remove no longer relevant test
+            /*
             var bsp = new ByteStreamProvider("Test", CreateData(length), maxLength, @readonly);
             Assert.That(bsp.UnderlyingStreamIsReadonly, Is.EqualTo(@readonly));
             Assert.That(bsp.Length, Is.EqualTo(length));
@@ -74,6 +78,7 @@ namespace NetTopologySuite.IO.Esri.Test.Streams
                     Assert.That(length, Is.EqualTo(maxLength));
                 }
             }
+            */
         }
 
         private static byte[] CreateData(int length)
