@@ -17,19 +17,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Remove="Geometries\**" />
     <Compile Remove="Headers\**" />
     <Compile Remove="ShapeFile.Extended\**" />
     <Compile Remove="Streams\**" />
     <Compile Remove="Various\**" />
     <Compile Remove="Writers\**" />
-    <EmbeddedResource Remove="Geometries\**" />
     <EmbeddedResource Remove="Headers\**" />
     <EmbeddedResource Remove="ShapeFile.Extended\**" />
     <EmbeddedResource Remove="Streams\**" />
     <EmbeddedResource Remove="Various\**" />
     <EmbeddedResource Remove="Writers\**" />
-    <None Remove="Geometries\**" />
     <None Remove="Headers\**" />
     <None Remove="ShapeFile.Extended\**" />
     <None Remove="Streams\**" />
