@@ -48,7 +48,7 @@ namespace NetTopologySuite.IO.Esri.Shp
         /// <param name="shpStream">SHP file stream.</param>
         /// <param name="options">Reader options.</param>
         /// <returns>SHP reader.</returns>
-        public static ShpReader OpenRead(Stream shpStream, ShapefileReaderOptions options)
+        public static ShpReader OpenRead(Stream shpStream, ShapefileReaderOptions options = null)
         {
             var shapeType = Shapefile.GetShapeType(shpStream);
 
