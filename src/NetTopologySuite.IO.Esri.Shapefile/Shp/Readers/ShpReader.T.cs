@@ -97,6 +97,7 @@ namespace NetTopologySuite.IO.Esri.Shp.Readers
         internal override void Restart()
         {
             ShpStream.Seek(Shapefile.FileHeaderSize, SeekOrigin.Begin);
+            RecordNumber = 1;
         }
 
         /// <inheritdoc/>
