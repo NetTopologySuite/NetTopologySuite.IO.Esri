@@ -46,7 +46,7 @@ namespace NetTopologySuite.IO.Esri.Shapefiles.Readers
         {
             try
             {
-                options = options ?? new ShapefileReaderOptions();
+                options = options ?? ShapefileReaderOptions.Default;
                 options.DbfRecordCount = DbfReader.RecordCount;
                 ShpReader = CreateShpReader(shpStream, options);
             }
@@ -67,7 +67,7 @@ namespace NetTopologySuite.IO.Esri.Shapefiles.Readers
         {
             try
             {
-                options = options ?? new ShapefileReaderOptions();
+                options = options ?? ShapefileReaderOptions.Default;
                 options.DbfRecordCount = DbfReader.RecordCount;
                 var shpStream = OpenManagedFileStream(shpPath, ".shp", FileMode.Open);
                 ShpReader = CreateShpReader(shpStream, options);

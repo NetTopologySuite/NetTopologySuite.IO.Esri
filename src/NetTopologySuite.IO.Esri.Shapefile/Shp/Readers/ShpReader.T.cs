@@ -18,6 +18,7 @@ namespace NetTopologySuite.IO.Esri.Shp.Readers
         private readonly MemoryStream Buffer;
         private readonly bool SkipFailures;
         private readonly Envelope MbrEnvelope = null;
+        private readonly MbrFilterOption MbrFilterOption;
         private readonly Geometry MbrGeometry = null;
 
         /// <summary>
@@ -72,6 +73,7 @@ namespace NetTopologySuite.IO.Esri.Shp.Readers
             {
                 MbrGeometry = Factory.ToGeometry(MbrEnvelope);
             }
+            MbrFilterOption = options?.MbrFilterOption ?? MbrFilterOption.FilterByExtent;
 
             SkipFailures = options?.SkipFailures ?? false;
 
@@ -176,7 +178,7 @@ namespace NetTopologySuite.IO.Esri.Shp.Readers
 
         internal bool IsInMbr(Geometry geometry)
         {
-            if (MbrGeometry == null)
+            if (MbrGeometry == null || MbrFilterOption != MbrFilterOption.FilterByGeometry)
             {
                 return true;
             }

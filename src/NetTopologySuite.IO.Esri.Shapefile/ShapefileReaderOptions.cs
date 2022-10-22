@@ -25,6 +25,12 @@ namespace NetTopologySuite.IO.Esri
         /// </summary>
         public Envelope MbrFilter { get; set; } = null;
 
+
+        /// <summary>
+        ///  Minimum bounding rectangle (MBR) filtering options.
+        /// </summary>
+        public MbrFilterOption MbrFilterOption { get; set; } = MbrFilterOption.FilterByExtent;
+
         internal int DbfRecordCount { get; set; } = int.MaxValue;
 
         /// <summary>
@@ -35,5 +41,25 @@ namespace NetTopologySuite.IO.Esri
         /// https://github.com/NetTopologySuite/NetTopologySuite.IO.ShapeFile/issues/46
         /// </remarks>
         public bool SkipFailures { get; set; } = false;
+
+        internal static ShapefileReaderOptions Default = new ShapefileReaderOptions();
+
+    }
+
+
+    /// <summary>
+    ///  Minimum bounding rectangle (MBR) filtering options.
+    /// </summary>
+    public enum MbrFilterOption
+    {
+        /// <summary>
+        /// Filter by geometry extent. This option is faster but gives less acurate results (it can get some shapes that are not actually in the MBR).
+        /// </summary>
+        FilterByExtent,
+
+        /// <summary>
+        /// Filter by geometry shape. This option gives precise results but it also greatly affect the performance.
+        /// </summary>
+        FilterByGeometry
     }
 }

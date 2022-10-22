@@ -39,11 +39,6 @@ namespace NetTopologySuite.IO.Esri.Shapefiles.Readers
         public abstract Envelope BoundingBox { get; }
 
         /// <summary>
-        /// The minimum bounding rectangle (BMR) used to filter out shapes located outside it.
-        /// </summary>
-        public virtual Envelope MbrFilter { get; set; }
-
-        /// <summary>
         /// Shape geometry.
         /// </summary>
         public abstract Geometry Geometry { get; }
