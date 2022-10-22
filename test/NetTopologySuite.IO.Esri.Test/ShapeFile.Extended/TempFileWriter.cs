@@ -13,6 +13,18 @@ namespace NetTopologySuite.IO.Tests.ShapeFile.Extended
             File.WriteAllBytes(this.Path, data);
         }
 
+        public TempFileWriter(string ext, string testFile)
+        {
+            string file = System.IO.Path.ChangeExtension(testFile, ext);
+            string path = TestShapefiles.PathTo(file);
+            Assert.That(File.Exists(path), Is.True);
+
+
+            this.Path = System.IO.Path.GetFullPath(System.IO.Path.ChangeExtension(TestContext.CurrentContext.Test.ID, ext));
+            byte[] data = File.ReadAllBytes(path);
+            File.WriteAllBytes(this.Path, data);
+        }
+
         ~TempFileWriter() => this.InternalDispose();
 
         public string Path { get; }

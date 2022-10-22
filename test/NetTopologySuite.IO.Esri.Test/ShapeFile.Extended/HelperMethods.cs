@@ -1,6 +1,5 @@
 ﻿using System;
 using NetTopologySuite.Geometries;
-using NetTopologySuite.IO.Handlers;
 using Assert = NUnit.Framework.Assert;
 
 namespace NetTopologySuite.IO.Tests.ShapeFile.Extended
@@ -59,13 +58,6 @@ namespace NetTopologySuite.IO.Tests.ShapeFile.Extended
             {
                 Assert.AreEqual(num1, num2, requiredPrecision, errorMessage);
             }
-        }
-
-        public static void AssertMBRInfoEqual(MBRInfo info1, MBRInfo info2)
-        {
-            Assert.AreEqual(info1.ShapeFileDetails.OffsetFromStartOfFile, info2.ShapeFileDetails.OffsetFromStartOfFile);
-            Assert.AreEqual(info1.ShapeFileDetails.ShapeIndex, info2.ShapeFileDetails.ShapeIndex);
-            AssertEnvelopesEqual(info1.ShapeMBR, info2.ShapeMBR);
         }
     }
 }

@@ -1246,7 +1246,7 @@ namespace NetTopologySuite.IO.Tests.ShapeFile.Extended
         public static byte[] Read(string filename)
         {
             string file = Path.ChangeExtension(filename, "shp");
-            string path = Path.Combine(CommonHelpers.TestShapefilesDirectory, file);
+            string path = Path.Combine(TestShapefiles.Directory, file);
             Assert.That(File.Exists(path), Is.True, "file not found: " + filename);
             return File.ReadAllBytes(path);
         }

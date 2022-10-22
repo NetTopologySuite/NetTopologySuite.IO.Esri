@@ -3,27 +3,24 @@ using System.IO;
 using System.Linq;
 using NetTopologySuite.Geometries;
 using NetTopologySuite.Index.Strtree;
-using NetTopologySuite.IO.Handlers;
-using NetTopologySuite.IO.ShapeFile.Extended;
-using NetTopologySuite.IO.ShapeFile.Extended.Entities;
+using NetTopologySuite.IO.Esri.Shapefiles.Readers;
+using NetTopologySuite.IO.Esri;
 using NetTopologySuite.IO.Esri.Test;
 using NUnit.Framework;
+using NetTopologySuite.Features;
 
 namespace NetTopologySuite.IO.Tests.ShapeFile.Extended
 {
     [TestFixture]
     public class ShapeDataReaderTests
     {
-        private TempFileWriter[] m_TempFiles;
-        private ShapeDataReader m_shapeDataReader;
-
         [Test]
         public void Ctor_SendNullPath_ShouldThrowException()
         {
             // Act.
             Assert.Catch<ArgumentNullException>(() =>
             {
-                m_shapeDataReader = new ShapeDataReader((string)null);
+                using var shapefileReader = Shapefile.OpenRead((string)null);
             });
         }
 
@@ -31,9 +28,9 @@ namespace NetTopologySuite.IO.Tests.ShapeFile.Extended
         public void Ctor_SendEmptyPath_ShouldThrowException()
         {
             // Act.
-            Assert.Catch<ArgumentNullException>(() =>
+            Assert.Catch<ArgumentException>(() =>
             {
-                m_shapeDataReader = new ShapeDataReader(string.Empty);
+                using var shapefileReader = Shapefile.OpenRead(string.Empty);
             });
         }
 
@@ -41,9 +38,9 @@ namespace NetTopologySuite.IO.Tests.ShapeFile.Extended
         public void Ctor_SendWhitespacePath_ShouldThrowException()
         {
             // Act.
-            Assert.Catch<ArgumentNullException>(() =>
+            Assert.Catch<IOException>(() =>
             {
-                m_shapeDataReader = new ShapeDataReader("   \t   ");
+                using var shapefileReader = Shapefile.OpenRead("   \t   ");
             });
         }
 
@@ -51,9 +48,9 @@ namespace NetTopologySuite.IO.Tests.ShapeFile.Extended
         public void Ctor_SendNonExistantFilePath_ShouldThrowException()
         {
             // Act.
-            Assert.Catch<FileNotFoundException>(() =>
+            Assert.Catch<DirectoryNotFoundException>(() =>
             {
-                m_shapeDataReader = new ShapeDataReader(@"C:\this\is\sheker\path\should\never\exist\on\ur\pc");
+                using var shapefileReader = Shapefile.OpenRead(@"C:\this\is\sheker\path\should\never\exist\on\ur\pc");
             });
         }
 
@@ -61,21 +58,22 @@ namespace NetTopologySuite.IO.Tests.ShapeFile.Extended
         public void Ctor_SendShpWithNoDbf_ShouldThrowException()
         {
             // Arrange.
-            m_TempFiles = new TempFileWriter[]
-            {
-                new TempFileWriter(".shp", ShpFiles.Read("UnifiedChecksMaterial")),
-            };
+            using var tempShp = new TempFileWriter(".shp", "UnifiedChecksMaterial");
 
             // Act.
             Assert.Catch<FileNotFoundException>(() =>
             {
-                m_shapeDataReader = new ShapeDataReader(m_TempFiles[0].Path);
+                using var shapefileReader = Shapefile.OpenRead(tempShp.Path);
             });
         }
 
         [Test]
-        public void Ctor_SendNullSpatialIndex_ShouldThrowException()
+        public void Ctor_SendNullSpatialIndex_ShouldNotThrowException()
         {
+            // TODO: Remove no longer relevant test
+            //       IDX file is not used during reading at all.
+            //       It is stored during writing for compability reasons.
+            /*
             // Arrange.
             m_TempFiles = new TempFileWriter[]
             {
@@ -88,11 +86,15 @@ namespace NetTopologySuite.IO.Tests.ShapeFile.Extended
             {
                 m_shapeDataReader = new ShapeDataReader(m_TempFiles[0].Path, null);
             });
+            */
         }
 
         [Test]
         public void Ctor_SendNullGeometryFactory_ShouldThrowException()
         {
+            // TODO: Remove no longer relevant test
+            //       Geometry.DefaultFactory is used when provided factory is null.
+            /*
             // Arrange.
             m_TempFiles = new TempFileWriter[]
             {
@@ -105,26 +107,27 @@ namespace NetTopologySuite.IO.Tests.ShapeFile.Extended
             {
                 m_shapeDataReader = new ShapeDataReader(m_TempFiles[0].Path, new STRtree<ShapeLocationInFileInfo>(), null);
             });
+            */
         }
 
         [Test]
         public void Ctor_SendShpWithNoPrj_ShouldReturnNotNull()
         {
             // Arrange.
-            m_TempFiles = new TempFileWriter[]
-            {
-                new TempFileWriter(".shp", ShpFiles.Read("UnifiedChecksMaterial")),
-                new TempFileWriter(".dbf", DbfFiles.Read("UnifiedChecksMaterial")),
-            };
+            using var tempShp = new TempFileWriter(".shp", "UnifiedChecksMaterial");
+            using var tempDbf = new TempFileWriter(".dbf", "UnifiedChecksMaterial");
 
             // Act.
-            m_shapeDataReader = new ShapeDataReader(m_TempFiles[0].Path);
-            Assert.IsNotNull(m_shapeDataReader);
+            using var shapefileReader = Shapefile.OpenRead(tempShp.Path);
+            Assert.IsNotNull(shapefileReader);
         }
 
         [Test]
         public void Ctor_SetAsyncIndexToTrue_ShouldReturnNotNull()
         {
+            // TODO: Remove no longer relevant test
+            //       STRtree is not supported
+            /*
             // Arrange.
             m_TempFiles = new TempFileWriter[]
             {
@@ -137,11 +140,15 @@ namespace NetTopologySuite.IO.Tests.ShapeFile.Extended
 
             // Assert.
             Assert.IsNotNull(m_shapeDataReader);
+            */
         }
 
         [Test]
         public void Ctor_SetAsyncIndexToFalse_ShouldReturnNotNull()
         {
+            // TODO: Remove no longer relevant test
+            //       STRtree is not supported
+            /*
             // Arrange.
             m_TempFiles = new TempFileWriter[]
             {
@@ -154,6 +161,7 @@ namespace NetTopologySuite.IO.Tests.ShapeFile.Extended
 
             // Assert.
             Assert.IsNotNull(m_shapeDataReader);
+            */
         }
 
         [Test]
@@ -162,28 +170,19 @@ namespace NetTopologySuite.IO.Tests.ShapeFile.Extended
             // Arrange.
             var expectedMBR = new Envelope(34.14526022208882, 34.28293070132935, 31.85116738930965, 31.92063218020455);
 
-            m_TempFiles = new TempFileWriter[]
-            {
-                new TempFileWriter(".shp", ShpFiles.Read("point_ed50_geo")),
-                new TempFileWriter(".dbf", DbfFiles.Read("point_ed50_geo")),
-            };
-
             // Act.
-            m_shapeDataReader = new ShapeDataReader(m_TempFiles[0].Path);
+            using var shapefileReader = Shapefile.OpenRead(TestShapefiles.PathTo("point_ed50_geo"));
 
             // Assert.
-            HelperMethods.AssertEnvelopesEqual(expectedMBR, m_shapeDataReader.ShapefileBounds);
+            HelperMethods.AssertEnvelopesEqual(expectedMBR, shapefileReader.BoundingBox);
         }
 
         [Test]
         public void ReadByGeoFilter_ReadAllInBounds_ShouldReturnAllShapesAndCorrectDbfData()
         {
             // Arrange.
-            m_TempFiles = new TempFileWriter[]
-            {
-                new TempFileWriter(".shp", ShpFiles.Read("UnifiedChecksMaterial")),
-                new TempFileWriter(".dbf", DbfFiles.Read("UnifiedChecksMaterial")),
-            };
+            using var tempShp = new TempFileWriter(".shp", "UnifiedChecksMaterial");
+            using var tempDbf = new TempFileWriter(".dbf", "UnifiedChecksMaterial");
 
             Polygon[] expectedResult = new Polygon[]
             {
@@ -206,10 +205,14 @@ namespace NetTopologySuite.IO.Tests.ShapeFile.Extended
 
             string[] expectedShapeMetadata = new string[] { "Rectangle", "Triangle" };
 
-            m_shapeDataReader = new ShapeDataReader(m_TempFiles[0].Path);
+            using var boundingBoxReader = Shapefile.OpenRead(tempShp.Path);
+            var options = new ShapefileReaderOptions()
+            {
+                MbrFilter = boundingBoxReader.BoundingBox
+            };
 
             // Act.
-            var results = m_shapeDataReader.ReadByMBRFilter(m_shapeDataReader.ShapefileBounds);
+            var results = Shapefile.ReadAllFeatures(tempShp.Path, options); 
 
             // Assert.
             Assert.IsNotNull(results);
@@ -218,17 +221,16 @@ namespace NetTopologySuite.IO.Tests.ShapeFile.Extended
             foreach (var result in results)
             {
                 Assert.IsNotNull(result);
-                Assert.IsInstanceOf<ShapefileFeature>(result);
-                var sf = (ShapefileFeature)result;
-                Assert.AreEqual(sf.FeatureId, currIndex);
                 Assert.IsNotNull(result.Attributes);
 
-                HelperMethods.AssertPolygonsEqual(result.Geometry as Polygon, expectedResult[currIndex]);
+                Polygon resultPolygon = GetPolygon(result.Geometry);
+                HelperMethods.AssertPolygonsEqual(resultPolygon, expectedResult[currIndex]);
 
                 object shapeNameData = result.Attributes["ShapeName"];
                 Assert.IsInstanceOf<string>(shapeNameData);
 
-                Assert.AreEqual((string)shapeNameData, expectedShapeMetadata[currIndex++]);
+                Assert.AreEqual((string)shapeNameData, expectedShapeMetadata[currIndex]);
+                currIndex++;
             }
         }
 
@@ -238,11 +240,8 @@ namespace NetTopologySuite.IO.Tests.ShapeFile.Extended
             var boundsWithWholeTriangle = new Envelope(-0.62331, 0.63774, -0.02304, 0.76942);
 
             // Arrange.
-            m_TempFiles = new TempFileWriter[]
-            {
-                new TempFileWriter(".shp", ShpFiles.Read("UnifiedChecksMaterial")),
-                new TempFileWriter(".dbf", DbfFiles.Read("UnifiedChecksMaterial")),
-            };
+            using var tempShp = new TempFileWriter(".shp", "UnifiedChecksMaterial");
+            using var tempDbf = new TempFileWriter(".dbf", "UnifiedChecksMaterial");
 
             var expectedTriangle = new Polygon(new LinearRing(new Coordinate[]
                     {
@@ -254,22 +253,21 @@ namespace NetTopologySuite.IO.Tests.ShapeFile.Extended
 
             string expectedShapeMetadata = "Triangle";
 
-            m_shapeDataReader = new ShapeDataReader(m_TempFiles[0].Path);
+            var options = new ShapefileReaderOptions()
+            {
+                MbrFilter = boundsWithWholeTriangle
+            };
 
             // Act.
-            var results = m_shapeDataReader.ReadByMBRFilter(boundsWithWholeTriangle);
+            using var shapefileReader = Shapefile.OpenRead(tempShp.Path, options);
+            var result = shapefileReader.Single();
 
             // Assert.
-            Assert.IsNotNull(results);
-
-            var result = results.Single();
-
             Assert.IsNotNull(result);
-            Assert.IsInstanceOf<ShapefileFeature>(result);
-            Assert.AreEqual(((ShapefileFeature)result).FeatureId, 1);
             Assert.IsNotNull(result.Attributes);
 
-            HelperMethods.AssertPolygonsEqual(result.Geometry as Polygon, expectedTriangle);
+            Polygon resultPolygon = GetPolygon(result.Geometry);
+            HelperMethods.AssertPolygonsEqual(resultPolygon, expectedTriangle);
 
             object shapeNameData = result.Attributes["ShapeName"];
             Assert.IsInstanceOf<string>(shapeNameData);
@@ -283,11 +281,8 @@ namespace NetTopologySuite.IO.Tests.ShapeFile.Extended
             var boundsWithWholeTriangle = new Envelope(-1.39510, -0.12716, -1.13938, -0.22977);
 
             // Arrange.
-            m_TempFiles = new TempFileWriter[]
-            {
-                new TempFileWriter(".shp", ShpFiles.Read("UnifiedChecksMaterial")),
-                new TempFileWriter(".dbf", DbfFiles.Read("UnifiedChecksMaterial")),
-            };
+            using var tempShp = new TempFileWriter(".shp", "UnifiedChecksMaterial");
+            using var tempDbf = new TempFileWriter(".dbf", "UnifiedChecksMaterial");
 
             var expectedTriangle = new Polygon(new LinearRing(new Coordinate[]
                     {
@@ -300,22 +295,21 @@ namespace NetTopologySuite.IO.Tests.ShapeFile.Extended
 
             string expectedShapeMetadata = "Rectangle";
 
-            m_shapeDataReader = new ShapeDataReader(m_TempFiles[0].Path);
+            var options = new ShapefileReaderOptions()
+            {
+                MbrFilter = boundsWithWholeTriangle
+            };
 
             // Act.
-            var results = m_shapeDataReader.ReadByMBRFilter(boundsWithWholeTriangle);
+            using var shapefileReader = Shapefile.OpenRead(tempShp.Path, options);
+            var result = shapefileReader.Single();
 
             // Assert.
-            Assert.IsNotNull(results);
-
-            var result = results.Single();
-
             Assert.IsNotNull(result);
-            Assert.IsInstanceOf<ShapefileFeature>(result);
-            Assert.AreEqual(((ShapefileFeature)result).FeatureId, 0);
             Assert.IsNotNull(result.Attributes);
 
-            HelperMethods.AssertPolygonsEqual(result.Geometry as Polygon, expectedTriangle);
+            Polygon resultPolygon = GetPolygon(result.Geometry);
+            HelperMethods.AssertPolygonsEqual(resultPolygon, expectedTriangle);
 
             object shapeNameData = result.Attributes["ShapeName"];
             Assert.IsInstanceOf<string>(shapeNameData);
@@ -324,16 +318,13 @@ namespace NetTopologySuite.IO.Tests.ShapeFile.Extended
         }
 
         [Test]
-        public void ReadByGeoFilter_ReadWithWholeRectangleInBoundsAndFlagSetToTrue_ShouldReturnRectangle()
+        public void ReadByGeoFilter_ReadWithWholeRectangleInBoundsAndFilterByGeometryOption_ShouldReturnRectangle()
         {
             var boundsWithWholeTriangle = new Envelope(-1.39510, -0.12716, -1.13938, -0.22977);
 
             // Arrange.
-            m_TempFiles = new TempFileWriter[]
-            {
-                new TempFileWriter(".shp", ShpFiles.Read("UnifiedChecksMaterial")),
-                new TempFileWriter(".dbf", DbfFiles.Read("UnifiedChecksMaterial")),
-            };
+            using var tempShp = new TempFileWriter(".shp", "UnifiedChecksMaterial");
+            using var tempDbf = new TempFileWriter(".dbf", "UnifiedChecksMaterial");
 
             var expectedTriangle = new Polygon(new LinearRing(new Coordinate[]
                     {
@@ -346,22 +337,22 @@ namespace NetTopologySuite.IO.Tests.ShapeFile.Extended
 
             string expectedShapeMetadata = "Rectangle";
 
-            m_shapeDataReader = new ShapeDataReader(m_TempFiles[0].Path);
+            var options = new ShapefileReaderOptions()
+            {
+                MbrFilter = boundsWithWholeTriangle,
+                MbrFilterOption = MbrFilterOption.FilterByGeometry
+            };
 
             // Act.
-            var results = m_shapeDataReader.ReadByMBRFilter(boundsWithWholeTriangle, true);
+            using var shapefileReader = Shapefile.OpenRead(tempShp.Path, options);
+            var result = shapefileReader.Single();
 
             // Assert.
-            Assert.IsNotNull(results);
-
-            var result = results.Single();
-
             Assert.IsNotNull(result);
-            Assert.IsInstanceOf<ShapefileFeature>(result);
-            Assert.AreEqual(((ShapefileFeature)result).FeatureId, 0);
             Assert.IsNotNull(result.Attributes);
 
-            HelperMethods.AssertPolygonsEqual(result.Geometry as Polygon, expectedTriangle);
+            Polygon resultPolygon = GetPolygon(result.Geometry);
+            HelperMethods.AssertPolygonsEqual(resultPolygon, expectedTriangle);
 
             object shapeNameData = result.Attributes["ShapeName"];
             Assert.IsInstanceOf<string>(shapeNameData);
@@ -375,11 +366,8 @@ namespace NetTopologySuite.IO.Tests.ShapeFile.Extended
             var boundsWithWholeTriangle = new Envelope(-0.93340, -0.38902, -0.73281, -0.29179);
 
             // Arrange.
-            m_TempFiles = new TempFileWriter[]
-            {
-                new TempFileWriter(".shp", ShpFiles.Read("UnifiedChecksMaterial")),
-                new TempFileWriter(".dbf", DbfFiles.Read("UnifiedChecksMaterial")),
-            };
+            using var tempShp = new TempFileWriter(".shp", "UnifiedChecksMaterial");
+            using var tempDbf = new TempFileWriter(".dbf", "UnifiedChecksMaterial");
 
             var expectedTriangle = new Polygon(new LinearRing(new Coordinate[]
                     {
@@ -392,22 +380,21 @@ namespace NetTopologySuite.IO.Tests.ShapeFile.Extended
 
             string expectedShapeMetadata = "Rectangle";
 
-            m_shapeDataReader = new ShapeDataReader(m_TempFiles[0].Path);
+            var options = new ShapefileReaderOptions()
+            {
+                MbrFilter = boundsWithWholeTriangle
+            };
 
             // Act.
-            var results = m_shapeDataReader.ReadByMBRFilter(boundsWithWholeTriangle);
+            using var shapefileReader = Shapefile.OpenRead(tempShp.Path, options);
+            var result = shapefileReader.Single();
 
             // Assert.
-            Assert.IsNotNull(results);
-
-            var result = results.Single();
-
             Assert.IsNotNull(result);
-            Assert.IsInstanceOf<ShapefileFeature>(result);
-            Assert.AreEqual(((ShapefileFeature)result).FeatureId, 0);
             Assert.IsNotNull(result.Attributes);
 
-            HelperMethods.AssertPolygonsEqual(result.Geometry as Polygon, expectedTriangle);
+            Polygon resultPolygon = GetPolygon(result.Geometry);
+            HelperMethods.AssertPolygonsEqual(resultPolygon, expectedTriangle);
 
             object shapeNameData = result.Attributes["ShapeName"];
             Assert.IsInstanceOf<string>(shapeNameData);
@@ -416,16 +403,13 @@ namespace NetTopologySuite.IO.Tests.ShapeFile.Extended
         }
 
         [Test]
-        public void ReadByGeoFilter_ReadWithRectanglePartiallyInBoundsAndFlagSetToTrue_ShouldReturnRectangle()
+        public void ReadByGeoFilter_ReadWithRectanglePartiallyInBoundsAndFilterByGeometryOption_ShouldReturnRectangle()
         {
             var boundsWithWholeTriangle = new Envelope(-0.93340, -0.38902, -0.73281, -0.29179);
 
             // Arrange.
-            m_TempFiles = new TempFileWriter[]
-            {
-                new TempFileWriter(".shp", ShpFiles.Read("UnifiedChecksMaterial")),
-                new TempFileWriter(".dbf", DbfFiles.Read("UnifiedChecksMaterial")),
-            };
+            using var tempShp = new TempFileWriter(".shp", "UnifiedChecksMaterial");
+            using var tempDbf = new TempFileWriter(".dbf", "UnifiedChecksMaterial");
 
             var expectedTriangle = new Polygon(new LinearRing(new Coordinate[]
                     {
@@ -438,22 +422,22 @@ namespace NetTopologySuite.IO.Tests.ShapeFile.Extended
 
             string expectedShapeMetadata = "Rectangle";
 
-            m_shapeDataReader = new ShapeDataReader(m_TempFiles[0].Path);
+            var options = new ShapefileReaderOptions()
+            {
+                MbrFilter = boundsWithWholeTriangle,
+                MbrFilterOption = MbrFilterOption.FilterByGeometry
+            };
 
             // Act.
-            var results = m_shapeDataReader.ReadByMBRFilter(boundsWithWholeTriangle, true);
+            using var shapefileReader = Shapefile.OpenRead(tempShp.Path, options);
+            var result = shapefileReader.Single();
 
             // Assert.
-            Assert.IsNotNull(results);
-
-            var result = results.Single();
-
             Assert.IsNotNull(result);
-            Assert.IsInstanceOf<ShapefileFeature>(result);
-            Assert.AreEqual(((ShapefileFeature)result).FeatureId, 0);
             Assert.IsNotNull(result.Attributes);
 
-            HelperMethods.AssertPolygonsEqual(result.Geometry as Polygon, expectedTriangle);
+            Polygon resultPolygon = GetPolygon(result.Geometry);
+            HelperMethods.AssertPolygonsEqual(resultPolygon, expectedTriangle);
 
             object shapeNameData = result.Attributes["ShapeName"];
             Assert.IsInstanceOf<string>(shapeNameData);
@@ -462,42 +446,38 @@ namespace NetTopologySuite.IO.Tests.ShapeFile.Extended
         }
 
         [Test]
-        public void ReadByGeoFilter_ReadWithRectangleMBRPartiallyInBoundsAndFlagSetToTrue_ShouldReturnNoGeometries()
+        public void ReadByGeoFilter_ReadWithRectangleMBRPartiallyInBoundsAndFilterByGeometryOption_ShouldReturnNoGeometries()
         {
             var boundsWithWholeTriangle = new Envelope(-1.17459, -1.00231, -1.09803, -0.80861);
 
             // Arrange.
-            m_TempFiles = new TempFileWriter[]
+            using var tempShp = new TempFileWriter(".shp", "UnifiedChecksMaterial");
+            using var tempDbf = new TempFileWriter(".dbf", "UnifiedChecksMaterial");
+
+            var options = new ShapefileReaderOptions()
             {
-                new TempFileWriter(".shp", ShpFiles.Read("UnifiedChecksMaterial")),
-                new TempFileWriter(".dbf", DbfFiles.Read("UnifiedChecksMaterial")),
+                MbrFilter = boundsWithWholeTriangle,
+                MbrFilterOption = MbrFilterOption.FilterByGeometry
             };
 
-            m_shapeDataReader = new ShapeDataReader(m_TempFiles[0].Path);
-
             // Act.
-            var results = m_shapeDataReader.ReadByMBRFilter(boundsWithWholeTriangle, true);
+            var results = Shapefile.ReadAllFeatures(tempShp.Path, options);
 
             // Assert.
             Assert.IsNotNull(results);
             Assert.IsFalse(results.Any());
         }
 
-        // TODO: Don't know how bad it is that this tests passes.
         // I give it as a parameter a rectangle that partially intersects only with the MBR of the
         // shape, and doesn't intersect with the shape itself at all.
-        // It only works because the default index is RTree, use a different index?
         [Test]
         public void ReadByGeoFilter_ReadWithRectangleMBRPartiallyInBounds_ShouldReturnRectangle()
         {
             var boundsWithWholeTriangle = new Envelope(-1.17459, -1.00231, -1.09803, -0.80861);
 
             // Arrange.
-            m_TempFiles = new TempFileWriter[]
-            {
-                new TempFileWriter(".shp", ShpFiles.Read("UnifiedChecksMaterial")),
-                new TempFileWriter(".dbf", DbfFiles.Read("UnifiedChecksMaterial")),
-            };
+            using var tempShp = new TempFileWriter(".shp", "UnifiedChecksMaterial");
+            using var tempDbf = new TempFileWriter(".dbf", "UnifiedChecksMaterial");
 
             var expectedTriangle = new Polygon(new LinearRing(new Coordinate[]
                     {
@@ -510,22 +490,22 @@ namespace NetTopologySuite.IO.Tests.ShapeFile.Extended
 
             string expectedShapeMetadata = "Rectangle";
 
-            m_shapeDataReader = new ShapeDataReader(m_TempFiles[0].Path);
+            var options = new ShapefileReaderOptions()
+            {
+                MbrFilter = boundsWithWholeTriangle,
+                MbrFilterOption = MbrFilterOption.FilterByExtent
+            };
 
             // Act.
-            var results = m_shapeDataReader.ReadByMBRFilter(boundsWithWholeTriangle);
+            using var shapefileReader = Shapefile.OpenRead(tempShp.Path, options);
+            var result = shapefileReader.Single();
 
             // Assert.
-            Assert.IsNotNull(results);
-
-            var result = results.Single();
-
             Assert.IsNotNull(result);
-            Assert.IsInstanceOf<ShapefileFeature>(result);
-            Assert.AreEqual(((ShapefileFeature)result).FeatureId, 0);
             Assert.IsNotNull(result.Attributes);
 
-            HelperMethods.AssertPolygonsEqual(result.Geometry as Polygon, expectedTriangle);
+            Polygon resultPolygon = GetPolygon(result.Geometry);
+            HelperMethods.AssertPolygonsEqual(resultPolygon, expectedTriangle);
 
             object shapeNameData = result.Attributes["ShapeName"];
             Assert.IsInstanceOf<string>(shapeNameData);
@@ -539,16 +519,16 @@ namespace NetTopologySuite.IO.Tests.ShapeFile.Extended
             var boundsWithWholeTriangle = new Envelope(-1.17459, -1.00231, -1.09803, -1.5);
 
             // Arrange.
-            m_TempFiles = new TempFileWriter[]
+            using var tempShp = new TempFileWriter(".shp", "UnifiedChecksMaterial");
+            using var tempDbf = new TempFileWriter(".dbf", "UnifiedChecksMaterial");
+
+            var options = new ShapefileReaderOptions()
             {
-                new TempFileWriter(".shp", ShpFiles.Read("UnifiedChecksMaterial")),
-                new TempFileWriter(".dbf", DbfFiles.Read("UnifiedChecksMaterial")),
+                MbrFilter = boundsWithWholeTriangle
             };
 
-            m_shapeDataReader = new ShapeDataReader(m_TempFiles[0].Path);
-
             // Act.
-            var results = m_shapeDataReader.ReadByMBRFilter(boundsWithWholeTriangle);
+            var results = Shapefile.ReadAllFeatures(tempShp.Path, options);
 
             // Assert.
             Assert.IsNotNull(results);
@@ -556,21 +536,22 @@ namespace NetTopologySuite.IO.Tests.ShapeFile.Extended
         }
 
         [Test]
-        public void ReadByGeoFilter_ReadWithNoShapeInBoundsAndFlagSetToTrue_ShouldReturnEmptyEnumerable()
+        public void ReadByGeoFilter_ReadWithNoShapeInBoundsAndFilterByGeometryOption_ShouldReturnEmptyEnumerable()
         {
             var boundsWithWholeTriangle = new Envelope(-1.17459, -1.00231, -1.09803, -1.5);
 
             // Arrange.
-            m_TempFiles = new TempFileWriter[]
+            using var tempShp = new TempFileWriter(".shp", "UnifiedChecksMaterial");
+            using var tempDbf = new TempFileWriter(".dbf", "UnifiedChecksMaterial");
+
+            var options = new ShapefileReaderOptions()
             {
-                new TempFileWriter(".shp", ShpFiles.Read("UnifiedChecksMaterial")),
-                new TempFileWriter(".dbf", DbfFiles.Read("UnifiedChecksMaterial")),
+                MbrFilter = boundsWithWholeTriangle,
+                MbrFilterOption = MbrFilterOption.FilterByGeometry
             };
 
-            m_shapeDataReader = new ShapeDataReader(m_TempFiles[0].Path);
-
             // Act.
-            var results = m_shapeDataReader.ReadByMBRFilter(boundsWithWholeTriangle, true);
+            var results = Shapefile.ReadAllFeatures(tempShp.Path, options);
 
             // Assert.
             Assert.IsNotNull(results);
@@ -583,25 +564,22 @@ namespace NetTopologySuite.IO.Tests.ShapeFile.Extended
             var boundsWithWholeTriangle = new Envelope(-1.17459, -1.00231, -1.09803, -0.80861);
 
             // Arrange.
-            m_TempFiles = new TempFileWriter[]
+            using var tempShp = new TempFileWriter(".shp", "UnifiedChecksMaterial");
+            using var tempDbf = new TempFileWriter(".dbf", "UnifiedChecksMaterial");
+
+            var options = new ShapefileReaderOptions()
             {
-                new TempFileWriter(".shp", ShpFiles.Read("UnifiedChecksMaterial")),
-                new TempFileWriter(".dbf", DbfFiles.Read("UnifiedChecksMaterial")),
+                MbrFilter = boundsWithWholeTriangle
             };
 
-            m_shapeDataReader = new ShapeDataReader(m_TempFiles[0].Path);
-
             // Act.
-            var results = m_shapeDataReader.ReadByMBRFilter(boundsWithWholeTriangle);
-
-            // Assert.
-            Assert.IsNotNull(results);
-            var result = results.Single();
+            using var shapefileReader = Shapefile.OpenRead(tempShp.Path, options);
+            var result = shapefileReader.Single();
 
             // Dispose of the reader object.
-            m_shapeDataReader.Dispose();
+            shapefileReader.Dispose();
 
-            // Try reading data.
+            // Assert.
             Assert.IsNotNull(result.Attributes);
         }
 
@@ -611,46 +589,32 @@ namespace NetTopologySuite.IO.Tests.ShapeFile.Extended
             var boundsWithWholeTriangle = new Envelope(-1.17459, -1.00231, -1.09803, -0.80861);
 
             // Arrange.
-            m_TempFiles = new TempFileWriter[]
+            using var tempShp = new TempFileWriter(".shp", "UnifiedChecksMaterial");
+            using var tempDbf = new TempFileWriter(".dbf", "UnifiedChecksMaterial");
+
+            var options = new ShapefileReaderOptions()
             {
-                new TempFileWriter(".shp", ShpFiles.Read("UnifiedChecksMaterial")),
-                new TempFileWriter(".dbf", DbfFiles.Read("UnifiedChecksMaterial")),
+                MbrFilter = boundsWithWholeTriangle
             };
 
-            m_shapeDataReader = new ShapeDataReader(m_TempFiles[0].Path);
-
             // Act.
-            var results = m_shapeDataReader.ReadByMBRFilter(boundsWithWholeTriangle);
+            using var shapefileReader = Shapefile.OpenRead(tempShp.Path, options);
+            var result = shapefileReader.Single();
+            shapefileReader.Dispose();
 
             // Assert.
-            Assert.IsNotNull(results);
-            var result = results.Single();
-
-            // Dispose of the reader object.
-            m_shapeDataReader.Dispose();
-
-            // Try reading data.
             Assert.IsNotNull(result.Geometry);
         }
 
-        [TearDown]
-        public void TestCleanup()
+        private Polygon GetPolygon(Geometry geometry)
         {
-            if (m_shapeDataReader != null)
-            {
-                m_shapeDataReader.Dispose();
-                m_shapeDataReader = null;
-            }
+            var multiPolygon = geometry as MultiPolygon;
+            Assert.IsNotNull(multiPolygon);
+            Assert.AreEqual(geometry.NumGeometries, 1);
 
-            if (m_TempFiles != null)
-            {
-                foreach (var tempFile in m_TempFiles)
-                {
-                    tempFile.Dispose();
-                }
-
-                m_TempFiles = null;
-            }
+            var polygon = multiPolygon.GetGeometryN(0) as Polygon;
+            Assert.IsNotNull(polygon);
+            return polygon;
         }
     }
 }
