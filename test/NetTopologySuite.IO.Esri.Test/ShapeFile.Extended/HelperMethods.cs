@@ -37,6 +37,19 @@ namespace NetTopologySuite.IO.Tests.ShapeFile.Extended
             }
         }
 
+        public static void AssertPolygonsEqual(MultiPolygon multiPoly1, Polygon poly2)
+        {
+            if (multiPoly1.IsEmpty && poly2.IsEmpty)
+            {
+                return;
+            }
+
+            Assert.AreEqual(multiPoly1.NumGeometries, 1);
+            var poly1 = multiPoly1.GetGeometryN(0) as Polygon;
+            Assert.IsNotNull(poly1);
+            AssertPolygonsEqual(poly1, poly2);
+        }
+
         public static void AssertCoordinatesEqual(Coordinate coord1, Coordinate coord2)
         {
             AssertDoubleValuesEqual(coord1.X, coord2.X);
