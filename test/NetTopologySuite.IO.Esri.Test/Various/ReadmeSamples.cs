@@ -26,30 +26,23 @@ namespace NetTopologySuite.IO.Esri.Test.Various
         [Test]
         public void DbfReader()
         {
-            using (var dbf = new DbfReader(dbfPath))
+            using var dbf = new DbfReader(dbfPath);
+            foreach (var record in dbf)
             {
-                foreach (var record in dbf)
+                foreach (var fieldName in record.GetNames())
                 {
-                    var fieldNames = record.Keys;
-                    foreach (var fieldName in fieldNames)
-                    {
-                        Console.WriteLine($"{fieldName,10} {record[fieldName]}");
-                    }
-                    Console.WriteLine();
+                    Console.WriteLine($"{fieldName,10} {record[fieldName]}");
                 }
+                Console.WriteLine();
             }
         }
 
         [Test]
         public void ShpReader()
         {
-            using (var shpStream = File.OpenRead(shpPath))
-            using (var shp = new ShpPointReader(shpStream))
+            foreach (var geometry in Shapefile.ReadAllGeometries(shpPath))
             {
-                while (shp.Read())
-                {
-                    Console.WriteLine(shp.Geometry);
-                }
+                Console.WriteLine(geometry);
             }
         }
 
@@ -75,24 +68,27 @@ namespace NetTopologySuite.IO.Esri.Test.Various
             var features = new List<Feature>();
             for (int i = 1; i < 5; i++)
             {
-                var lineCoords = new List<CoordinateZ>();
-                lineCoords.Add(new CoordinateZ(i, i + 1, i));
-                lineCoords.Add(new CoordinateZ(i, i, i));
-                lineCoords.Add(new CoordinateZ(i + 1, i, i));
+                var lineCoords = new List<CoordinateZ>
+                {
+                    new CoordinateZ(i, i + 1, i),
+                    new CoordinateZ(i, i, i),
+                    new CoordinateZ(i + 1, i, i)
+                };
                 var line = new LineString(lineCoords.ToArray());
                 var mline = new MultiLineString(new LineString[] { line });
 
-                var attributes = new AttributesTable();
-                attributes.Add("date", new DateTime(2000, 1, i + 1));
-                attributes.Add("float", i * 0.1);
-                attributes.Add("int", i);
-                attributes.Add("logical", i % 2 == 0);
-                attributes.Add("text", i.ToString("0.00"));
+                var attributes = new AttributesTable
+                {
+                    { "date", new DateTime(2000, 1, i + 1) },
+                    { "float", i * 0.1 },
+                    { "int", i },
+                    { "logical", i % 2 == 0 },
+                    { "text", i.ToString("0.00") }
+                };
 
                 var feature = new Feature(mline, attributes);
                 features.Add(feature);
             }
-
             Shapefile.WriteAllFeatures(features, shpPath);
 
             TestShapefiles.DeleteShp(shpPath);
