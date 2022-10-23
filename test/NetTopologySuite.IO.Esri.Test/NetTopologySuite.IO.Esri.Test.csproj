@@ -17,15 +17,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Remove="ShapeFile.Extended\**" />
-    <Compile Remove="Various\**" />
-    <EmbeddedResource Remove="ShapeFile.Extended\**" />
-    <EmbeddedResource Remove="Various\**" />
-    <None Remove="ShapeFile.Extended\**" />
-    <None Remove="Various\**" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="QuickGraph" Version="3.6.61119.7" NoWarn="NU1701" />
     <PackageReference Include="System.Text.Encoding.CodePages" Version="6.0.0" />
   </ItemGroup>
