@@ -12,6 +12,18 @@ namespace NetTopologySuite.IO.Esri.Test.Geometries
     [TestFixture]
     public class NestedPolygonsTest
     {
+        private string Wkt = @"
+            MULTIPOLYGON(
+                (
+                    (1 9, 9 9, 9 1, 1 1, 1 9),
+                    (2 8, 2 2, 8 2, 8 8, 2 8)
+                ),
+                (
+                    (3 7, 7 7, 7 3, 3 3, 3 7),
+                    (4 6, 4 4, 6 4, 6 6, 4 6)
+                )
+            )";
+
         [Test]
         public void WriteNestedPolygons()
         {
