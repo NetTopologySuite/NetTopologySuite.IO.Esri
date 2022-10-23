@@ -21,7 +21,7 @@ namespace NetTopologySuite.IO.Esri.Test.Various
         public void SetUp()
         {
             // Set current dir to shapefiles dir
-            Environment.CurrentDirectory = CommonHelpers.TestShapefilesDirectory;
+            Environment.CurrentDirectory = TestShapefiles.Directory;
         }
 
         /// <summary>
@@ -64,22 +64,22 @@ namespace NetTopologySuite.IO.Esri.Test.Various
         {
             //int count = 0;
             var geoms = new List<Geometry>();
-            using (var reader = new ShapefileDataReader(fileName, GeometryFactory.Floating))
+            var options = new ShapefileReaderOptions() { Factory = GeometryFactory.Floating };
+
+            using var reader = Shapefile.OpenRead(fileName,  options);
+            while (reader.Read())
             {
-                while (reader.Read())
+                var current = reader.Geometry;
+                if (!current.IsValid)
                 {
-                    var current = reader.Geometry;
-                    if (!current.IsValid)
-                    {
-                        Debug.WriteLine("Imvalid geometry found: " + current);
-                        continue;
-                    }
-                    geoms.Add(current);
-                    //if (result == null)
-                    //    result = current;
-                    //else result = result.Union(current);
-                    //Debug.WriteLine("Iteration => " + ++count);
+                    Debug.WriteLine("Imvalid geometry found: " + current);
+                    continue;
                 }
+                geoms.Add(current);
+                //if (result == null)
+                //    result = current;
+                //else result = result.Union(current);
+                //Debug.WriteLine("Iteration => " + ++count);
             }
             var result = UnaryUnionOp.Union(geoms);
             var write = new WKTWriter { Formatted = true, MaxCoordinatesPerLine = 3, Tab = 2 };
