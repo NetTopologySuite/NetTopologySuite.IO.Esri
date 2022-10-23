@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using NetTopologySuite.Features;
 using NetTopologySuite.Geometries;
 using NUnit.Framework;
@@ -83,7 +84,7 @@ namespace NetTopologySuite.IO.Esri.Test.Various
         /// <param name="fileName">The name of the shape file we want to load</param>
         /// <param name="src"></param>
         /// <param name="dst"></param>
-        public LineString TestGraphBuilder2WithSampleGeometries(string fileName, Coordinate src, Coordinate dst)
+        public static LineString TestGraphBuilder2WithSampleGeometries(string fileName, Coordinate src, Coordinate dst)
         {
             var geometries = Shapefile.ReadAllGeometries(fileName);
             var edges = new GeometryCollection(geometries);
@@ -96,13 +97,16 @@ namespace NetTopologySuite.IO.Esri.Test.Various
         /// <param name="edges"></param>
         /// <param name="src"></param>
         /// <param name="dst"></param>
-        public LineString TestGraphBuilder2WithSampleGeometries(GeometryCollection edges, Coordinate src,
-                                                                 Coordinate dst)
+        public static LineString TestGraphBuilder2WithSampleGeometries(GeometryCollection edges, Coordinate src, Coordinate dst)
         {
             var builder = new GraphBuilder2(true);
-            foreach (MultiLineString edge in edges.Geometries)
-                foreach (LineString line in edge.Geometries)
+            foreach (var edge in edges.Geometries.Cast<MultiLineString>())
+            {
+                foreach (var line in edge.Geometries.Cast<LineString>())
+                {
                     builder.Add(line);
+                }
+            }
             builder.Initialize();
 
             return builder.Perform(src, dst);
@@ -114,7 +118,7 @@ namespace NetTopologySuite.IO.Esri.Test.Various
             Environment.CurrentDirectory = TestShapefiles.Directory;
         }
 
-        private void SaveGraphResult(Geometry path)
+        private static void SaveGraphResult(Geometry path)
         {
             if (path == null)
                 throw new ArgumentNullException(nameof(path));
@@ -164,7 +168,7 @@ namespace NetTopologySuite.IO.Esri.Test.Various
             Assert.AreEqual(4844539d, endPoint.Y);
 
             var builder = new GraphBuilder2(true);
-            foreach (MultiLineString mlstr in edges.Geometries)
+            foreach (MultiLineString mlstr in edges.Geometries.Cast<MultiLineString>())
             {
                 Assert.AreEqual(1, mlstr.NumGeometries);
                 var str = mlstr.GetGeometryN(0) as LineString;
@@ -203,7 +207,7 @@ namespace NetTopologySuite.IO.Esri.Test.Various
             Assert.IsNotNull(endls);
 
             var builder = new GraphBuilder2(true);
-            foreach (MultiLineString mlstr in edges.Geometries)
+            foreach (var mlstr in edges.Geometries.Cast<MultiLineString>())
             {
                 Assert.AreEqual(1, mlstr.NumGeometries);
                 var str = mlstr.GetGeometryN(0) as LineString;
@@ -236,7 +240,7 @@ namespace NetTopologySuite.IO.Esri.Test.Various
             bool startFound = false;
             bool endFound = false;
             var builder = new GraphBuilder2(true);
-            foreach (MultiLineString mlstr in edges.Geometries)
+            foreach (var mlstr in edges.Geometries.Cast<MultiLineString>())
             {
                 Assert.AreEqual(1, mlstr.NumGeometries);
                 var str = mlstr.GetGeometryN(0) as LineString;
