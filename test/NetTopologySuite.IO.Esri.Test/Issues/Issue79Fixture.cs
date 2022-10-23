@@ -20,7 +20,7 @@ namespace NetTopologySuite.IO.Esri.Test.Issues
             Assert.Throws(typeof(ShapefileException), () => {
                 using var shpReader = Shapefile.OpenRead(filePath);
 
-                // TODO: Changed test logic.
+                // TODO: Changed original test logic.
 
                 // This will not be executed.
                 // ShpNullReader and ShpNullWriter can be implemented

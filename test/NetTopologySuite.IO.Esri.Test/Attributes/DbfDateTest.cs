@@ -37,7 +37,7 @@ namespace NetTopologySuite.IO.Esri.Test.Attributes
             Assert.IsNotNull(record);
             Assert.AreEqual(2, record.Count);
 
-            foreach (object value in record.Values)
+            foreach (object value in record.GetValues())
                 Assert.IsNotNull(value);
 
             var dateFieldName = reader.Fields[1].Name;

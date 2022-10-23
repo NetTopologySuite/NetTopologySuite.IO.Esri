@@ -137,7 +137,7 @@ namespace NetTopologySuite.IO.Esri.Test.Readers
                 File.Delete(shapepath);
             var attributes = new AttributesTable();
             attributes.Add("attr_name", "attr_value");
-            var features = geometries.Select(g => new Features.Feature(g, attributes));
+            var features = geometries.Select(g => new Feature(g, attributes));
             Shapefile.WriteAllFeatures(features, shapepath);
         }
 

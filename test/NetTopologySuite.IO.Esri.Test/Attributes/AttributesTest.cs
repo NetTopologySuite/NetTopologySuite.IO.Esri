@@ -77,9 +77,9 @@ namespace NetTopologySuite.IO.Esri.Test.Attributes
 
             foreach (var record in reader)
             {
-                foreach (var kv in record)
+                foreach (var name in record.GetNames())
                 {
-                    Console.WriteLine(kv.Key + ": " + kv.Value);
+                    Console.WriteLine(name + ": " + record[name]);
                 }
             }
             Console.WriteLine();
