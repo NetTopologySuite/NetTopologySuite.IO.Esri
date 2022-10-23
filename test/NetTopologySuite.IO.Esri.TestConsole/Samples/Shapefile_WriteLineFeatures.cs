@@ -13,15 +13,15 @@ namespace NetTopologySuite.IO.Esri.TestConsole.Tests
         {
             var shpPath = GetTempFilePath("abcd1.shp");
 
-
-            var dateField = DbfField.Create("date", typeof(DateTime));
-            var floatField = DbfField.Create("float", typeof(double));
-            var intField = DbfField.Create("int", typeof(int));
-            var LogicalField = DbfField.Create("logical", typeof(bool));
-            var textField = DbfField.Create("text", typeof(string));
+            var options = new ShapefileWriterOptions(ShapeType.PolyLine);
+            options.AddField("date", typeof(DateTime));
+            options.AddField("float", typeof(double));
+            options.AddField("int", typeof(int));
+            options.AddField("logical", typeof(bool));
+            options.AddField("text", typeof(string));
 
             var features = GetFeatures();
-            using (var shp = new ShapefilePolyLineWriter(shpPath, ShapeType.PolyLine, dateField, floatField, intField, LogicalField, textField))
+            using (var shp = new ShapefilePolyLineWriter(shpPath, options))
             {
                 shp.Write(features);
                 Console.WriteLine($"{features.Count} features was written.");

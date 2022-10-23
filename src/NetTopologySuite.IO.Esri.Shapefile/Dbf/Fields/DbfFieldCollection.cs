@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NetTopologySuite.Features;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -65,8 +66,8 @@ namespace NetTopologySuite.IO.Esri.Dbf.Fields
         /// <summary>
         /// Reads current fields values.
         /// </summary>
-        /// <returns>Array of field values.</returns>
-        public IReadOnlyDictionary<string, object> GetValues()
+        /// <returns>Dictionary containging field names and values.</returns>
+        public IReadOnlyDictionary<string, object> ToDictionary()
         {
             var values = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
             foreach (var field in Fields)
@@ -77,17 +78,40 @@ namespace NetTopologySuite.IO.Esri.Dbf.Fields
         }
 
         /// <summary>
+        /// Reads current fields values.
+        /// </summary>
+        /// <returns>Dictionary containging field names and values.</returns>
+        public IAttributesTable ToAttributesTable()
+        {
+            var attributes = new AttributesTable();
+            foreach (var field in Fields)
+            {
+                attributes.Add(field.Name, field.Value);
+            }
+            return attributes;
+        }
+
+        /// <summary>
+        /// Reads current fields values.
+        /// </summary>
+        /// <returns>Array of field values.</returns>
+        public object[] GetValues()
+        {
+            var valueArray = new object[Count];
+            for (int i = 0; i < Count; i++)
+            {
+                valueArray[i] = Fields[i].Value;
+            }
+            return valueArray;
+        }
+
+        /// <summary>
         /// Sets current filed values.
         /// </summary>
         /// <param name="values"></param>
         public void SetValues(IReadOnlyDictionary<string, object> values)
         {
-            if (values == null)
-                throw new ArgumentNullException("dBASE record must contain values.", nameof(values));
-
-            if (values.Count < Fields.Count)
-                throw new ArgumentNullException("Invalid dBASE record value count: " + values.Count + ". Expected: " + Fields.Count, nameof(values));
-
+            CheckValuesCount(values);
             foreach (var field in Fields)
             {
                 if (values.TryGetValue(field.Name, out var value))
@@ -99,6 +123,28 @@ namespace NetTopologySuite.IO.Esri.Dbf.Fields
                     throw new ArgumentException("Required dBASE attribute value is missing for '" + field.Name + "' field.");
                 }
             }
+        }
+
+        /// <summary>
+        /// Sets current filed values.
+        /// </summary>
+        /// <param name="values"></param>
+        public void SetValues(IReadOnlyList<object> values)
+        {
+            CheckValuesCount(values);
+            for (int i = 0; i < Count; i++)
+            {
+                Fields[i].Value = values[i];
+            }
+        }
+
+        private void CheckValuesCount<T>(IReadOnlyCollection<T> values)
+        {
+            if (values == null)
+                throw new ArgumentNullException("dBASE record must contain values.", nameof(values));
+
+            if (values.Count < Fields.Count)
+                throw new ArgumentNullException("Invalid dBASE record value count: " + values.Count + ". Expected: " + Fields.Count, nameof(values));
         }
     }
 }

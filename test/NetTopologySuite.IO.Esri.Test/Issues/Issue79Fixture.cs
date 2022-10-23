@@ -14,15 +14,23 @@ namespace NetTopologySuite.IO.Esri.Test.Issues
         [Test]
         public void TestReadEmptyShapefile()
         {
-            string filePath = Path.Combine(
-                CommonHelpers.TestShapefilesDirectory,
-                "__emptyShapefile.shp");
+            string filePath = TestShapefiles.PathTo("__emptyShapefile.shp");
             Assert.That(File.Exists(filePath), Is.True);
-            using var shpReader = new ShapefileDataReader(
-                Path.GetFileNameWithoutExtension(filePath),
-                GeometryFactory.Default);
-            bool success = shpReader.Read();
-            Assert.That(success, Is.False);
+
+            Assert.Throws(typeof(ShapefileException), () => {
+                using var shpReader = Shapefile.OpenRead(filePath);
+
+                // TODO: Changed original test logic.
+
+                // This will not be executed.
+                // ShpNullReader and ShpNullWriter can be implemented
+                // but what's the point for having Shapefile without geometries at all?
+                // QGIS reads this Shapefile as a table(!).
+                bool success = shpReader.Read(out var deleted);
+                Assert.That(success, Is.False);
+
+                // Empty Shapefiles with specified ShapeType (Point, Polygon, ...) can be read without any problem.
+            });
         }
     }
 }

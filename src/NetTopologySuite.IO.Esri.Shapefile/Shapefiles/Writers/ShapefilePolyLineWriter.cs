@@ -14,20 +14,14 @@ namespace NetTopologySuite.IO.Esri.Shapefiles.Writers
     public class ShapefilePolyLineWriter : ShapefileWriter<MultiLineString>
     {
         /// <inheritdoc/>
-        public ShapefilePolyLineWriter(Stream shpStream, Stream shxStream, Stream dbfStream, ShapeType type, IReadOnlyList<DbfField> fields, Encoding encoding = null)
-            : base(shpStream, shxStream, dbfStream, type, fields, encoding)
+        public ShapefilePolyLineWriter(Stream shpStream, Stream shxStream, Stream dbfStream, ShapefileWriterOptions options)
+            : base(shpStream, shxStream, dbfStream, options)
         { }
 
         /// <inheritdoc/>
-        public ShapefilePolyLineWriter(string shpPath, ShapeType type, IReadOnlyList<DbfField> fields, Encoding encoding = null, string projection = null)
-            : base(shpPath, type, fields, encoding, projection)
+        public ShapefilePolyLineWriter(string shpPath, ShapefileWriterOptions options)
+            : base(shpPath, options)
         { }
-
-        /// <inheritdoc/>
-        public ShapefilePolyLineWriter(string shpPath, ShapeType type, params DbfField[] fields)
-            : base(shpPath, type, fields)
-        {
-        }
 
         internal override ShpWriter<MultiLineString> CreateShpWriter(Stream shpStream, Stream shxStream)
         {

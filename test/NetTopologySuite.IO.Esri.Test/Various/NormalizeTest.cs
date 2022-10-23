@@ -1,4 +1,5 @@
-﻿using NetTopologySuite.Geometries;
+﻿using System.Linq;
+using NetTopologySuite.Geometries;
 using NUnit.Framework;
 
 namespace NetTopologySuite.IO.Esri.Test.Various
@@ -31,12 +32,13 @@ namespace NetTopologySuite.IO.Esri.Test.Various
             this.Factory = new GeometryFactory();
             this.Reader = new WKTReader();
 
+            // NOTE: Shell is created with not correct order of coordinates (should be clockwise order)
             _shell = Factory.CreateLinearRing(new Coordinate[] {    new Coordinate(100,100),
                                                                     new Coordinate(200,100),
                                                                     new Coordinate(200,200),
                                                                     new Coordinate(100,200),
                                                                     new Coordinate(100,100), });
-            // NOTE: Hole is created with not correct order for holes
+
             _hole = Factory.CreateLinearRing(new Coordinate[] {      new Coordinate(120,120),
                                                                     new Coordinate(180,120),
                                                                     new Coordinate(180,180),
@@ -51,13 +53,20 @@ namespace NetTopologySuite.IO.Esri.Test.Various
         [Test]
         public void NotNormalizedGDBOperation()
         {
-            byte[] bytes = new GDBWriter().Write(_polygon);
-            var test = new GDBReader().Read(bytes);
+            var shpPath = TestShapefiles.GetTempShpPath();
+            using (var shpWriter = Shapefile.OpenWrite(shpPath, new(ShapeType.Polygon)))
+            {
+                shpWriter.Geometry = new MultiPolygon(new[] { _polygon });
+                shpWriter.Write();
+            }
+            var firstGeometry = Shapefile.ReadAllGeometries(shpPath).First();
+            var test = firstGeometry.GetGeometryN(0) as Polygon;
+            Assert.IsNotNull(test);
 
-            //This is no longer true
-            //Assert.IsNull(test);
-            Assert.IsTrue(test.IsEmpty);
             Assert.IsTrue(test is IPolygonal);
+            Assert.IsFalse(_polygon.EqualsExact(test)); // SHP shells and holes are always written with correct coordinate order
+
+
         }
 
         /// <summary>
@@ -68,10 +77,18 @@ namespace NetTopologySuite.IO.Esri.Test.Various
         {
             _polygon.Normalize();
 
-            byte[] bytes = new GDBWriter().Write(_polygon);
-            var test = new GDBReader().Read(bytes);
+            var shpPath = TestShapefiles.GetTempShpPath();
+            using (var shpWriter = Shapefile.OpenWrite(shpPath, new(ShapeType.Polygon)))
+            {
+                shpWriter.Geometry = new MultiPolygon(new[] { _polygon });
+                shpWriter.Write();
+            }
+            var firstGeometry = Shapefile.ReadAllGeometries(shpPath).First();
+            var test = firstGeometry.GetGeometryN(0) as Polygon;
+            Assert.IsNotNull(test);
 
             Assert.IsNotNull(test);
+            Assert.IsTrue(test is IPolygonal);
             Assert.IsTrue(_polygon.EqualsExact(test));
         }
     }

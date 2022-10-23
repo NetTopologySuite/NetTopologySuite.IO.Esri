@@ -11,18 +11,17 @@ namespace NetTopologySuite.IO.Esri.Test.Issues
         public void TestIssue161()
         {
             //SETUP
-            string filePath = Path.Combine(CommonHelpers.TestShapefilesDirectory, "LSOA_2011_EW_BGC.shp");
+            // https://webarchive.nationalarchives.gov.uk/ukgwa/20160110200248/http://www.ons.gov.uk/ons/guide-method/geography/products/census/spatial/2011/index.html
+            string filePath = TestShapefiles.PathTo("LSOA_2011_EW_BGC.shp");
             if (!File.Exists(filePath)) Assert.Ignore("File '{0}' not present", filePath);
 
             //ATTEMPT
-            using (var reader = new ShapefileDataReader(filePath, GeometryFactory.Default))
+            using (var reader = Shapefile.OpenRead(filePath))
             {
-                var header = reader.ShapeHeader;
-
-                while (reader.Read())//&& count++ < 3)
+                while (reader.Read(out bool deleted))//&& count++ < 3)
                 {
                     object val;
-                    Assert.DoesNotThrow(() => val = reader["LSOA11CD"]);
+                    Assert.DoesNotThrow(() => val = reader.Fields["LSOA11CD"].Value);
                 }
             }
         }

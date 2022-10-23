@@ -2,7 +2,6 @@
 using NetTopologySuite.Algorithm.Match;
 using NetTopologySuite.Features;
 using NetTopologySuite.Geometries.Implementation;
-using NetTopologySuite.IO.Streams;
 using NUnit.Framework;
 using System;
 using System.Collections.ObjectModel;
@@ -24,7 +23,7 @@ namespace NetTopologySuite.IO.Esri.Test.Writers
         public ShapeFileDataWriterTest()
         {
             // Set current dir to shapefiles dir
-            Environment.CurrentDirectory = CommonHelpers.TestShapefilesDirectory;
+            Environment.CurrentDirectory = TestShapefiles.Directory;
 
             Factory = new GeometryFactory();
             Reader = new WKTReader();
@@ -44,8 +43,8 @@ namespace NetTopologySuite.IO.Esri.Test.Writers
             if (File.Exists(emptyDbf))
                 File.Delete(emptyDbf);
 
-            var writer = new ShapefileDataWriter(filename, Factory);
-            writer.Header = new DbaseFileHeader();
+            var options = new ShapefileWriterOptions(ShapeType.Point);
+            using var writer = Shapefile.OpenWrite(filename, options);
             writer.Write(new IFeature[0]);
 
             Assert.That(File.Exists(emptyShp), Is.True);
@@ -90,20 +89,15 @@ namespace NetTopologySuite.IO.Esri.Test.Writers
             var feature = new Feature(Factory.CreateMultiLineString(new[] { lineString }), attributes);
             var features = new Feature[1];
             features[0] = feature;
-
-            var shpWriter = new ShapefileDataWriter("ZMtest", Factory)
-            {
-                Header = ShapefileDataWriter.GetHeader(features[0], features.Length)
-            };
-            shpWriter.Write(features);
+            Shapefile.WriteAllFeatures(features, "ZMtest");
 
             // Now let's read the file and verify that we got Z and M back
             var factory = new GeometryFactory(DotSpatialAffineCoordinateSequenceFactory.Instance);
 
-            using (var reader = new ShapefileDataReader("ZMtest", factory))
+            using (var reader = Shapefile.OpenRead("ZMtest"))
             {
                 reader.Read();
-                var geom = reader.Geometry;
+                var geom = (MultiLineString)reader.Geometry;
 
                 for (int i = 0; i < 3; i++)
                 {
@@ -113,7 +107,7 @@ namespace NetTopologySuite.IO.Esri.Test.Writers
 
                 if (testM)
                 {
-                    sequence = ((LineString)geom).CoordinateSequence;
+                    sequence = ((LineString)geom[0]).CoordinateSequence;
                     for (int i = 0; i < 3; i++)
                     {
                         Assert.AreEqual(sequence.GetOrdinate(i, Ordinate.M), 11 + i);
@@ -121,7 +115,7 @@ namespace NetTopologySuite.IO.Esri.Test.Writers
                 }
 
                 // Run a simple attribute test too
-                string v = reader.GetString(1);
+                string v = reader.Fields["FOO"].Value?.ToString();
                 Assert.AreEqual(v, "Trond");
             }
         }
@@ -133,9 +127,7 @@ namespace NetTopologySuite.IO.Esri.Test.Writers
             var p2 = Factory.CreatePoint(new Coordinate(200, 200));
 
             var coll = new GeometryCollection(new Geometry[] { p1, p2, });
-            ShapefileWriter.WriteGeometryCollection(@"test_arcview", coll);
-
-            // Not read by ArcView!!!
+            WriteGeometryCollection(@"test_arcview", coll);
         }
 
         [Test]
@@ -182,6 +174,19 @@ namespace NetTopologySuite.IO.Esri.Test.Writers
             DoTest(geomsWrite, Ordinates.XYZM, false);
         }
 
+        private static void WriteGeometryCollection(string shpPath, GeometryCollection geomColl)
+        {
+            var shapeType = Shapefile.GetShapeType(geomColl);
+            var options = new ShapefileWriterOptions(shapeType);
+            using var shp = Shapefile.OpenWrite(shpPath, options);
+
+            for (int i = 0; i < geomColl.Count; i++)
+            {
+                shp.Geometry = geomColl[i];
+                shp.Write();
+            }
+        }
+
         private static void DoTest(GeometryCollection geomsWrite, Ordinates ordinates, bool testGetOrdinate = true)
         {
             string fileName = string.Empty;
@@ -191,9 +196,8 @@ namespace NetTopologySuite.IO.Esri.Test.Writers
 
                 fileName = Path.GetTempFileName();
                 fileName = Path.ChangeExtension(fileName, "shp");
-                ShapefileWriter.WriteGeometryCollection(fileName, geomsWrite);
-                var reader = new ShapefileReader(fileName, ShapeFileShapeFactory.FactoryRead);
-                var geomsRead = reader.ReadAll();
+                WriteGeometryCollection(fileName, geomsWrite);
+                var geomsRead = new GeometryCollection(Shapefile.ReadAllGeometries(fileName));
 
                 // This tests x- and y- values
                 if (!geomsWrite.EqualsExact(geomsRead))
@@ -372,13 +376,7 @@ namespace NetTopologySuite.IO.Esri.Test.Writers
 
             private static Geometry CreateLineal(Ordinates ordinates, bool empty)
             {
-                switch (Rnd.Next(2))
-                {
-                    case 0:
-                        return CreateLineString(ordinates, empty);
-                    default:
-                        return CreateMultiLineString(ordinates, empty);
-                }
+                return CreateMultiLineString(ordinates, empty);
             }
 
             private static Geometry CreateLineString(Ordinates ordinates, bool empty)
@@ -417,8 +415,6 @@ namespace NetTopologySuite.IO.Esri.Test.Writers
 
             private static Geometry CreatePolygonal(Ordinates ordinates, bool empty)
             {
-                if (Rnd.Next(2) == 0)
-                    return CreatePolygon(ordinates, empty);
                 return CreateMultiPolygon(ordinates, empty);
             }
 
@@ -546,7 +542,16 @@ namespace NetTopologySuite.IO.Esri.Test.Writers
                         var polygons = new Polygon[numPolygons];
                         for (int i = 0; i < numPolygons; i++)
                             polygons[i] = (Polygon)CreatePolygon(ordinates, false);
-                        return Factory.BuildGeometry(new Collection<Geometry>(polygons)).Union();
+                        var union = Factory.BuildGeometry(new Collection<Geometry>(polygons)).Union();
+                        if (union.IsEmpty)
+                        {
+                            return MultiPolygon.Empty;
+                        }
+                        if (union is MultiPolygon multiPolygon)
+                        {
+                            return multiPolygon;
+                        }
+                        return new MultiPolygon(new Polygon[] { (Polygon)union });
 
                     case 1:
                         polygons = new Polygon[2];
@@ -599,12 +604,9 @@ namespace NetTopologySuite.IO.Esri.Test.Writers
             attrs.Add("Simulation name", "FOO");
 
             var features = new[] { new Feature(mls, attrs) };
-            ShapefileDataWriter shp_writer = null;
-            Assert.Throws<ArgumentException>(() => shp_writer =
-                new ShapefileDataWriter("invalid_line_string")
-                {
-                    Header = ShapefileDataWriter.GetHeader(features[0], features.Length)
-                });
+            Assert.Throws<ArgumentException>(
+                () => Shapefile.WriteAllFeatures(features, "invalid_field_name")
+            );
 
             //Assert.Throws<ArgumentException>(() => shp_writer.Write(features));
         }
@@ -620,11 +622,12 @@ namespace NetTopologySuite.IO.Esri.Test.Writers
             var geometries = factory.CreateGeometryCollection(arr);
 
             var shapeType = Shapefile.GetShapeType(geometries);
-            Assert.AreEqual(ShapeGeometryType.PointZM, shapeType);
+            Assert.AreEqual(ShapeType.PointZM, shapeType);
 
-            string tempPath = Path.GetTempFileName();
-            var sfw = new ShapefileWriter(Path.GetFileNameWithoutExtension(tempPath), shapeType);
-            Assert.Throws<ArgumentException>(() => sfw.Write(geometries));
+            string tempPath = TestShapefiles.GetTempShpPath();
+            Assert.Throws<InvalidCastException>(
+                () => WriteGeometryCollection(tempPath, geometries)
+            );
         }
 
         [Test/*, ExpectedException(typeof(ArgumentException))*/]
@@ -639,12 +642,12 @@ namespace NetTopologySuite.IO.Esri.Test.Writers
             var geometries = factory.CreateGeometryCollection(arr);
 
             var shapeType = Shapefile.GetShapeType(geometries);
-            Assert.AreEqual(ShapeGeometryType.MultiPointZM, shapeType);
+            Assert.AreEqual(ShapeType.MultiPointZM, shapeType);
 
-            string tempPath = Path.GetTempFileName();
-            var sfw = new ShapefileWriter(Path.GetFileNameWithoutExtension(tempPath), shapeType);
-            Assert.Throws<ArgumentException>(() => sfw.Write(geometries));
-
+            string tempPath = TestShapefiles.GetTempShpPath();
+            Assert.Throws<InvalidCastException>(
+                () => WriteGeometryCollection(tempPath, geometries)
+            );
         }
 
         [Test/*, ExpectedException(typeof(ArgumentException))*/]
@@ -664,11 +667,12 @@ namespace NetTopologySuite.IO.Esri.Test.Writers
             var geometries = factory.CreateGeometryCollection(arr);
 
             var shapeType = Shapefile.GetShapeType(geometries);
-            Assert.AreEqual(ShapeGeometryType.LineStringZM, shapeType);
+            Assert.AreEqual(ShapeType.PolyLineZM, shapeType);
 
-            string tempPath = Path.GetTempFileName();
-            var sfw = new ShapefileWriter(Path.GetFileNameWithoutExtension(tempPath), shapeType);
-            Assert.Throws<ArgumentException>(() => sfw.Write(geometries));
+            string tempPath = TestShapefiles.GetTempShpPath();
+            Assert.Throws<InvalidCastException>(
+                () => WriteGeometryCollection(tempPath, geometries)
+            );
         }
 
         [Test/*, ExpectedException(typeof(ArgumentException))*/]
@@ -690,12 +694,12 @@ namespace NetTopologySuite.IO.Esri.Test.Writers
             var geometries = factory.CreateGeometryCollection(arr);
 
             var shapeType = Shapefile.GetShapeType(geometries);
-            Assert.AreEqual(ShapeGeometryType.PolygonZM, shapeType);
+            Assert.AreEqual(ShapeType.PolygonZM, shapeType);
 
-            string tempPath = Path.GetTempFileName();
-            var sfw = new ShapefileWriter(Path.GetFileNameWithoutExtension(tempPath), shapeType);
-
-            Assert.Throws<ArgumentException>(() => sfw.Write(geometries));
+            string tempPath = TestShapefiles.GetTempShpPath();
+            Assert.Throws<InvalidCastException>(
+                () => WriteGeometryCollection(tempPath, geometries)
+            );
         }
 
         // ESRI spec says index file is mandatory, but we do allow writing a
@@ -703,6 +707,9 @@ namespace NetTopologySuite.IO.Esri.Test.Writers
         [Test]
         public void WriteShouldWorkWithoutIndexFileWhenRequested()
         {
+            // TODO: Remove no longer relevant test (Shapefile can be read without SHX file, but for compability reasons SHX file is always written)
+            // If one really requires not to have the SHX file then the SXH file must be deleted manually by using File.Delete().
+            /*
             var pt = GeometryFactory.Default.CreatePoint(new Coordinate(2, 3));
             var attributes = new AttributesTable { { "Foo", "Bar" } };
             Feature[] features = { new Feature(pt, attributes) };
@@ -727,6 +734,7 @@ namespace NetTopologySuite.IO.Esri.Test.Writers
             Assert.True(File.Exists(shpFilePath));
             Assert.True(File.Exists(dbfFilePath));
             Assert.False(File.Exists(shxFilePath));
+            */
         }
 
         private static Ordinate[] ToOrdinateArray(Ordinates ordinates)
@@ -759,20 +767,15 @@ namespace NetTopologySuite.IO.Esri.Test.Writers
             var points = Factory.CreateMultiPointFromCoords(coors);
             var feature = new Feature(points, attribs);
 
-            var filename = Path.ChangeExtension(Path.GetTempFileName(), ".shp");
-            var writer = new ShapefileDataWriter(filename, Factory)
-            {
-                Header = ShapefileDataWriter.GetHeader(feature, 1)
-            };
-            writer.Write(new[] { feature });
+            var filename = TestShapefiles.GetTempShpPath();
+            Shapefile.WriteAllFeatures(new[] { feature }, filename);
 
-            var reader = new ShapefileDataReader(filename, Factory);
+            using var reader = Shapefile.OpenRead(filename);
             while (reader.Read())
             {
                 Assert.IsNotNull(reader.Geometry);
                 Assert.IsInstanceOf<MultiPoint>(reader.Geometry);
-                Assert.AreEqual(1, reader.GetOrdinal("Id"));
-                Assert.AreEqual(10, reader.GetInt32(1));
+                Assert.AreEqual(10, reader.Fields["Id"].Value);
             }
         }
     }

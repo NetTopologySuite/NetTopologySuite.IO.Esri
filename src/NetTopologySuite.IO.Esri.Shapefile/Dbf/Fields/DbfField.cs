@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NetTopologySuite.Features;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -65,10 +66,14 @@ namespace NetTopologySuite.IO.Esri.Dbf.Fields
             */
 
             if (length < 1)
+            {
                 throw new ArgumentException($"Ivalid dBASE field length: {length}.", nameof(length));
+            }
 
             if (precision < 0)
-                precision = 0; // throw new ArgumentException($"Ivalid dBASE III field decimal places count: {precision}.", nameof(precision));
+            {
+                throw new ArgumentException($"Ivalid dBASE field precision: {precision}.", nameof(precision));
+            }
 
             Name = name;
             FieldType = type;
@@ -103,9 +108,14 @@ namespace NetTopologySuite.IO.Esri.Dbf.Fields
         /// </remarks>
         public abstract object Value { get; set; }
 
+        /// <summary>
+        /// Determines if the field currently does not contain any value.
+        /// </summary>
+        public virtual bool IsNull => Value == null;
 
 
-        internal static readonly IReadOnlyDictionary<string, object> EmptyFieldValues = new ReadOnlyDictionary<string, object>(new Dictionary<string, object>());
+
+        internal static readonly IAttributesTable EmptyFieldValues = new AttributesTable();
 
         /// <summary>
         /// Creates dBASE field determined using specified value. 
@@ -127,25 +137,28 @@ namespace NetTopologySuite.IO.Esri.Dbf.Fields
             if (type == typeof(DateTime) || type == typeof(DateTime?))
                 return new DbfDateField(name);
 
-            if (type == typeof(sbyte) || type == typeof(sbyte?) || type == typeof(byte) || type == typeof(byte?))
-                return new DbfNumericField(name, 4, 0);
+            if (type == typeof(sbyte) || type == typeof(sbyte?))
+                return new DbfNumericInt32Field(name);
+            if (type == typeof(byte) || type == typeof(byte?))
+                return new DbfNumericInt32Field(name);
+            if (type == typeof(short) || type == typeof(short?))
+                return new DbfNumericInt32Field(name);
+            if (type == typeof(ushort) || type == typeof(ushort?))
+                return new DbfNumericInt32Field(name);
+            if (type == typeof(int) || type == typeof(int?))
+                return new DbfNumericInt32Field(name);
+            if (type == typeof(uint) || type == typeof(uint?))
+                return new DbfNumericInt32Field(name);
 
-            if (type == typeof(short) || type == typeof(short?) || type == typeof(ushort) || type == typeof(ushort?))
-                return new DbfNumericField(name, 6, 0);
-
-            if (type == typeof(int) || type == typeof(int?) || type == typeof(uint) || type == typeof(uint?))
-                return new DbfNumericField(name, 11, 0);
-
-            if (type == typeof(long) || type == typeof(long?) || type == typeof(ulong) || type == typeof(ulong?))
-                return new DbfNumericField(name, DbfNumericField.MaxFieldLength, 0);
-
-            if (type == typeof(decimal) || type == typeof(decimal?))
-                return new DbfNumericField(name, DbfNumericField.MaxFieldLength, DbfNumericField.MaxFieldPrecision);
+            if (type == typeof(long) || type == typeof(long?))
+                return new DbfNumericInt64Field(name);
+            if (type == typeof(ulong) || type == typeof(ulong?))
+                return new DbfNumericInt64Field(name);
 
             if (type == typeof(double) || type == typeof(float) || type == typeof(double?) || type == typeof(float?))
                 return new DbfFloatField(name);
 
-            throw new ArgumentException($"Unsupported dBASE field value: {type} ({type.GetType().Name})");
+            throw new NotSupportedException($"Unsupported dBASE field type: {type.GetType().Name} ({type})");
         }
 
     }

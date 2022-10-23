@@ -1,6 +1,8 @@
-﻿using NetTopologySuite.Geometries;
+﻿using NetTopologySuite.Features;
+using NetTopologySuite.Geometries;
 using System;
 using System.IO;
+using System.Linq;
 
 namespace NetTopologySuite.IO.Esri.Test.Readers
 {
@@ -19,7 +21,7 @@ namespace NetTopologySuite.IO.Esri.Test.Readers
         public ShapeRead()
         {
             // Set current dir to shapefiles dir
-            Environment.CurrentDirectory = CommonHelpers.TestShapefilesDirectory;
+            Environment.CurrentDirectory = TestShapefiles.Directory;
 
             Factory = new GeometryFactory();
             Reader = new WKTReader();
@@ -124,17 +126,19 @@ namespace NetTopologySuite.IO.Esri.Test.Readers
             if (!File.Exists(shapepath))
                 throw new ArgumentException("File " + shapepath + " not found!");
 
-            var reader = new ShapefileReader(shapepath);
-            var geometries = reader.ReadAll();
-            return geometries;
+            var geometries = Shapefile.ReadAllGeometries(shapepath);
+            var factory = GeometryFactory.Default;
+            return factory.CreateGeometryCollection(geometries);
         }
 
         private static void WriteShape(GeometryCollection geometries, string shapepath)
         {
             if (File.Exists(shapepath))
                 File.Delete(shapepath);
-            var sfw = new ShapefileWriter(geometries.Factory);
-            ShapefileWriter.WriteGeometryCollection(Path.GetFileNameWithoutExtension(shapepath), geometries);
+            var attributes = new AttributesTable();
+            attributes.Add("attr_name", "attr_value");
+            var features = geometries.Select(g => new Feature(g, attributes));
+            Shapefile.WriteAllFeatures(features, shapepath);
         }
 
         private static void TestShapeReadWrite(string shapepath, string outputpath)

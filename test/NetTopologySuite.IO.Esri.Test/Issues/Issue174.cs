@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using NetTopologySuite.IO.Esri.Shp.Readers;
+using NUnit.Framework;
 using System;
 
 namespace NetTopologySuite.IO.Esri.Test.Issues
@@ -9,19 +10,20 @@ namespace NetTopologySuite.IO.Esri.Test.Issues
         [Test]
         public void ensure_NetTopologySuite_IO_ShapeFile_assembly_is_strongly_named()
         {
-            AssertStronglyNamedAssembly(typeof(ShapeReader));
+            // This one is asserting the same assembly as ensure_NetTopologySuite_IO_GeoTools_assembly_is_strongly_named()
+            AssertStronglyNamedAssembly(typeof(ShpReader)); // TODO: Remove no longer relevant test
         }
 
         [Test]
         public void ensure_NetTopologySuite_IO_GDB_assembly_is_strongly_named()
         {
-            AssertStronglyNamedAssembly(typeof(GDBReader));
+            //AssertStronglyNamedAssembly(typeof(GDBReader)); // TODO: Remove no longer relevant test
         }
 
         [Test]
         public void ensure_NetTopologySuite_IO_GeoTools_assembly_is_strongly_named()
         {
-            AssertStronglyNamedAssembly(typeof(ShapefileDataReader));
+            AssertStronglyNamedAssembly(typeof(Shapefile));
         }
 
         private void AssertStronglyNamedAssembly(Type typeFromAssemblyToCheck)

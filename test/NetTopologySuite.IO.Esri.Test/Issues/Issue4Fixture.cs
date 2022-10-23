@@ -46,9 +46,8 @@ namespace NetTopologySuite.IO.Esri.Test.Issues
             IList<IFeature> features = new List<IFeature> { feature };
 
             string path = CreateShapefilePath();
-            var header = ShapefileDataWriter.GetHeader(feature, features.Count);
-            var writer = new ShapefileDataWriter(path) { Header = header };
-            writer.Write(features);
+            Shapefile.WriteAllFeatures(features, path);
+
             Assert.That(File.Exists(Path.ChangeExtension(path, ".shp")), Is.True);
         }
 

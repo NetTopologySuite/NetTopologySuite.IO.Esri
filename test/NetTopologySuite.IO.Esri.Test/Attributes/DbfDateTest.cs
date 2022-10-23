@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.IO;
+using System.Linq;
 
 namespace NetTopologySuite.IO.Esri.Test.Attributes
 {
@@ -25,24 +26,22 @@ namespace NetTopologySuite.IO.Esri.Test.Attributes
         [Test]
         public void ReadDbfDate()
         {
-            string file = Path.Combine(CommonHelpers.TestShapefilesDirectory, "date.dbf");
+            string file = TestShapefiles.PathTo("date.dbf");
 
             if (!File.Exists(file))
                 throw new FileNotFoundException("file not found at " + Path.GetDirectoryName(file));
 
-            var reader = new DbaseFileReader(file);
-            var header = reader.GetHeader();
-            var ienum = reader.GetEnumerator();
-            ienum.MoveNext();
-            var items = ienum.Current as ArrayList;
+            using var reader = new Dbf.DbfReader(file);
+            var record = reader.FirstOrDefault();
 
-            Assert.IsNotNull(items);
-            Assert.AreEqual(2, items.Count);
+            Assert.IsNotNull(record);
+            Assert.AreEqual(2, record.Count);
 
-            foreach (object item in items)
-                Assert.IsNotNull(item);
+            foreach (object value in record.GetValues())
+                Assert.IsNotNull(value);
 
-            var date = (DateTime)items[1];
+            var dateFieldName = reader.Fields[1].Name;
+            var date = (DateTime)record[dateFieldName];
 
             Assert.AreEqual(10, date.Day);
             Assert.AreEqual(3, date.Month);

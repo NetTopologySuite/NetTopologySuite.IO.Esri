@@ -16,7 +16,7 @@ namespace NetTopologySuite.IO.Esri.Test.Issues
         [Test]
         public void Data_should_be_readable_after_reader_dispose()
         {
-            string test56 = Path.Combine(CommonHelpers.TestShapefilesDirectory, "test56.shp");
+            string test56 = TestShapefiles.PathTo("test56.shp");
             var factory = new GeometryFactory();
             int intValue = 56;
             string key = "id";
@@ -24,19 +24,17 @@ namespace NetTopologySuite.IO.Esri.Test.Issues
             attributes.Add(key, intValue);
             var feature = new Feature(factory.CreatePoint(new Coordinate(1, 2)), attributes);
 
-            var writer = new ShapefileDataWriter(test56);
-            writer.Header = ShapefileDataWriter.GetHeader(feature, 1);
-            writer.Write(new[] { feature });
+            Shapefile.WriteAllFeatures(new[] { feature }, test56);
 
-            using (var reader = new ShapefileDataReader(test56, factory))
+            using (var reader = Shapefile.OpenRead(test56))
             {
 
                 if (reader.RecordCount > 0)
                 {
-                    while (reader.Read())
+                    while (reader.Read(out var deleted))
                     {
-                        int index = reader.GetOrdinal(key);
-                        Assert.AreEqual(intValue.GetType(), reader.GetFieldType(index));
+                        var field = reader.Fields[key];
+                        Assert.AreEqual(intValue.GetType(), field.Value.GetType());
                     }
                 }
             }

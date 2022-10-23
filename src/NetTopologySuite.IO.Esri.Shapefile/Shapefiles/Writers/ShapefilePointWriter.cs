@@ -14,20 +14,14 @@ namespace NetTopologySuite.IO.Esri.Shapefiles.Writers
     public class ShapefilePointWriter : ShapefileWriter<Point>
     {
         /// <inheritdoc/>
-        public ShapefilePointWriter(Stream shpStream, Stream shxStream, Stream dbfStream, ShapeType type, IReadOnlyList<DbfField> fields, Encoding encoding = null)
-            : base(shpStream, shxStream, dbfStream, type, fields, encoding)
+        public ShapefilePointWriter(Stream shpStream, Stream shxStream, Stream dbfStream, ShapefileWriterOptions options)
+            : base(shpStream, shxStream, dbfStream, options)
         { }
 
         /// <inheritdoc/>
-        public ShapefilePointWriter(string shpPath, ShapeType type, IReadOnlyList<DbfField> fields, Encoding encoding = null, string projection = null)
-            : base(shpPath, type, fields, encoding, projection)
+        public ShapefilePointWriter(string shpPath, ShapefileWriterOptions options)
+            : base(shpPath, options)
         { }
-
-        /// <inheritdoc/>
-        public ShapefilePointWriter(string shpPath, ShapeType type, params DbfField[] fields)
-           : base(shpPath, type, fields)
-        {
-        }
 
         internal override ShpWriter<Point> CreateShpWriter(Stream shpStream, Stream shxStream)
         {

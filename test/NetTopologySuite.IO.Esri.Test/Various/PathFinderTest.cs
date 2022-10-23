@@ -14,33 +14,35 @@ namespace NetTopologySuite.IO.Esri.Test.Various
         private const string shx = ".shx";
         private const string dbf = ".dbf";
 
-        private GeometryFactory factory;
+        ShapefileReaderOptions options;
 
         [SetUp]
         public void FixtureSetup()
         {
-            Environment.CurrentDirectory = CommonHelpers.TestShapefilesDirectory;
+            Environment.CurrentDirectory = TestShapefiles.Directory;
 
-            factory = GeometryFactory.Fixed;
+            options = new ShapefileReaderOptions()
+            {
+                Factory = GeometryFactory.Fixed
+            };
         }
 
-        [Ignore("")]
+        [Ignore("strade.shp is not present")]
         [Test]
         public void BuildStradeFixed()
         {
             string path = "strade" + shp;
             Assert.IsTrue(File.Exists(path));
 
-            var reader = new ShapefileDataReader(path, factory);
+            using var reader = Shapefile.OpenRead(path, options);
             var features = new List<IFeature>(reader.RecordCount);
             while (reader.Read())
             {
                 var feature = new Feature(reader.Geometry, new AttributesTable());
-                object[] values = new object[reader.FieldCount - 1];
-                reader.GetValues(values);
+                object[] values = reader.Fields.GetValues();
                 for (int i = 0; i < values.Length; i++)
                 {
-                    string name = reader.GetName(i + 1);
+                    string name = reader.Fields[i].Name;
                     object value = values[i];
                     feature.Attributes.Add(name, value);
                 }
@@ -49,20 +51,12 @@ namespace NetTopologySuite.IO.Esri.Test.Various
             Assert.AreEqual(703, features.Count);
 
             string shapepath = "strade_fixed";
-            if (File.Exists(shapepath + shp))
-                File.Delete(shapepath + shp);
+            TestShapefiles.DeleteShp(shapepath);
             Assert.IsFalse(File.Exists(shapepath + shp));
-            if (File.Exists(shapepath + shx))
-                File.Delete(shapepath + shx);
             Assert.IsFalse(File.Exists(shapepath + shx));
-            if (File.Exists(shapepath + dbf))
-                File.Delete(shapepath + dbf);
             Assert.IsFalse(File.Exists(shapepath + dbf));
 
-            var header = reader.DbaseHeader;
-
-            var writer = new ShapefileDataWriter(shapepath, factory) { Header = header };
-            writer.Write(features);
+            Shapefile.WriteAllFeatures(features, shapepath);
 
             Assert.IsTrue(File.Exists(shapepath + shp));
             Assert.IsTrue(File.Exists(shapepath + shx));
@@ -74,8 +68,8 @@ namespace NetTopologySuite.IO.Esri.Test.Various
             string path = "graphresult.shp";
             Assert.IsTrue(Path.GetExtension(path) == shp);
 
-            var reader = new ShapefileReader(path);
-            var coll = reader.ReadAll();
+            var geometries = Shapefile.ReadAllGeometries(path);
+            var coll = new GeometryCollection(geometries);
             Assert.AreEqual(1, coll.Count);
 
             var geom = coll.GetGeometryN(0);
@@ -91,25 +85,16 @@ namespace NetTopologySuite.IO.Esri.Test.Various
                 throw new ArgumentNullException("path");
 
             string shapepath = "graphresult";
-            if (File.Exists(shapepath + shp))
-                File.Delete(shapepath + shp);
+            TestShapefiles.DeleteShp(shapepath);
             Assert.IsFalse(File.Exists(shapepath + shp));
-            if (File.Exists(shapepath + shx))
-                File.Delete(shapepath + shx);
             Assert.IsFalse(File.Exists(shapepath + shx));
-            if (File.Exists(shapepath + dbf))
-                File.Delete(shapepath + dbf);
             Assert.IsFalse(File.Exists(shapepath + dbf));
 
             string field1 = "OBJECTID";
             var feature = new Feature(path, new AttributesTable());
             feature.Attributes.Add(field1, 0);
 
-            var header = new DbaseFileHeader { NumRecords = 1, NumFields = 1 };
-            header.AddColumn(field1, 'N', 5, 0);
-
-            var writer = new ShapefileDataWriter(shapepath, factory) { Header = header };
-            writer.Write(new List<IFeature>(new[] { feature, }));
+            Shapefile.WriteAllFeatures(new[] { feature }, shapepath);
 
             Assert.IsTrue(File.Exists(shapepath + shp));
             Assert.IsTrue(File.Exists(shapepath + shx));
@@ -124,8 +109,8 @@ namespace NetTopologySuite.IO.Esri.Test.Various
             int count = 1179;
 
             Assert.IsTrue(File.Exists(shapepath), string.Format("File not found: '{0}'", shapepath));
-            var reader = new ShapefileReader(shapepath);
-            var edges = reader.ReadAll();
+            var geometries = Shapefile.ReadAllGeometries(shapepath);
+            var edges = new GeometryCollection(geometries);
             Assert.IsNotNull(edges);
             Assert.IsInstanceOf(typeof(GeometryCollection), edges);
             Assert.AreEqual(count, edges.NumGeometries);

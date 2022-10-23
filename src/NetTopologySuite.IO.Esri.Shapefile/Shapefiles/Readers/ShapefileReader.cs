@@ -33,6 +33,12 @@ namespace NetTopologySuite.IO.Esri.Shapefiles.Readers
         public abstract string Projection { get; }
 
         /// <summary>
+        /// The Bounding Box stored in the SHP file header representing the actual extent of the shapes in the file.
+        /// If the shapefile is empty (that is, has no records), the Bounding Box values are unspecified.
+        /// </summary>
+        public abstract Envelope BoundingBox { get; }
+
+        /// <summary>
         /// Shape geometry.
         /// </summary>
         public abstract Geometry Geometry { get; }
@@ -85,7 +91,22 @@ namespace NetTopologySuite.IO.Esri.Shapefiles.Readers
         /// </returns>
         public abstract bool Read(out bool deleted);
 
-
+        /// <summary>
+        /// Reads feature geometry and attributes from underlying SHP and DBF files into <see cref="Geometry"/> and <see cref="Fields"/> properties. 
+        /// </summary>
+        /// <returns>
+        /// true if the enumerator was successfully advanced to the next record;
+        /// false if the enumerator has passed the end of the table.
+        /// </returns>
+        public bool Read()
+        {
+            var read = Read(out var deleted);
+            if (read && deleted)
+            {
+                return Read();
+            }
+            return read;
+        }
 
         #region *** Enumerator ***
 

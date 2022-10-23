@@ -13,26 +13,31 @@ namespace NetTopologySuite.IO.Esri.Test.Features
 
     public class UseOfIndexAndPreparedGeometry
     {
-        [TestCase(@"D:\Daten\Geofabrik\roads.shp")]
+        [TestCase(@"eurostat/countries_pt.shp")]
+        [TestCase(@"eurostat/countries_ln.shp")]
+        [TestCase(@"eurostat/countries_pg.shp")]
         public void TestShapefile(string shapefile)
         {
+            shapefile = TestShapefiles.PathTo(shapefile);
             if (!System.IO.File.Exists(shapefile))
-                throw new IgnoreException("file not present");
+                throw new Exception("file not present: " + shapefile);
 
             var featureCollection = new Collection<IFeature>();
-            Envelope bbox;
-            //using (var shp = new IO.ShapeFile.Extended.ShapeDataReader(shapefile))
-            var shp = new Extended.ShapeDataReader(shapefile);
-            //{
-            bbox = shp.ShapefileBounds;
-            foreach (var shapefileFeature in shp.ReadByMBRFilter(shp.ShapefileBounds))
+            Envelope bbox = GetBoundingBox(shapefile);
+            var options = new ShapefileReaderOptions()
+            {
+                MbrFilter = bbox
+            };
+            using var shp = Shapefile.OpenRead(shapefile, options);
+            foreach (var shapefileFeature in shp)
+            { 
                 featureCollection.Add(shapefileFeature);
-            //}
+            }
 
             const double min1 = 0.4;
             const double min2 = 0.5 - min1;
 
-            var rnd = new System.Random(8888);
+            var rnd = new Random(8888);
             var queryBox = new Envelope(
                 bbox.MinX + (min1 + rnd.NextDouble() * min2) * bbox.Width,
                 bbox.MaxX - (min1 + rnd.NextDouble() * min2) * bbox.Width,
@@ -44,8 +49,12 @@ namespace NetTopologySuite.IO.Esri.Test.Features
             TestShapefilePlain(featureCollection, shape, "intersects");
             TestShapefilePrepared(featureCollection, shape, "intersects");
             TestShapefileIndexed(featureCollection, shape, "intersects");
+        }
 
-            shp.Dispose();
+        private Envelope GetBoundingBox(string shapefile)
+        {
+            using var shp = Shapefile.OpenRead(shapefile);
+            return shp.BoundingBox;
         }
 
         private void TestShapefilePrepared(ICollection<IFeature> features, Geometry queryGeom, string spatialPredicate)

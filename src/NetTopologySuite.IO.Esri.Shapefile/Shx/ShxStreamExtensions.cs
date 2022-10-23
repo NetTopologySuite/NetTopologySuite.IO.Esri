@@ -1,4 +1,5 @@
-﻿using NetTopologySuite.IO.Esri.Shp;
+﻿using NetTopologySuite.Geometries;
+using NetTopologySuite.IO.Esri.Shp;
 using System.IO;
 
 namespace NetTopologySuite.IO.Esri.Shx
@@ -12,9 +13,9 @@ namespace NetTopologySuite.IO.Esri.Shx
             stream.WriteShpFileHeader(type, fileLength, extent, hasZ, hasM);
         }
 
-        public static void ReadShxFileHeader(this Stream binary, out ShapeType type, out int fileLength)
+        public static void ReadShxFileHeader(this Stream binary, out ShapeType type, out int fileLength, out Envelope boundingBox)
         {
-            binary.ReadShpFileHeader(out type, out fileLength);
+            binary.ReadShpFileHeader(out type, out fileLength, out boundingBox);
         }
 
 

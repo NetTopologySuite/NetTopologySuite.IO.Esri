@@ -1,5 +1,7 @@
 ﻿using NetTopologySuite.Features;
 using NetTopologySuite.Geometries;
+using NetTopologySuite.IO.Esri;
+using NetTopologySuite.IO.Esri.Dbf;
 using NUnit.Framework;
 using System;
 using System.Linq;
@@ -18,11 +20,10 @@ namespace NetTopologySuite.IO.Tests.ShapeFile.Extended
         [Test]
         public void TestGetHeaderFromFeature()
         {
-            var feature = new Feature(new Point(0, 0),
-                new AttributesTable());
+            var feature = new Feature(new Point(0, 0), new AttributesTable());
             feature.Attributes.Add("c_long", (long)12345678900000000);
             feature.Attributes.Add("c_ulong", (ulong)12345678900000000);
-            feature.Attributes.Add("c_int", int.MinValue);
+            feature.Attributes.Add("c_int", int.MaxValue);
             feature.Attributes.Add("c_uint", uint.MinValue);
             feature.Attributes.Add("c_short", short.MaxValue);
             feature.Attributes.Add("c_ushort", ushort.MaxValue);
@@ -31,60 +32,74 @@ namespace NetTopologySuite.IO.Tests.ShapeFile.Extended
             feature.Attributes.Add("c_bool", false);
             feature.Attributes.Add("c_datetime", new DateTime(1999, 01, 01));
 
-            var header = ShapefileDataWriter.GetHeader(feature, 1);
+            var shpPath = TestShapefiles.GetTempShpPath();
+            Shapefile.WriteAllFeatures(Enumerable.Repeat(feature, 1), shpPath);
+            using var shapefile = Shapefile.OpenRead(shpPath);
+            var fields = shapefile.Fields;
 
-            Assert.IsNotNull(header);
-            Assert.AreEqual(10, header.Fields.Length);
-            var field = header.Fields.FirstOrDefault(x => x.Name == "c_long");
+            Assert.IsNotNull(fields);
+            Assert.AreEqual(10, fields.Count);
+
+            var field = fields["c_long"];
             Assert.IsNotNull(field);
-            Assert.AreEqual(78, field.DbaseType);
-            Assert.AreEqual(0, field.DecimalCount);
-            Assert.AreEqual(18, field.Length);
-            field = header.Fields.FirstOrDefault(x => x.Name == "c_ulong");
+            Assert.AreEqual(DbfType.Numeric, field.FieldType);
+            Assert.AreEqual(0, field.NumericScale);
+            Assert.AreEqual(19, field.Length);
+
+            field = fields["c_ulong"];
             Assert.IsNotNull(field);
-            Assert.AreEqual(78, field.DbaseType);
-            Assert.AreEqual(0, field.DecimalCount);
-            Assert.AreEqual(18, field.Length);
-            field = header.Fields.FirstOrDefault(x => x.Name == "c_int");
+            Assert.AreEqual(DbfType.Numeric, field.FieldType);
+            Assert.AreEqual(0, field.NumericScale);
+            Assert.AreEqual(19, field.Length);
+
+            field = fields["c_int"];
             Assert.IsNotNull(field);
-            Assert.AreEqual(78, field.DbaseType);
-            Assert.AreEqual(0, field.DecimalCount);
+            Assert.AreEqual(DbfType.Numeric, field.FieldType);
+            Assert.AreEqual(0, field.NumericScale);
             Assert.AreEqual(10, field.Length);
-            field = header.Fields.FirstOrDefault(x => x.Name == "c_uint");
+
+            field = fields["c_uint"];
             Assert.IsNotNull(field);
-            Assert.AreEqual(78, field.DbaseType);
-            Assert.AreEqual(0, field.DecimalCount);
+            Assert.AreEqual(DbfType.Numeric, field.FieldType);
+            Assert.AreEqual(0, field.NumericScale);
             Assert.AreEqual(10, field.Length);
-            field = header.Fields.FirstOrDefault(x => x.Name == "c_short");
+
+            field = fields["c_short"];
             Assert.IsNotNull(field);
-            Assert.AreEqual(78, field.DbaseType);
-            Assert.AreEqual(0, field.DecimalCount);
+            Assert.AreEqual(DbfType.Numeric, field.FieldType);
+            Assert.AreEqual(0, field.NumericScale);
             Assert.AreEqual(10, field.Length);
-            field = header.Fields.FirstOrDefault(x => x.Name == "c_ushort");
+
+            field = fields["c_ushort"];
             Assert.IsNotNull(field);
-            Assert.AreEqual(78, field.DbaseType);
-            Assert.AreEqual(0, field.DecimalCount);
+            Assert.AreEqual(DbfType.Numeric, field.FieldType);
+            Assert.AreEqual(0, field.NumericScale);
             Assert.AreEqual(10, field.Length);
-            field = header.Fields.FirstOrDefault(x => x.Name == "c_string");
+
+            field = fields["c_string"];
             Assert.IsNotNull(field);
-            Assert.AreEqual(67, field.DbaseType);
-            Assert.AreEqual(0, field.DecimalCount);
+            Assert.AreEqual(DbfType.Character, field.FieldType);
+            Assert.AreEqual(0, field.NumericScale);
             Assert.AreEqual(254, field.Length);
-            field = header.Fields.FirstOrDefault(x => x.Name == "c_double");
+
+            field = fields["c_double"];
             Assert.IsNotNull(field);
-            Assert.AreEqual(78, field.DbaseType);
-            Assert.AreEqual(8, field.DecimalCount);
-            Assert.AreEqual(18, field.Length);
-            field = header.Fields.FirstOrDefault(x => x.Name == "c_bool");
+            Assert.AreEqual(DbfType.Float, field.FieldType);
+            Assert.AreEqual(11, field.NumericScale);
+            Assert.AreEqual(19, field.Length);
+
+            field = fields["c_bool"];
             Assert.IsNotNull(field);
-            Assert.AreEqual(76, field.DbaseType);
-            Assert.AreEqual(0, field.DecimalCount);
+            Assert.AreEqual(DbfType.Logical, field.FieldType);
+            Assert.AreEqual(0, field.NumericScale);
             Assert.AreEqual(1, field.Length);
-            field = header.Fields.FirstOrDefault(x => x.Name == "c_datetime");
+
+            field = fields["c_datetime"];
             Assert.IsNotNull(field);
-            Assert.AreEqual(68, field.DbaseType);
-            Assert.AreEqual(0, field.DecimalCount);
+            Assert.AreEqual(DbfType.Date, field.FieldType);
+            Assert.AreEqual(0, field.NumericScale);
             Assert.AreEqual(8, field.Length);
+
         }
     }
 }

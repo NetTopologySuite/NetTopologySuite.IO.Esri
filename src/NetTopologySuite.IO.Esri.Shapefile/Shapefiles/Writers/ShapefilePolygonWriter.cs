@@ -14,20 +14,14 @@ namespace NetTopologySuite.IO.Esri.Shapefiles.Writers
     public class ShapefilePolygonWriter : ShapefileWriter<MultiPolygon>
     {
         /// <inheritdoc/>
-        public ShapefilePolygonWriter(Stream shpStream, Stream shxStream, Stream dbfStream, ShapeType type, IReadOnlyList<DbfField> fields, Encoding encoding = null)
-            : base(shpStream, shxStream, dbfStream, type, fields, encoding)
+        public ShapefilePolygonWriter(Stream shpStream, Stream shxStream, Stream dbfStream, ShapefileWriterOptions options)
+            : base(shpStream, shxStream, dbfStream, options)
         { }
 
         /// <inheritdoc/>
-        public ShapefilePolygonWriter(string shpPath, ShapeType type, IReadOnlyList<DbfField> fields, Encoding encoding = null, string projection = null)
-            : base(shpPath, type, fields, encoding, projection)
+        public ShapefilePolygonWriter(string shpPath, ShapefileWriterOptions options)
+            : base(shpPath, options)
         { }
-
-        /// <inheritdoc/>
-        public ShapefilePolygonWriter(string shpPath, ShapeType type, params DbfField[] fields)
-            : base(shpPath, type, fields)
-        {
-        }
 
         internal override ShpWriter<MultiPolygon> CreateShpWriter(Stream shpStream, Stream shxStream)
         {

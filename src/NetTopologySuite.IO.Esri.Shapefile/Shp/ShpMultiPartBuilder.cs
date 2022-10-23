@@ -82,7 +82,6 @@ namespace NetTopologySuite.IO.Esri.Shp
         public virtual void ReadParts(Stream stream, bool hasZ, bool hasM, Func<int, CoordinateSequence> createCoordinateSequence)
         {
             Clear();
-            stream.ReadXYBoundingBox();
             var partCount = stream.ReadPartCount();
             PointCount = stream.ReadPointCount();
             stream.ReadPartOfsets(partCount, Offsets);

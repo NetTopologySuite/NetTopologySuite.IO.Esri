@@ -39,6 +39,9 @@ namespace NetTopologySuite.IO.Esri.Dbf.Fields
             set { StringValue = value?.ToString(); }
         }
 
+        /// <inheritdoc/>
+        public override bool IsNull => StringValue == null;
+
         internal override void ReadValue(Stream stream)
         {
             StringValue = stream.ReadString(Length, Encoding)?.TrimEnd();

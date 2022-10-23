@@ -73,6 +73,15 @@ namespace NetTopologySuite.IO.Esri.Shp.Writers
             RecordNumber++;
         }
 
+        /// <summary>
+        /// Writes the geometry to the underlying stream.
+        /// </summary>
+        public void Write(T geometry)
+        {
+            Geometry = geometry;
+            Write();
+        }
+
         internal abstract void WriteGeometry(T geometry, Stream shapeBinary);
 
 

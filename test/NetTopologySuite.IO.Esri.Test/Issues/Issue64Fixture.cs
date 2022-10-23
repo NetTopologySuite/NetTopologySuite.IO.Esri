@@ -1,51 +1,73 @@
 ﻿using NUnit.Framework;
-using System.Collections;
 using System.IO;
-
-using NetTopologySuite.IO.Streams;
+using NetTopologySuite.IO.Esri.Dbf.Fields;
+using System.Collections.Generic;
+using NetTopologySuite.IO.Esri.Dbf;
 
 namespace NetTopologySuite.IO.Esri.Test.Issues
 {
+    /// <summary>
+    /// <see href="https://github.com/NetTopologySuite/NetTopologySuite.IO.ShapeFile/issues/64"/>
+    /// </summary>
     [TestFixture]
     [ShapeFileIssueNumber(64)]
     public class Issue64Fixture
     {
-        /// <summary>
-        /// <see href="https://github.com/NetTopologySuite/NetTopologySuite.IO.ShapeFile/issues/64"/>
-        /// </summary>
-        [TestCase('L', 1)]
-        [TestCase('D', 8)]
-        [TestCase('F', 8)]
-        [TestCase('N', 8)]
-        [TestCase('C', 8)]
-        public void Dbase_Read_Null(char fieldType, int fieldLength)
+        public void Dbase_Read_Null(DbfField field)
         {
             using var s = new MemoryStream();
-            var provider = new ExternallyManagedStreamProvider(StreamTypes.Data, s);
-            var reg = new ShapefileStreamProviderRegistry(null, provider);
 
-            var header = new DbaseFileHeader();
-            header.AddColumn("TestCol", fieldType, fieldLength, 0);
-            header.NumRecords = 1;
+            var fields = new List<DbfField>();
+            fields.Add(field);
 
-            object[] values = new[] { (object)null };
-
-            using (var writer = new DbaseFileWriter(reg))
+            var values = new Dictionary<string, object>()
             {
-                writer.Write(header);
+                { field.Name, null }
+            };
+
+            using (var writer = new DbfWriter(s, fields))
+            {
                 writer.Write(values);
             }
 
             s.Position = 0;
-            var reader = new DbaseFileReader(reg);
-
-            reader.GetHeader();
-            s.Position = 0;
-
-            foreach (ArrayList readValues in reader)
+            using (var reader = new DbfReader(s))
             {
-                Assert.AreEqual(values[0], readValues[0]);
+                foreach (var readValues in reader)
+                {
+                    Assert.AreEqual(values[field.Name], readValues[field.Name]);
+                }
             }
+        }
+
+        [Test]
+        public void Dbase_Read_Null_Logical()
+        {
+            Dbase_Read_Null(new DbfLogicalField("field_name"));
+        }
+
+        [Test]
+        public void Dbase_Read_Null_Date()
+        {
+            Dbase_Read_Null(new DbfDateField("field_name"));
+        }
+
+        [Test]
+        public void Dbase_Read_Null_Float()
+        {
+            Dbase_Read_Null(new DbfFloatField("field_name"));
+        }
+
+        [Test]
+        public void Dbase_Read_Null_Numeric()
+        {
+            Dbase_Read_Null(new DbfNumericInt32Field("field_name"));
+        }
+
+        [Test]
+        public void Dbase_Read_Null_Character()
+        {
+            Dbase_Read_Null(new DbfCharacterField("field_name"));
         }
     }
 }

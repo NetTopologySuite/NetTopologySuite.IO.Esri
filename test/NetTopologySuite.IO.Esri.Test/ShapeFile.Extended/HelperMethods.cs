@@ -1,6 +1,5 @@
 ﻿using System;
 using NetTopologySuite.Geometries;
-using NetTopologySuite.IO.Handlers;
 using Assert = NUnit.Framework.Assert;
 
 namespace NetTopologySuite.IO.Tests.ShapeFile.Extended
@@ -38,6 +37,19 @@ namespace NetTopologySuite.IO.Tests.ShapeFile.Extended
             }
         }
 
+        public static void AssertPolygonsEqual(MultiPolygon multiPoly1, Polygon poly2)
+        {
+            if (multiPoly1.IsEmpty && poly2.IsEmpty)
+            {
+                return;
+            }
+
+            Assert.AreEqual(multiPoly1.NumGeometries, 1);
+            var poly1 = multiPoly1.GetGeometryN(0) as Polygon;
+            Assert.IsNotNull(poly1);
+            AssertPolygonsEqual(poly1, poly2);
+        }
+
         public static void AssertCoordinatesEqual(Coordinate coord1, Coordinate coord2)
         {
             AssertDoubleValuesEqual(coord1.X, coord2.X);
@@ -59,13 +71,6 @@ namespace NetTopologySuite.IO.Tests.ShapeFile.Extended
             {
                 Assert.AreEqual(num1, num2, requiredPrecision, errorMessage);
             }
-        }
-
-        public static void AssertMBRInfoEqual(MBRInfo info1, MBRInfo info2)
-        {
-            Assert.AreEqual(info1.ShapeFileDetails.OffsetFromStartOfFile, info2.ShapeFileDetails.OffsetFromStartOfFile);
-            Assert.AreEqual(info1.ShapeFileDetails.ShapeIndex, info2.ShapeFileDetails.ShapeIndex);
-            AssertEnvelopesEqual(info1.ShapeMBR, info2.ShapeMBR);
         }
     }
 }

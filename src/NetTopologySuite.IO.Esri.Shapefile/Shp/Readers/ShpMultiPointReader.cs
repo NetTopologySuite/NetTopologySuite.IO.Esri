@@ -9,20 +9,28 @@ namespace NetTopologySuite.IO.Esri.Shp.Readers
     /// </summary>
     public class ShpMultiPointReader : ShpReader<MultiPoint>
     {
+
         /// <inheritdoc/>
-        public ShpMultiPointReader(Stream shpStream, GeometryFactory factory) : base(shpStream, factory)
+        public ShpMultiPointReader(Stream shpStream, ShapefileReaderOptions options = null)
+            : base(shpStream, options)
         {
             if (!ShapeType.IsMultiPoint())
                 ThrowUnsupportedShapeTypeException();
         }
+
         internal override MultiPoint GetEmptyGeometry()
         {
             return MultiPoint.Empty;
         }
 
-        internal override MultiPoint ReadGeometry(Stream stream)
+        internal override bool ReadGeometry(Stream stream, out MultiPoint geometry)
         {
-            stream.ReadXYBoundingBox();
+            var bbox = stream.ReadXYBoundingBox();
+            if (!IsInMbr(bbox))
+            {
+                geometry = null;
+                return false;
+            }
 
             var pointCount = stream.ReadPointCount();
             var coordinateSequence = CreateCoordinateSequence(pointCount);
@@ -40,7 +48,12 @@ namespace NetTopologySuite.IO.Esri.Shp.Readers
                 stream.ReadMValues(coordinateSequence);
             }
 
-            return Factory.CreateMultiPoint(coordinateSequence);
+            geometry = Factory.CreateMultiPoint(coordinateSequence);
+            if (!IsInMbr(geometry))
+            {
+                return false;
+            }
+            return true;
         }
     }
 

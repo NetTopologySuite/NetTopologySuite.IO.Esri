@@ -14,23 +14,24 @@ namespace NetTopologySuite.IO.Esri.Test.Issues
         [Test]
         public void Invalid_data_should_be_not_read_as_default()
         {
-            var factory = GeometryFactory.Default;
+            var options = new ShapefileReaderOptions();
+            options.Factory = GeometryFactory.Default;
+            options.SkipFailures = true;
 
-            string shp_path = Path.Combine(CommonHelpers.TestShapefilesDirectory, "Victoria North.shp");
+            string shp_path = TestShapefiles.PathTo("Victoria North.shp");
             Assert.True(File.Exists(shp_path));
 
-            var reader = new ShapefileReader(shp_path, factory);
-            var data = reader.ReadAll();
+            var data = Shapefile.ReadAllGeometries(shp_path, options);  
             Assert.IsNotNull(data);
             Assert.IsNotEmpty(data);
-            Assert.AreEqual(2, data.Count);
+            Assert.AreEqual(2, data.Length);
 
             Assert.IsTrue(data[0].IsEmpty);
-            Assert.IsInstanceOf<Polygon>(data[0]);
-            Assert.IsTrue(factory.CreatePolygon().EqualsExact(data[0]));
+            Assert.IsInstanceOf<MultiPolygon>(data[0]);
+            Assert.IsTrue(options.Factory.CreateMultiPolygon().EqualsExact(data[0]));
 
             Assert.IsFalse(data[1].IsEmpty);
-            Assert.IsInstanceOf<Polygon>(data[1]);
+            Assert.IsInstanceOf<MultiPolygon>(data[1]);
         }
     }
 }

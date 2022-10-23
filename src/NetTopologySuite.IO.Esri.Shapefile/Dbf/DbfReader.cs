@@ -1,3 +1,4 @@
+using NetTopologySuite.Features;
 using NetTopologySuite.IO.Esri.Dbf.Fields;
 using System;
 using System.Collections;
@@ -15,7 +16,7 @@ namespace NetTopologySuite.IO.Esri.Dbf
     /// <summary>
     ///     Class that allows records in a dbase file to be enumerated.
     /// </summary>
-    public class DbfReader : ManagedDisposable, IEnumerable<IReadOnlyDictionary<string, object>>
+    public class DbfReader : ManagedDisposable, IEnumerable<IAttributesTable>
     {
         private int HeaderSize;
         private int CurrentIndex = 0;
@@ -160,6 +161,10 @@ namespace NetTopologySuite.IO.Esri.Dbf
 
             try
             {
+                if (int.TryParse(cpgText, out var cpgId))
+                {
+                    return Encoding.GetEncoding(cpgId);
+                }
                 return Encoding.GetEncoding(cpgText);
             }
             catch (Exception)
@@ -177,6 +182,31 @@ namespace NetTopologySuite.IO.Esri.Dbf
 
             return File.ReadAllText(filePath).Trim();
         }
+
+
+
+        /// <summary>
+        /// Reads field values from underlying stream and advances the enumerator to the next record.
+        /// </summary>
+        /// <returns>
+        /// true if the enumerator was successfully advanced to the next record;
+        /// false if the enumerator has passed the end of the table.
+        /// </returns>
+        public bool Read()
+        {
+            var readSucceeded = Read(out var deleted);
+            if (!readSucceeded)
+            {
+                return false;
+            }
+            if (deleted)
+            {
+                return Read();
+            }
+            return true;
+        }
+
+
 
         /// <summary>
         /// Reads field values from underlying stream and advances the enumerator to the next record.
@@ -217,22 +247,41 @@ namespace NetTopologySuite.IO.Esri.Dbf
         /// true if the enumerator was successfully advanced to the next element;
         /// false if the enumerator has passed the end of the collection.
         /// </returns>
-        public bool Read(out IReadOnlyDictionary<string, object> values, out bool deleted)
+        public bool Read(out IAttributesTable values, out bool deleted)
         {
             if (!Read(out deleted))
             {
-                //values = null; // This would cause recreating array in next iteration
                 values = DbfField.EmptyFieldValues;
                 return false;
             }
 
-            values = Fields.GetValues();
+            values = Fields.ToAttributesTable();
             return true;
+        }
+
+        /// <summary>
+        /// Moves enumerator to specified position and reads values from underlying stream.
+        /// </summary>
+        /// <param name="index">Thre record index.</param>
+        /// <returns>
+        /// Table containing record fields (attributes).
+        /// </returns>
+        public IAttributesTable ReadEntry(int index)
+        {
+            if (index < 0 || index >= RecordCount)
+            {
+                throw new ArgumentOutOfRangeException(nameof(index));
+            }
+
+            DbfStream.Position = HeaderSize + (index * RecordSize);
+            CurrentIndex = index;
+            Read(out var _);
+            return Fields.ToAttributesTable();
         }
 
         #region IEnumerable
 
-        IEnumerator<IReadOnlyDictionary<string, object>> IEnumerable<IReadOnlyDictionary<string, object>>.GetEnumerator()
+        IEnumerator<IAttributesTable> IEnumerable<IAttributesTable>.GetEnumerator()
         {
             return new DbfEnumerator(this);
         }
@@ -242,10 +291,10 @@ namespace NetTopologySuite.IO.Esri.Dbf
             return new DbfEnumerator(this);
         }
 
-        private class DbfEnumerator : IEnumerator<IReadOnlyDictionary<string, object>>
+        private class DbfEnumerator : IEnumerator<IAttributesTable>
         {
             private readonly DbfReader Owner;
-            public IReadOnlyDictionary<string, object> Current { get; private set; }
+            public IAttributesTable Current { get; private set; }
             object IEnumerator.Current => Current;
 
             public DbfEnumerator(DbfReader owner)

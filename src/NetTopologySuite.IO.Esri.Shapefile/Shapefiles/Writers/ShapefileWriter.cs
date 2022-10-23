@@ -13,7 +13,6 @@ namespace NetTopologySuite.IO.Esri.Shapefiles.Writers
     /// </summary>
     public abstract class ShapefileWriter : Shapefile
     {
-
         internal readonly DbfWriter DbfWriter;
 
         /// <inheritdoc/>
@@ -33,6 +32,13 @@ namespace NetTopologySuite.IO.Esri.Shapefiles.Writers
         {
             DbfWriter = dbfWriter ?? throw new ArgumentNullException(nameof(dbfWriter));
         }
+
+
+        /// <summary>
+        /// Wrties geometry and attributes into underlying SHP and DBF files.
+        /// Attribute values must be set using Value property of DbfFiled(s) provided during initialization.
+        /// </summary>
+        public abstract void Write();
 
 
         /// <summary>
