@@ -8,18 +8,15 @@ namespace NetTopologySuite.IO.Esri.TestConsole.Tests
         public override void Run()
         {
             var dbfPath = GetTestFilePath("arcmap/shp/pt_utf8.dbf");
-            using (var dbf = new DbfReader(dbfPath))
+            using var dbf = new DbfReader(dbfPath);
+            foreach (var fields in dbf)
             {
-                foreach (var fields in dbf)
+                Console.WriteLine("Record ID: " + fields["Id"]);
+                foreach (var fieldName in fields.GetNames())
                 {
-                    Console.WriteLine("Record ID: " + fields["Id"]);
-                    var fieldNames = fields.Keys;
-                    foreach (var fieldName in fieldNames)
-                    {
-                        Console.WriteLine($"{fieldName, 10} {fields[fieldName]}");
-                    }
-                    Console.WriteLine();
+                    Console.WriteLine($"{fieldName, 10} {fields[fieldName]}");
                 }
+                Console.WriteLine();
             }
         }
 
