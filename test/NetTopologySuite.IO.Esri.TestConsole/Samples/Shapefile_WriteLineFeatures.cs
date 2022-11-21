@@ -13,15 +13,15 @@ namespace NetTopologySuite.IO.Esri.TestConsole.Tests
         {
             var shpPath = GetTempFilePath("abcd1.shp");
 
-
-            var dateField = DbfField.Create("date", typeof(DateTime));
-            var floatField = DbfField.Create("float", typeof(double));
-            var intField = DbfField.Create("int", typeof(int));
-            var LogicalField = DbfField.Create("logical", typeof(bool));
-            var textField = DbfField.Create("text", typeof(string));
+            var options = new ShapefileWriterOptions(ShapeType.PolyLine);
+            options.AddField("date", typeof(DateTime));
+            options.AddField("float", typeof(double));
+            options.AddField("int", typeof(int));
+            options.AddField("logical", typeof(bool));
+            options.AddField("text", typeof(string));
 
             var features = GetFeatures();
-            using (var shp = new ShapefilePolyLineWriter(shpPath, ShapeType.PolyLine, dateField, floatField, intField, LogicalField, textField))
+            using (var shp = new ShapefilePolyLineWriter(shpPath, options))
             {
                 shp.Write(features);
                 Console.WriteLine($"{features.Count} features was written.");
@@ -33,7 +33,7 @@ namespace NetTopologySuite.IO.Esri.TestConsole.Tests
             }
         }
 
-        private List<Feature> GetFeatures()
+        private static List<Feature> GetFeatures()
         {
             var features = new List<Feature>();
             for (int i = 1; i < 5; i++)
@@ -44,12 +44,14 @@ namespace NetTopologySuite.IO.Esri.TestConsole.Tests
                 var line = GeometryFactory.Default.CreateLineString(new Coordinate[] { p1, p2, p3 });
                 var mline = GeometryFactory.Default.CreateMultiLineString(new LineString[] { line });
 
-                var attributes = new AttributesTable(StringComparer.Ordinal);
-                attributes.Add("date", new DateTime(2000, 1, i + 1));
-                attributes.Add("float", i * 0.1);
-                attributes.Add("int", i);
-                attributes.Add("logical", i % 2 == 0);
-                attributes.Add("text", i.ToString("0.00"));
+                var attributes = new AttributesTable(new(StringComparer.Ordinal))
+                {
+                    { "date", new DateTime(2000, 1, i + 1) },
+                    { "float", i * 0.1 },
+                    { "int", i },
+                    { "logical", i % 2 == 0 },
+                    { "text", i.ToString("0.00") }
+                };
 
                 var feature = new Feature(mline, attributes);
                 features.Add(feature);

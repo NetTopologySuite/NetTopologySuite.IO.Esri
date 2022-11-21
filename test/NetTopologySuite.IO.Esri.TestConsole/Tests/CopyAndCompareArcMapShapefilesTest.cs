@@ -7,7 +7,7 @@ namespace NetTopologySuite.IO.Esri.TestConsole.Tests
         public override void Run()
         {
             var filePath = GetTestFilePath("arcmap/shp/point.shp");
-            var shpDataDir = Path.GetDirectoryName(filePath);
+            var shpDataDir = Path.GetDirectoryName(filePath) ?? "shp_dir";
 
             foreach (var shpFilePath in Directory.GetFiles(shpDataDir, "*.shp"))
             {

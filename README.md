@@ -4,23 +4,19 @@ This library provides forward-only readers and writers for [Esri shapefiles](htt
 
 ## DBF
 
-Shapefile feature attributes are held in a dBASE format file (.dbf extension). Each attribute record
+Shapefile feature attributes are held in a [dBASE format file](dBASE.md) (.dbf extension). Each attribute record
 has a one-to-one relationship with the associated shape record. Classes whose name starts
 with `Dbf` (eg. `DbfReader`) provide direct access to dBASE files.
 
 ```c#
-using (var dbf = new DbfReader(dbfPath))
+using var dbf = new DbfReader(dbfPath);
+foreach (var record in dbf)
 {
-    foreach (var fields in dbf)
+    foreach (var fieldName in record.GetNames())
     {
-        Console.WriteLine("Record ID: " + fields["Id"]);
-        var fieldNames = fields.Keys;
-        foreach (var fieldName in fieldNames)
-        {
-            Console.WriteLine($"{fieldName, 10} {fields[fieldName]}");
-        }
-        Console.WriteLine();
+        Console.WriteLine($"{fieldName,10} {record[fieldName]}");
     }
+    Console.WriteLine();
 }
 ```
 
@@ -31,13 +27,9 @@ a shape with a list of its vertices. Classes whose name starts with `Shp` (eg. `
 provide direct access to main file.
 
 ```c#
-using (var shpStream = File.OpenRead(shpPath))
-using (var shp = new ShpPointReader(shpStream, GeometryFactory.Default))
+foreach (var geometry in Shapefile.ReadAllGeometries(shpPath))
 {
-    while (shp.Read())
-    {
-        Console.WriteLine(shp.Geometry);
-    }
+    Console.WriteLine(geometry);
 }
 ```
 
@@ -58,7 +50,6 @@ Under the hood they are decorators wrapping `Dbf` and `Shp` classes.
 ```c#
 foreach (var feature in Shapefile.ReadAllFeatures(shpPath))
 {
-    Console.WriteLine(" Record ID: " + feature.Attributes["Id"]);
     foreach (var attrName in feature.Attributes.GetNames())
     {
         Console.WriteLine($"{attrName,10}: {feature.Attributes[attrName]}");
@@ -74,24 +65,27 @@ foreach (var feature in Shapefile.ReadAllFeatures(shpPath))
 var features = new List<Feature>();
 for (int i = 1; i < 5; i++)
 {
-    var lineCoords = new List<CoordinateZ>();
-    lineCoords.Add(new CoordinateZ(i, i + 1, i));
-    lineCoords.Add(new CoordinateZ(i, i, i));
-    lineCoords.Add(new CoordinateZ(i + 1, i, i));
+    var lineCoords = new List<CoordinateZ>
+    {
+        new CoordinateZ(i, i + 1, i),
+        new CoordinateZ(i, i, i),
+        new CoordinateZ(i + 1, i, i)
+    };
     var line = new LineString(lineCoords.ToArray());
     var mline = new MultiLineString(new LineString[] { line });
 
-    var attributes = new AttributesTable();
-    attributes.Add("date", new DateTime(2000, 1, i + 1));
-    attributes.Add("float", i * 0.1);
-    attributes.Add("int", i);
-    attributes.Add("logical", i % 2 == 0);
-    attributes.Add("text", i.ToString("0.00"));
+    var attributes = new AttributesTable
+    {
+        { "date", new DateTime(2000, 1, i + 1) },
+        { "float", i * 0.1 },
+        { "int", i },
+        { "logical", i % 2 == 0 },
+        { "text", i.ToString("0.00") }
+    };
 
     var feature = new Feature(mline, attributes);
     features.Add(feature);
 }
-
 Shapefile.WriteAllFeatures(features, shpPath);
 ```
 

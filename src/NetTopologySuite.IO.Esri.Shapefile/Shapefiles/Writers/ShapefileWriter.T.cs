@@ -3,6 +3,7 @@ using NetTopologySuite.Geometries;
 using NetTopologySuite.IO.Esri.Dbf;
 using NetTopologySuite.IO.Esri.Dbf.Fields;
 using NetTopologySuite.IO.Esri.Shp.Writers;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -44,14 +45,21 @@ namespace NetTopologySuite.IO.Esri.Shapefiles.Writers
         /// <param name="shpStream">SHP file stream.</param>
         /// <param name="shxStream">SHX file stream.</param>
         /// <param name="dbfStream">DBF file stream.</param>
-        /// <param name="type">Shape type.</param>
-        /// <param name="fields">Shapefile fields definitions.</param>
-        /// <param name="encoding">DBF file encoding. If null encoding will be guess from related .CPG file or from reserved DBF bytes.</param>
-        internal ShapefileWriter(Stream shpStream, Stream shxStream, Stream dbfStream, ShapeType type, IReadOnlyList<DbfField> fields, Encoding encoding)
-            : base(new DbfWriter(dbfStream, fields, encoding))
+        /// <param name="options">Writer options.</param>
+        internal ShapefileWriter(Stream shpStream, Stream shxStream, Stream dbfStream, ShapefileWriterOptions options)
+            : base(new DbfWriter(dbfStream, options?.Fields, options?.Encoding))
         {
-            ShapeType = type;
-            ShpWriter = CreateShpWriter(shpStream, shxStream);
+            try
+            {
+                options = options ?? throw new ArgumentNullException(nameof(options));
+                ShapeType = options.ShapeType;
+                ShpWriter = CreateShpWriter(shpStream, shxStream);
+            }
+            catch
+            {
+                DisposeManagedResources();
+                throw;
+            }
         }
 
 
@@ -59,23 +67,21 @@ namespace NetTopologySuite.IO.Esri.Shapefiles.Writers
         /// Initializes a new instance of the writer class.
         /// </summary>
         /// <param name="shpPath">Path to SHP file.</param>
-        /// <param name="type">Shape type.</param>
-        /// <param name="fields">Shapefile attribute definitions.</param>
-        /// <param name="encoding">DBF file encoding. If null encoding will be guess from related .CPG file or from reserved DBF bytes.</param>
-        /// <param name="projection">Projection metadata for the shapefile (.prj file).</param>
-        internal ShapefileWriter(string shpPath, ShapeType type, IReadOnlyList<DbfField> fields, Encoding encoding, string projection)
-            : base(new DbfWriter(Path.ChangeExtension(shpPath, ".dbf"), fields, encoding))
+        /// <param name="options">Writer options.</param>
+        internal ShapefileWriter(string shpPath, ShapefileWriterOptions options)
+            : base(new DbfWriter(Path.ChangeExtension(shpPath, ".dbf"), options?.Fields, options?.Encoding))
         {
             try
             {
+                options = options ?? throw new ArgumentNullException(nameof(options));
                 var shpStream = OpenManagedFileStream(shpPath, ".shp", FileMode.Create);
                 var shxStream = OpenManagedFileStream(shpPath, ".shx", FileMode.Create);
 
-                ShapeType = type;
+                ShapeType = options.ShapeType;
                 ShpWriter = CreateShpWriter(shpStream, shxStream); // It calls this.ShapeType
 
-                if (!string.IsNullOrWhiteSpace(projection))
-                    File.WriteAllText(Path.ChangeExtension(shpPath, ".prj"), projection);
+                if (!string.IsNullOrWhiteSpace(options.Projection))
+                    File.WriteAllText(Path.ChangeExtension(shpPath, ".prj"), options.Projection);
             }
             catch
             {
@@ -85,17 +91,6 @@ namespace NetTopologySuite.IO.Esri.Shapefiles.Writers
 
         }
 
-
-        /// <summary>
-        /// Initializes a new instance of the writer class.
-        /// </summary>
-        /// <param name="shpPath">Path to SHP file.</param>
-        /// <param name="type">Shape type.</param>
-        /// <param name="fields">Shapefile attribute definitions.</param>
-        internal ShapefileWriter(string shpPath, ShapeType type, params DbfField[] fields) : this(shpPath, type, fields, null, null)
-        {
-        }
-
         internal abstract ShpWriter<T> CreateShpWriter(Stream shpStream, Stream shxStream);
 
 
@@ -103,7 +98,7 @@ namespace NetTopologySuite.IO.Esri.Shapefiles.Writers
         /// Wrties geometry and attributes into underlying SHP and DBF files.
         /// Attribute values must be set using Value property of DbfFiled(s) provided during initialization.
         /// </summary>
-        public void Write()
+        public override void Write()
         {
             ShpWriter.Write();
             DbfWriter.Write();
@@ -114,7 +109,10 @@ namespace NetTopologySuite.IO.Esri.Shapefiles.Writers
         {
             foreach (var field in DbfWriter.Fields)
             {
-                field.Value = feature.Attributes[field.Name];
+                if (feature.Attributes?.Exists(field.Name) == true)
+                {
+                    field.Value = feature.Attributes[field.Name];
+                }
             }
             Geometry = (T)feature.Geometry;
             Write();

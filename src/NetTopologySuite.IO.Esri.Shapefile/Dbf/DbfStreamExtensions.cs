@@ -119,7 +119,7 @@ namespace NetTopologySuite.IO.Esri.Dbf
             }
             else if (type == DbfType.Numeric)
             {
-                return new DbfNumericField(name, length, precision);
+                return DbfNumericField.Create(name, length, precision);
             }
             else if (type == DbfType.Float)
             {

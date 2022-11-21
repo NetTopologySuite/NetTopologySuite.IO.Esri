@@ -6,7 +6,7 @@ namespace NetTopologySuite.IO.Esri.TestConsole
     class Program
     {
 
-        private static Test[] TestList = {
+        private static readonly Test[] TestList = {
             new DBF_ReadIterator(), //"arcmap/shp/fields_utf8.dbf"
             new DBF_ReadCore(),
             new SHP_ReadCore(),
@@ -68,11 +68,11 @@ namespace NetTopologySuite.IO.Esri.TestConsole
             Console.Write("Write test number or pres ENTER to exit: ");
         }
 
-        private static void WriteError(Exception ex, bool exitApp = false)
+        private static void WriteError(Exception? ex, bool exitApp = false)
         {
             Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine("ERROR: " + ex.Message);
-            ex = ex.InnerException;
+            Console.WriteLine("ERROR: " + ex?.Message);
+            ex = ex?.InnerException;
             while (ex != null)
             {
                 Console.WriteLine("- " + ex.Message);

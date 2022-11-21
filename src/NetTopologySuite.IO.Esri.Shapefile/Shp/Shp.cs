@@ -1,4 +1,7 @@
-﻿using System.IO;
+﻿using NetTopologySuite.Geometries;
+using NetTopologySuite.IO.Esri.Shp.Readers;
+using System.IO;
+using System.Linq;
 
 namespace NetTopologySuite.IO.Esri.Shp
 {
@@ -36,5 +39,41 @@ namespace NetTopologySuite.IO.Esri.Shp
         {
             throw new FileLoadException(GetType().Name + $" does not support {ShapeType} shapes.");
         }
+
+        #region Static Methods
+
+        /// <summary>
+        /// Opens SHP reader.
+        /// </summary>
+        /// <param name="shpStream">SHP file stream.</param>
+        /// <param name="options">Reader options.</param>
+        /// <returns>SHP reader.</returns>
+        public static ShpReader OpenRead(Stream shpStream, ShapefileReaderOptions options = null)
+        {
+            var shapeType = Shapefile.GetShapeType(shpStream);
+
+            if (shapeType.IsPoint())
+            {
+                return new ShpPointReader(shpStream, options);
+            }
+            else if (shapeType.IsMultiPoint())
+            {
+                return new ShpMultiPointReader(shpStream, options);
+            }
+            else if (shapeType.IsPolyLine())
+            {
+                return new ShpPolyLineReader(shpStream, options);
+            }
+            else if (shapeType.IsPolygon())
+            {
+                return new ShpPolygonReader(shpStream, options);
+            }
+            else
+            {
+                throw new FileLoadException("Unsupported shapefile type: " + shapeType);
+            }
+        }
+
+        #endregion
     }
 }

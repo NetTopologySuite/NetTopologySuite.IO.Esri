@@ -12,11 +12,11 @@ namespace NetTopologySuite.IO.Esri.TestConsole.Tests
             var shpPath = GetTestFilePath("arcmap/shp/pt_utf8.shp");
 
             using (var shpStream = File.OpenRead(shpPath))
-            using (var shp = new ShpPointReader(shpStream, GeometryFactory.Default))
+            using (var shp = new ShpPointReader(shpStream))
             {
                 while (shp.Read())
                 {
-                    Console.WriteLine(shp.Geometry);
+                    Console.WriteLine(shp.Shape);
                 }
             }
         }

@@ -1,13 +1,16 @@
 ﻿using NetTopologySuite.Algorithm;
 using NetTopologySuite.Geometries;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 
 namespace NetTopologySuite.IO.Esri.Shp.Readers
 {
     internal class ShpPolygonReader : ShpReader<MultiPolygon>
     {
-        public ShpPolygonReader(Stream shpStream, GeometryFactory factory) : base(shpStream, factory)
+        /// <inheritdoc/>
+        public ShpPolygonReader(Stream shpStream, ShapefileReaderOptions options = null)
+            : base(shpStream, options)
         {
             if (!ShapeType.IsPolygon())
                 ThrowUnsupportedShapeTypeException();
@@ -18,11 +21,18 @@ namespace NetTopologySuite.IO.Esri.Shp.Readers
             return MultiPolygon.Empty;
         }
 
-        internal override MultiPolygon ReadGeometry(Stream shapeBinary)
+        internal override bool ReadGeometry(Stream stream, out MultiPolygon geometry)
         {
+            var bbox = stream.ReadXYBoundingBox();
+            if (!IsInMbr(bbox))
+            {
+                geometry = null;
+                return false;
+            }
+
             // SHP Docs: A ring is a connected sequence of four or more points (page 8)
             var partsBuilder = new ShpMultiPartBuilder(1, 4);
-            partsBuilder.ReadParts(shapeBinary, HasZ, HasM, CreateCoordinateSequence);
+            partsBuilder.ReadParts(stream, HasZ, HasM, CreateCoordinateSequence);
 
             var polygons = new List<Polygon>();
             var holes = new List<LinearRing>();
@@ -30,8 +40,14 @@ namespace NetTopologySuite.IO.Esri.Shp.Readers
             var shell = Factory.CreateLinearRing(partsBuilder[0]);
             if (shell.IsCCW)
             {
-                ThrowInvalidRecordException("Invalid Shapefile polygon - shell coordinates are not in in clockwise order.");
+                if (partsBuilder.Count > 1)
+                {
+                    ThrowInvalidRecordException("Invalid Shapefile polygon - shell coordinates are not in in clockwise order.");
+                }
+                Debug.Assert(!shell.IsCCW, "Invalid Shapefile polygon - shell coordinates are not in in clockwise order.");
+                shell = Factory.CreateLinearRing(partsBuilder[0].Reversed());
             }
+
             for (int partIndex = 1; partIndex < partsBuilder.Count; partIndex++)
             {
                 // SHP Docs: Vertices of rings defining holes in polygons are in a counterclockwise direction.
@@ -53,7 +69,13 @@ namespace NetTopologySuite.IO.Esri.Shp.Readers
                 }
             }
             polygons.AddRange(CreatePolygons(shell, holes));
-            return Factory.CreateMultiPolygon(polygons.ToArray());
+
+            geometry = Factory.CreateMultiPolygon(polygons.ToArray());
+            if (!IsInMbr(geometry))
+            {
+                return false;
+            }
+            return true;
         }
 
         private IEnumerable<Polygon> CreatePolygons(LinearRing shell, List<LinearRing> innerRings)

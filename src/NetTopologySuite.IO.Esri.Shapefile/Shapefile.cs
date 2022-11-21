@@ -60,10 +60,21 @@ namespace NetTopologySuite.IO.Esri
             shpStream.Position = 0;
             var fileCode = shpStream.ReadInt32BigEndian();
             if (fileCode != Shapefile.FileCode)
-                throw new FileLoadException("Invalid shapefile format.");
+                throw new ShapefileException("Invalid shapefile format.");
 
             shpStream.Advance(28);
             return shpStream.ReadShapeType();
+        }
+
+
+        /// <summary>
+        /// Gets default <see cref="ShapeType"/> for specified geometry.
+        /// </summary>
+        /// <param name="geometry">A Geometry object.</param>
+        /// <returns>Shape type.</returns>
+        public static ShapeType GetShapeType(Geometry geometry)
+        {
+            return geometry.GetShapeType();
         }
 
         /// <summary>
@@ -73,9 +84,7 @@ namespace NetTopologySuite.IO.Esri
         /// <returns>Shape type.</returns>
         public static ShapeType GetShapeType(string shpPath)
         {
-            if (Path.GetExtension(shpPath).ToLowerInvariant() != ".shp")
-                throw new FileLoadException("Specified file must have .shp extension.");
-
+            shpPath = Path.ChangeExtension(shpPath, ".shp");
             using (var shpStream = new FileStream(shpPath, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
                 return GetShapeType(shpStream);
@@ -86,32 +95,31 @@ namespace NetTopologySuite.IO.Esri
         /// Opens shapefile reader.
         /// </summary>
         /// <param name="shpPath">Path to shapefile.</param>
-        /// <param name="factory">Geometry factory.</param>
-        /// <param name="encoding">DBF file encoding. If null encoding will be guess from related .CPG file or from reserved DBF bytes.</param>
+        /// <param name="options">Reader options.</param>
         /// <returns>Shapefile reader.</returns>
-        public static ShapefileReader OpenRead(string shpPath, GeometryFactory factory = null, Encoding encoding = null)
+        public static ShapefileReader OpenRead(string shpPath, ShapefileReaderOptions options = null)
         {
             var shapeType = GetShapeType(shpPath);
 
             if (shapeType.IsPoint())
             {
-                return new ShapefilePointReader(shpPath, factory, encoding);
+                return new ShapefilePointReader(shpPath, options);
             }
             else if (shapeType.IsMultiPoint())
             {
-                return new ShapefileMultiPointReader(shpPath, factory, encoding);
+                return new ShapefileMultiPointReader(shpPath, options);
             }
             else if (shapeType.IsPolyLine())
             {
-                return new ShapefilePolyLineReader(shpPath, factory, encoding);
+                return new ShapefilePolyLineReader(shpPath, options);
             }
             else if (shapeType.IsPolygon())
             {
-                return new ShapefilePolygonReader(shpPath, factory, encoding);
+                return new ShapefilePolygonReader(shpPath, options);
             }
             else
             {
-                throw new FileLoadException("Unsupported shapefile type: " + shapeType, shpPath);
+                throw new ShapefileException("Unsupported shapefile type: " + shapeType, shpPath);
             }
         }
 
@@ -119,13 +127,29 @@ namespace NetTopologySuite.IO.Esri
         /// Reads all features from shapefile.
         /// </summary>
         /// <param name="shpPath">Path to shapefile.</param>
-        /// <param name="factory">Geometry factory.</param>
-        /// <param name="encoding">DBF file encoding. If null encoding will be guess from related .CPG file or from reserved DBF bytes.</param>
+        /// <param name="options">Reader options.</param>
         /// <returns>Shapefile features.</returns>
-        public static Feature[] ReadAllFeatures(string shpPath, GeometryFactory factory = null, Encoding encoding = null)
+        public static Feature[] ReadAllFeatures(string shpPath, ShapefileReaderOptions options = null)
         {
-            using (var shp = OpenRead(shpPath, factory, encoding))
+            using (var shp = OpenRead(shpPath, options))
             {
+                return shp.ToArray();
+            }
+        }
+
+
+        /// <summary>
+        /// Reads all geometries from SHP file.
+        /// </summary>
+        /// <param name="shpPath">Path to SHP file.</param>
+        /// <param name="options">Reader options.</param>
+        /// <returns>Shapefile geometries.</returns>
+        public static Geometry[] ReadAllGeometries(string shpPath, ShapefileReaderOptions options = null)
+        {
+            shpPath = Path.ChangeExtension(shpPath, ".shp");
+            using (var shpStream = File.OpenRead(shpPath))
+            {
+                var shp = Shp.Shp.OpenRead(shpStream, options);
                 return shp.ToArray();
             }
         }
@@ -135,32 +159,30 @@ namespace NetTopologySuite.IO.Esri
         /// Opens shapefile writer.
         /// </summary>
         /// <param name="shpPath">Path to shapefile.</param>
-        /// <param name="type">Shape type.</param>
-        /// <param name="fields">Shapefile fields definitions.</param>
-        /// <param name="encoding">DBF file encoding. If null encoding will be guess from related .CPG file or from reserved DBF bytes.</param>
-        /// <param name="projection">Projection metadata for the shapefile (.prj file).</param>
+        /// <param name="options">Writer options.</param>
         /// <returns>Shapefile writer.</returns>
-        public static ShapefileWriter OpenWrite(string shpPath, ShapeType type, IReadOnlyList<DbfField> fields, Encoding encoding = null, string projection = null)
+        public static ShapefileWriter OpenWrite(string shpPath, ShapefileWriterOptions options)
         {
-            if (type.IsPoint())
+            options = options ?? throw new ArgumentNullException(nameof(options));
+            if (options.ShapeType.IsPoint())
             {
-                return new ShapefilePointWriter(shpPath, type, fields, encoding, projection);
+                return new ShapefilePointWriter(shpPath, options);
             }
-            else if (type.IsMultiPoint())
+            else if (options.ShapeType.IsMultiPoint())
             {
-                return new ShapefileMultiPointWriter(shpPath, type, fields, encoding, projection);
+                return new ShapefileMultiPointWriter(shpPath, options);
             }
-            else if (type.IsPolyLine())
+            else if (options.ShapeType.IsPolyLine())
             {
-                return new ShapefilePolyLineWriter(shpPath, type, fields, encoding, projection);
+                return new ShapefilePolyLineWriter(shpPath, options);
             }
-            else if (type.IsPolygon())
+            else if (options.ShapeType.IsPolygon())
             {
-                return new ShapefilePolygonWriter(shpPath, type, fields, encoding, projection);
+                return new ShapefilePolygonWriter(shpPath, options);
             }
             else
             {
-                throw new FileLoadException("Unsupported shapefile type: " + type, shpPath);
+                throw new ShapefileException("Unsupported shapefile type: " + options.ShapeType, shpPath);
             }
         }
 
@@ -170,9 +192,7 @@ namespace NetTopologySuite.IO.Esri
         /// </summary>
         /// <param name="features">Features to be written.</param>
         /// <param name="shpPath">Path to shapefile.</param>
-        /// <param name="encoding">DBF file encoding. If null encoding will be guess from related .CPG file or from reserved DBF bytes.</param>
-        /// <param name="projection">Projection metadata for the shapefile (.prj file).</param>
-        public static void WriteAllFeatures(IEnumerable<IFeature> features, string shpPath, Encoding encoding = null, string projection = null)
+        public static void WriteAllFeatures(IEnumerable<IFeature> features, string shpPath)
         {
             if (features == null)
                 throw new ArgumentNullException(nameof(features));
@@ -183,8 +203,9 @@ namespace NetTopologySuite.IO.Esri
 
             var fields = firstFeature.Attributes.GetDbfFields();
             var shapeType = features.FindNonEmptyGeometry().GetShapeType();
+            var options = new ShapefileWriterOptions(shapeType, fields);
 
-            using (var shpWriter = OpenWrite(shpPath, shapeType, fields, encoding, projection))
+            using (var shpWriter = OpenWrite(shpPath, options))
             {
                 shpWriter.Write(features);
             }

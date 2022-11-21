@@ -11,17 +11,18 @@ namespace NetTopologySuite.IO.Esri.TestConsole.Tests
         {
             var shpPath = GetTempFilePath("abcd2.shp");
 
-            var dateField = new DbfDateField("date");
-            var floatField = new DbfFloatField("float");
-            var intField = new DbfNumericField("int");
-            var LogicalField = new DbfLogicalField("logical");
-            var textField = new DbfCharacterField("text");
+            var options = new ShapefileWriterOptions(ShapeType.PolyLine);
+            var dateField = options.AddDateField("date");
+            var floatField = options.AddFloatField("float");
+            var intField = options.AddNumericInt32Field("int");
+            var LogicalField = options.AddLogicalField("logical");
+            var textField = options.AddCharacterField("text");
 
             var pointsBuffer = new CoordinateSequenceBuffer();
             var lineBuffer = GeometryFactory.Default.CreateLineString(pointsBuffer);
             var multiLineBuffer = GeometryFactory.Default.CreateMultiLineString(new LineString[] { lineBuffer });
 
-            using (var shp = new ShapefilePolyLineWriter(shpPath, ShapeType.PolyLine, dateField, floatField, intField, LogicalField, textField))
+            using (var shp = new ShapefilePolyLineWriter(shpPath, options))
             {
                 for (int i = 1; i < 5; i++)
                 {

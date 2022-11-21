@@ -3,6 +3,7 @@ using NetTopologySuite.Geometries;
 using NetTopologySuite.IO.Esri.Dbf;
 using NetTopologySuite.IO.Esri.Dbf.Fields;
 using NetTopologySuite.IO.Esri.Shp.Readers;
+using System;
 using System.IO;
 using System.Text;
 
@@ -19,20 +20,19 @@ namespace NetTopologySuite.IO.Esri.Shapefiles.Readers
         /// <inheritdoc/>
         public override ShapeType ShapeType => ShpReader.ShapeType;
 
+        /// <inheritdoc/>
+        public override Envelope BoundingBox => ShpReader.BoundingBox;
+
         /// <summary>
         /// Shape geometry.
         /// </summary>
-        public T Shape => ShpReader.Geometry;
+        public T Shape => ShpReader.Shape;
 
         /// <inheritdoc/>
-        public override Geometry Geometry => ShpReader.Geometry;
-
-
+        public override Geometry Geometry => ShpReader.Shape;
 
         /// <inheritdoc/>
         public override string Projection { get; } = null;
-
-
 
 
         /// <summary>
@@ -40,28 +40,37 @@ namespace NetTopologySuite.IO.Esri.Shapefiles.Readers
         /// </summary>
         /// <param name="shpStream">SHP file stream.</param>
         /// <param name="dbfStream">DBF file stream.</param>
-        /// <param name="factory">Geometry factory.</param>
-        /// <param name="encoding">DBF file encoding. If null encoding will be guess from related .CPG file or from reserved DBF bytes.</param>
-        public ShapefileReader(Stream shpStream, Stream dbfStream, GeometryFactory factory, Encoding encoding)
-            : base(new DbfReader(dbfStream, encoding))
+        /// <param name="options">Reader options.</param>
+        public ShapefileReader(Stream shpStream, Stream dbfStream, ShapefileReaderOptions options)
+            : base(new DbfReader(dbfStream, options?.Encoding))
         {
-            ShpReader = CreateShpReader(shpStream, factory);
-
+            try
+            {
+                options = options ?? ShapefileReaderOptions.Default;
+                options.DbfRecordCount = DbfReader.RecordCount;
+                ShpReader = CreateShpReader(shpStream, options);
+            }
+            catch
+            {
+                DisposeManagedResources();
+                throw;
+            }
         }
 
         /// <summary>
         /// Initializes a new instance of the reader class.
         /// </summary>
         /// <param name="shpPath">Path to SHP file.</param>
-        /// <param name="factory">Geometry factory.</param>
-        /// <param name="encoding">DBF file encoding. If null encoding will be guess from related .CPG file or from reserved DBF bytes.</param>
-        public ShapefileReader(string shpPath, GeometryFactory factory, Encoding encoding = null)
-            : base(new DbfReader(Path.ChangeExtension(shpPath, ".dbf"), encoding))
+        /// <param name="options">Reader options.</param>
+        public ShapefileReader(string shpPath, ShapefileReaderOptions options)
+            : base(new DbfReader(Path.ChangeExtension(shpPath, ".dbf"), options?.Encoding))
         {
             try
             {
+                options = options ?? ShapefileReaderOptions.Default;
+                options.DbfRecordCount = DbfReader.RecordCount;
                 var shpStream = OpenManagedFileStream(shpPath, ".shp", FileMode.Open);
-                ShpReader = CreateShpReader(shpStream, factory);
+                ShpReader = CreateShpReader(shpStream, options);
 
                 var prjFile = Path.ChangeExtension(shpPath, ".prj");
                 if (File.Exists(prjFile))
@@ -86,14 +95,19 @@ namespace NetTopologySuite.IO.Esri.Shapefiles.Readers
         /// </returns>
         public override bool Read(out bool deleted)
         {
-            var readShpSucceed = ShpReader.Read();
+            var readShpSucceed = ShpReader.Read(out var skippedCount);
+            for (int i = 0; i < skippedCount; i++)
+            {
+                if (!DbfReader.Read(out _))
+                {
+                    ThrowCorruptedShapefileDataException();
+                }
+            }
             var readDbfSucceed = DbfReader.Read(out deleted);
 
             if (readDbfSucceed != readShpSucceed)
             {
-                throw new FileLoadException("Corrupted shapefile data. "
-                    + "The dBASE table must contain feature attributes with one record per feature. "
-                    + "There must be one-to-one relationship between geometry and attributes.");
+                ThrowCorruptedShapefileDataException();
             }
             return readDbfSucceed;
         }
@@ -102,9 +116,16 @@ namespace NetTopologySuite.IO.Esri.Shapefiles.Readers
         public override bool Read(out bool deleted, out Feature feature)
         {
             var readSucceed = Read(out deleted);
-            var attributes = new AttributesTable(Fields.GetValues());
+            if (!readSucceed)
+            {
+                feature = null;
+                return false;
+            }
+
+            var attributes = new AttributesTable(Fields.ToDictionary());
             feature = new Feature(Shape, attributes);
-            return readSucceed;
+            feature.BoundingBox = Shape.EnvelopeInternal;
+            return true;
         }
 
         /// <inheritdoc/>
@@ -123,7 +144,14 @@ namespace NetTopologySuite.IO.Esri.Shapefiles.Readers
             base.DisposeManagedResources(); // This will dispose streams used by ShpReader and DbfReader. Do it at the end.
         }
 
-        internal abstract ShpReader<T> CreateShpReader(Stream shpStream, GeometryFactory factory);
+        internal abstract ShpReader<T> CreateShpReader(Stream shpStream, ShapefileReaderOptions options);
+
+        private static void ThrowCorruptedShapefileDataException()
+        {
+            throw new ShapefileException("Corrupted shapefile data. "
+                    + "The dBASE table must contain feature attributes with one record per feature. "
+                    + "There must be one-to-one relationship between geometry and attributes.");
+        }
     }
 
 

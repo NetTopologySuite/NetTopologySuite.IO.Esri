@@ -1,36 +1,31 @@
 using System;
+using System.IO;
 using System.Runtime.Serialization;
 
 namespace NetTopologySuite.IO.Esri
 {
     /// <summary>
-    /// The exception that is thrown when a non-fatal application error occurs related to Topology functionality.
+    /// The exception that is thrown when a non-fatal application error occurs related to Shapefile functionality.
     /// </summary>
-    public class ShapefileException : ApplicationException
+    public class ShapefileException : FileLoadException
     {
-        /// <summary>
-        /// Initializes a new instance of the ShapefileException class.
-        /// </summary>
+        /// <inheritdoc/>
         public ShapefileException() { }
 
-        /// <summary>
-        /// Initializes a new instance of the ShapefileException class with a specified error message.
-        /// </summary>
-        /// <param name="message">A message that describes the error. </param>
+        /// <inheritdoc/>
         public ShapefileException(string message) : base(message) { }
 
-        /// <summary>
-        /// Initializes a new instance of the ShapefileException class with serialized data.
-        /// </summary>
-        /// <param name="info">The object that holds the serialized object data. </param>
-        /// <param name="context">The contextual information about the source or destination.</param>
+        /// <inheritdoc/>
         public ShapefileException(SerializationInfo info, StreamingContext context) : base(info, context) { }
 
-        /// <summary>
-        /// Initializes a new instance of the ShapefileException class with a specified error message and a reference to the inner exception that is the cause of this exception.
-        /// </summary>
-        /// <param name="message">The error message that explains the reason for the exception.</param>
-        /// <param name="innerException">The exception that is the cause of the current exception. If the innerException parameter is not a null reference, the current exception is raised in a catch block that handles the inner exception</param>
+        /// <inheritdoc/>
         public ShapefileException(string message, Exception innerException) : base(message, innerException) { }
+
+
+        /// <inheritdoc/>
+        public ShapefileException(string message, string fileName) : base(message, fileName) { }
+
+        /// <inheritdoc/>
+        public ShapefileException(string message, string fileName, Exception inner) : base(message, fileName, inner) { }
     }
 }

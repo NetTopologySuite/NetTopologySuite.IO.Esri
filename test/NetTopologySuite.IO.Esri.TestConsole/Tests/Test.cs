@@ -23,11 +23,11 @@ namespace NetTopologySuite.IO.Esri.TestConsole.Tests
 
         public static readonly string FieldSpace = " ".PadRight(12);
 
-        public static string TestDataDir = GetTestDataDir(Assembly.GetExecutingAssembly().Location);
+        public static string TestDataDir { get; private set; } = GetTestDataDir(Assembly.GetExecutingAssembly().Location);
 
         private static string GetTestDataDir(string dir)
         {
-            dir = Path.GetDirectoryName(dir);
+            dir = Path.GetDirectoryName(dir) ?? "";
             var testDataDir = Path.Combine(dir, "TestData");
 
             if (Directory.Exists(testDataDir))
@@ -58,7 +58,7 @@ namespace NetTopologySuite.IO.Esri.TestConsole.Tests
         public static string GetTempFilePath(string fileName)
         {
             var tempFilePath = Path.Combine(TestDataDir, "temp", fileName);
-            Directory.CreateDirectory(Path.GetDirectoryName(tempFilePath));
+            Directory.CreateDirectory(Path.GetDirectoryName(tempFilePath) ?? "shp_test");
             return tempFilePath;
         }
 
@@ -76,7 +76,7 @@ namespace NetTopologySuite.IO.Esri.TestConsole.Tests
             return Title;
         }
 
-        protected void PrintFieldNames(IReadOnlyList<DbfField> fields)
+        protected static void PrintFieldNames(IReadOnlyList<DbfField> fields)
         {
             Console.WriteLine("FIELD LIST");
             Console.WriteLine("----------");
@@ -87,32 +87,32 @@ namespace NetTopologySuite.IO.Esri.TestConsole.Tests
             Console.WriteLine();
         }
 
-        protected void PrintFieldValues(IReadOnlyDictionary<string, object> values)
+        protected static void PrintFieldValues(IAttributesTable fields)
         {
             Console.WriteLine();
-            foreach (var nameVal in values)
+            foreach (var name in fields.GetNames())
             {
-                PrintFieldValue(nameVal.Key, nameVal.Value);
+                PrintFieldValue(name, fields[name]);
             }
         }
 
-        protected void PrintFieldValue(string name, object value)
+        protected static void PrintFieldValue(string name, object value)
         {
             name += ": ";
             Console.WriteLine(name.PadRight(12) + ToText(value));
         }
 
-        public void PrintFields(DbfReader dbf)
+        public static void PrintFields(DbfReader dbf)
         {
             PrintFieldNames(dbf.Fields);
-            foreach (var values in dbf)
+            foreach (var fields in dbf)
             {
-                PrintFieldValues(values);
+                PrintFieldValues(fields);
 
             }
         }
 
-        protected void PrintGeometry(Geometry geometry)
+        protected static void PrintGeometry(Geometry geometry)
         {
             if (geometry.IsEmpty)
             {
@@ -137,7 +137,7 @@ namespace NetTopologySuite.IO.Esri.TestConsole.Tests
             }
         }
 
-        private void PrintCoordinates(Coordinate[] coordinates)
+        private static void PrintCoordinates(Coordinate[] coordinates)
         {
             foreach (var c in coordinates)
             {
@@ -146,7 +146,7 @@ namespace NetTopologySuite.IO.Esri.TestConsole.Tests
 
         }
 
-        public void PrintFeature(Feature feature)
+        public static void PrintFeature(Feature feature)
         {
             Console.WriteLine();
             foreach (var name in feature.Attributes.GetNames())
@@ -156,7 +156,7 @@ namespace NetTopologySuite.IO.Esri.TestConsole.Tests
             PrintGeometry(feature.Geometry);
         }
 
-        public void PrintFeatures(ShapefileReader shp)
+        public static void PrintFeatures(ShapefileReader shp)
         {
             PrintFieldNames(shp.Fields);
 
@@ -169,24 +169,21 @@ namespace NetTopologySuite.IO.Esri.TestConsole.Tests
         }
 
 
-        protected string ToText(object value)
+        protected static string ToText(object value)
         {
-            if (value == null)
-                return "<null>";
-
             if (value is string s)
                 return "'" + s + "'";
 
-            return value.ToString();
+            return value?.ToString() ?? "<null>";
         }
-        protected void PrintRecordListHeader()
+        protected static void PrintRecordListHeader()
         {
             Console.WriteLine("RECORD LIST");
             Console.WriteLine("-----------");
             Console.WriteLine();
         }
 
-        public void PrintSectionTitle(string title)
+        public static void PrintSectionTitle(string title)
         {
             Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine();
@@ -197,14 +194,14 @@ namespace NetTopologySuite.IO.Esri.TestConsole.Tests
             Console.ResetColor();
         }
 
-        public void PrintValidationResult(bool isValid, string message)
+        public static void PrintValidationResult(bool isValid, string message)
         {
             Console.ForegroundColor = isValid ? ConsoleColor.Green : ConsoleColor.Red;
             Console.WriteLine(message);
             Console.ResetColor();
         }
 
-        public CoordinateSequence CreateCoordinateSequence(int size, Ordinates ordinates = Ordinates.XY)
+        public static CoordinateSequence CreateCoordinateSequence(int size, Ordinates ordinates = Ordinates.XY)
         {
             return NtsGeometryServices.Instance.DefaultCoordinateSequenceFactory.Create(size, ordinates);
         }

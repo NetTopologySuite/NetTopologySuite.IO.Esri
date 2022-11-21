@@ -9,26 +9,57 @@ namespace NetTopologySuite.IO.Esri.Dbf.Fields
     /// <summary>
     /// Numeric field definition.
     /// </summary>
-    public abstract class DbfNumericField<T> : DbfField where T : struct, IConvertible, IFormattable
+    public abstract class DbfNumericField : DbfField
     {
         internal static readonly int MaxFieldLength = 19;    // Decimal point and any sign is included in field width, if present. 
         internal static readonly int MaxFieldPrecision = 17; // dBASE specs states it could be max 15, but Esri uses up to 17.
 
         internal DbfNumericField(string name, DbfType type, int length, int precision)
-            : base(name, type, GetProperLength(length), GetProperPrecision(length, precision))
+            : base(name, type, length, precision)
         {
+            // -0.12345 => legth: 8, decimalCount: 5 => should be (length - 3). But Esri allows decimalCount: 6 => (length - 2).
         }
 
-        /// <summary>
-        ///  Initializes a new instance of the field class.
-        /// </summary>
-        /// <param name="name">Field name.</param>
-        /// <param name="length">Field length.</param>
-        /// <param name="precision">Decmial places count.</param>
-        protected DbfNumericField(string name, int length, int precision)
-            : this(name, DbfType.Numeric, length, precision)
+        internal static DbfField Create(string name, int length, int precision)
         {
+            // Consider writing a field based on `Byte` value.
+            // Such field would get the length=3 (Byte.MaxValue=255). 
+            // Now consider you are reading the the same field.
+            // From the DBF point of view you know only that it has length=3 (and precision=0).
+            // What type would you use for such field?
+            // - The `Byte` type? (because it's you who create that field)
+            // - The `Int16` type? (because in the meantime one was able to write there 999 or even -3)
 
+            // For above reasons use only very basic numeric types - Int32, Int64 and Double.
+
+            if (precision <= 0 && length <= DbfNumericInt32Field.DefaultFieldLength)
+            {
+                return new DbfNumericInt32Field(name, length);
+            }
+
+            if (precision <= 0)
+            {
+                return new DbfNumericInt64Field(name, length);
+            }
+
+            return new DbfNumericDoubleField(name, length, precision);
+        }
+
+    }
+
+    /// <summary>
+    /// Numeric field definition.
+    /// </summary>
+    public abstract class DbfNumericField<T> : DbfNumericField where T : struct, IConvertible, IFormattable
+    {
+        private readonly string NumberFormat;
+
+        internal DbfNumericField(string name, DbfType type, int length, int precision)
+            : base(name, type, length, precision)
+        {
+            NumberFormat = precision > 0
+                ? "0." + new string('#', precision)
+                : "0";
         }
 
         /// <summary>
@@ -36,25 +67,25 @@ namespace NetTopologySuite.IO.Esri.Dbf.Fields
         /// </summary>
         public T? NumericValue { get; set; }
 
-        internal static int GetProperLength(int length)
+        /// <inheritdoc/>
+        public override object Value
         {
-            if (length < 1)
-                return 1;
-            return Math.Min(length, MaxFieldLength);
+            get { return NumericValue; }
+            set
+            {
+                if (value == null)
+                {
+                    NumericValue = null;
+                }
+                else
+                {
+                    NumericValue = (T)Convert.ChangeType(value, typeof(T), CultureInfo.InvariantCulture);
+                }
+            }
         }
 
-        private static int GetProperPrecision(int length, int precision)
-        {
-            if (precision < 0)
-                return 0;
-
-            length = GetProperLength(length);
-            if (length < 2)
-                return 0;
-
-            precision = Math.Min(precision, length - 2);  // -0.12345 => legth: 8, decimalCount: 5 => should be (length - 3). But Esri allows decimalCount: 6 => (length - 2).
-            return Math.Min(precision, MaxFieldPrecision);
-        }
+        /// <inheritdoc/>
+        public override bool IsNull => NumericValue == null;
 
         internal override void ReadValue(Stream stream)
         {
@@ -64,6 +95,10 @@ namespace NetTopologySuite.IO.Esri.Dbf.Fields
                 NumericValue = null;
                 return;
             }
+
+            // https://desktop.arcgis.com/en/arcmap/latest/manage-data/shapefiles/geoprocessing-considerations-for-shapefile-output.htm
+            // Null values are not supported in shapefiles. If a feature class containing nulls is converted to a shapefile, or a database table is converted to a dBASE file, the null values will be changed:
+            // Number: -1.7976931348623158e+308 (IEEE standard for the maximum negative value)
 
             NumericValue = StringToNumber(valueText);
         }
@@ -77,21 +112,19 @@ namespace NetTopologySuite.IO.Esri.Dbf.Fields
             }
 
             var valueText = NumberToString(NumericValue.Value);
+            if (valueText.Length > this.Length)
+            {
+                throw GetFieldValueError(valueText, "Field value out of range.");
+            }
 
             // Length: 4
             // 1.2 => " 1.2";
             if (valueText.Length < this.Length)
             {
-                stream.WriteString(valueText.PadLeft(this.Length, ' '), Length, Encoding.ASCII); // PadLeft for Values
+                valueText = valueText.PadLeft(this.Length, ' '); // PadLeft for Values
             }
-            else
-            {
-                if (valueText.Length > this.Length)
-                {
-                    throw GetFieldValueError(valueText, "Field value out of range.");
-                }
-                stream.WriteString(valueText, Length, Encoding.ASCII);
-            }
+
+            stream.WriteString(valueText, Length, Encoding.ASCII);
         }
 
 
@@ -100,53 +133,7 @@ namespace NetTopologySuite.IO.Esri.Dbf.Fields
         /// </summary>
         /// <param name="number">Number to convert.</param>
         /// <returns>A string that is equivalent to the specified numer.</returns>
-        protected abstract string NumberToString(T number);
-
-        /// <summary>
-        /// Converts the string representation of a number to its number equivalent.
-        /// </summary>
-        /// <param name="number">A string that contains a number to convert.</param>
-        /// <returns>A number that is equivalent to the specified string representation of numeric value.</returns>
-        protected abstract T StringToNumber(string number);
-    }
-
-
-
-    /// <inheritdoc/>
-    public class DbfNumericField : DbfNumericField<decimal>
-    {
-        internal static readonly int MaxInt32FieldLength = int.MaxValue.ToString().Length; // 10  (int.MinValue => -2147483648 => 11, but Esri uses 10)
-        private readonly string NumberFormat = "0"; // For integers
-
-        /// <inheritdoc/>
-        public DbfNumericField(string name, int length, int precision)
-            : base(name, DbfType.Numeric, length, precision)
-        {
-            if (NumericScale > 0)
-                NumberFormat = "0." + new string('0', NumericScale);
-        }
-
-        /// <summary>
-        ///  Initializes a new instance of the integer field class.
-        /// </summary>
-        /// <param name="name">Field name.</param>
-        public DbfNumericField(string name)
-            : this(name, MaxInt32FieldLength, 0)
-        {
-        }
-
-        /// <inheritdoc/>
-        protected override decimal StringToNumber(string number)
-        {
-            // https://desktop.arcgis.com/en/arcmap/latest/manage-data/shapefiles/geoprocessing-considerations-for-shapefile-output.htm
-            // Null values are not supported in shapefiles. If a feature class containing nulls is converted to a shapefile, or a database table is converted to a dBASE file, the null values will be changed:
-            // Number: -1.7976931348623158e+308 (IEEE standard for the maximum negative value)
-
-            return decimal.Parse(number, CultureInfo.InvariantCulture);
-        }
-
-        /// <inheritdoc/>
-        protected override string NumberToString(decimal number)
+        protected virtual string NumberToString(T number)
         {
             var valueString = number.ToString(NumberFormat, CultureInfo.InvariantCulture);
 
@@ -174,56 +161,13 @@ namespace NetTopologySuite.IO.Esri.Dbf.Fields
             return valueString;
         }
 
-        /// <inheritdoc/>
-        public override object Value
-        {
-            get { return NumericValue; }
-            set
-            {
-                if (value == null)
-                {
-                    NumericValue = null;
-                }
-                else
-                {
-                    NumericValue = Convert.ToDecimal(value);
-                }
-            }
-        }
-
         /// <summary>
-        /// <see cref="int"/> representation of field value.
+        /// Converts the string representation of a number to its number equivalent.
         /// </summary>
-        public int? Int32Value
-        {
-            get => ConvertValue(Convert.ToInt32);
-            set => NumericValue = ConvertToDecimal(value);
-        }
+        /// <param name="s">A string that contains a number to convert.</param>
+        /// <returns>A number that is equivalent to the specified string representation of numeric value.</returns>
+        protected abstract T StringToNumber(string s);
 
-        /// <summary>
-        /// <see cref="double"/> representation of field value.
-        /// </summary>
-        public double? DoubleValue
-        {
-            get => ConvertValue(Convert.ToDouble);
-            set => NumericValue = ConvertToDecimal(value);
-        }
-
-        private T? ConvertValue<T>(Func<decimal, T> converTo) where T : struct
-        {
-            if (NumericValue.HasValue)
-                return converTo(NumericValue.Value);
-            else
-                return null;
-        }
-
-        private decimal? ConvertToDecimal(IConvertible value)
-        {
-            if (value == null)
-                return null;
-            else
-                return value.ToDecimal(CultureInfo.InvariantCulture);
-        }
     }
 
 
