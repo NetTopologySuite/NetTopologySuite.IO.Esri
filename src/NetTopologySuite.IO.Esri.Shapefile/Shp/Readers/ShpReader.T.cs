@@ -1,4 +1,5 @@
 ﻿using NetTopologySuite.Geometries;
+using NetTopologySuite.IO.Esri.Shapefiles.Readers;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -16,7 +17,7 @@ namespace NetTopologySuite.IO.Esri.Shp.Readers
         private readonly Stream ShpStream;
         private readonly int ShpEndPosition;
         private readonly MemoryStream Buffer;
-        private readonly bool SkipFailures;
+        private protected readonly GeometryBuilderMode GeometryBuilderMode;
         private readonly Envelope MbrEnvelope = null;
         private readonly MbrFilterOption MbrFilterOption;
         private readonly Geometry MbrGeometry = null;
@@ -75,7 +76,7 @@ namespace NetTopologySuite.IO.Esri.Shp.Readers
             }
             MbrFilterOption = options?.MbrFilterOption ?? MbrFilterOption.FilterByExtent;
 
-            SkipFailures = options?.SkipFailures ?? false;
+            GeometryBuilderMode = options?.GeometryBuilderMode ?? GeometryBuilderMode.Strict;
 
             DbfRecordCount = options?.DbfRecordCount ?? int.MaxValue;
             if (DbfRecordCount < 0)
@@ -110,20 +111,7 @@ namespace NetTopologySuite.IO.Esri.Shp.Readers
         internal bool Read(out int skippedCount)
         {
             skippedCount = 0;
-            try
-            {
-                return ReadCore(ref skippedCount);
-            }
-            catch (Exception ex)
-            {
-                if (SkipFailures)
-                {
-                    _errors.Add(ex);
-                    Shape = GetEmptyGeometry();
-                    return true;
-                }
-                throw;
-            }
+            return ReadCore(ref skippedCount);
         }
 
         /// <inheritdoc/>
@@ -155,17 +143,31 @@ namespace NetTopologySuite.IO.Esri.Shp.Readers
             }
             else if (type != ShapeType)
             {
-                ThrowInvalidRecordTypeException(type);
-            }
-
-            if (!ReadGeometry(Buffer, out var geometry))
-            {
+                OnInvalidRecordType(type);
                 skippedCount++;
-                return ReadCore(ref skippedCount); 
+                return ReadCore(ref skippedCount);
             }
 
-            Shape = geometry;
-            return true;
+            try
+            {
+                if (!ReadGeometry(Buffer, out var geometry))
+                {
+                    skippedCount++;
+                    return ReadCore(ref skippedCount); 
+                }
+                Shape = geometry;
+                return true;
+            }
+            catch (Exception ex)
+            {
+                if (GeometryBuilderMode != GeometryBuilderMode.SkipInvalidShapes)
+                {
+                    throw;
+                }
+                _errors.Add(ex);
+                skippedCount++;
+                return ReadCore(ref skippedCount);
+            }
         }
 
         internal bool IsInMbr(Envelope boundingBox)
@@ -195,14 +197,21 @@ namespace NetTopologySuite.IO.Esri.Shp.Readers
             return Factory.CoordinateSequenceFactory.Create(size, HasZ, HasM);
         }
 
-        internal void ThrowInvalidRecordTypeException(ShapeType shapeType)
+        private void OnReaderError(string message)
         {
-            throw new FileLoadException($"Ivalid shapefile record type. {GetType().Name} does not support {shapeType} shape type.");
+            var ex = new ShapefileException(message);
+            _errors.Add(ex);
+
         }
 
-        internal void ThrowInvalidRecordException(string message)
+        private void OnInvalidRecordType(ShapeType shapeType)
         {
-            throw new FileLoadException(message);
+            OnReaderError($"Ivalid shapefile record type (FID={RecordNumber}). {GetType().Name} does not support {shapeType} shape type.");
+        }
+
+        internal void OnInvalidGeometry(string message)
+        {
+            OnReaderError($"Ivalid shapefile record geometry (FID={RecordNumber}). {message}");
         }
     }
 

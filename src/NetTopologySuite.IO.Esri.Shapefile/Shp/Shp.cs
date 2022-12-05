@@ -1,4 +1,5 @@
 ﻿using NetTopologySuite.Geometries;
+using NetTopologySuite.IO.Esri.Shapefiles.Readers;
 using NetTopologySuite.IO.Esri.Shp.Readers;
 using System.IO;
 using System.Linq;

@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace NetTopologySuite.IO.Esri
+namespace NetTopologySuite.IO.Esri.Shapefiles.Writers
 {
     /// <summary>
     ///  Shapefile writer options

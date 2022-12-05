@@ -2,6 +2,7 @@
 using NetTopologySuite.Geometries;
 using NetTopologySuite.Geometries.Utilities;
 using NetTopologySuite.Index.Quadtree;
+using NetTopologySuite.IO.Esri.Shapefiles.Readers;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;

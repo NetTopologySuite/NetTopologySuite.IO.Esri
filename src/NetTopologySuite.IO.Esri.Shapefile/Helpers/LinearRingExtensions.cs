@@ -1,6 +1,7 @@
 ﻿using NetTopologySuite.Algorithm;
 using NetTopologySuite.Geometries;
 using System.Collections.Generic;
+using System.Net.NetworkInformation;
 
 namespace NetTopologySuite.IO.Esri
 {
@@ -25,18 +26,28 @@ namespace NetTopologySuite.IO.Esri
                 }
 
                 var ringPoint = ring.CoordinateSequence.GetCoordinate(0);
-
-                if (!shell.EnvelopeInternal.Contains(ringPoint)) // Fast, but not precise.
+                if (shell.Contains(ringPoint))
                 {
-                    continue;
-                }
-                if (PointLocation.IsInRing(ringPoint, shell.CoordinateSequence))
-                {
-                    innerRings.Add(ring);
+                    innerRings.Insert(0, ring); // Keep sort order (we are iterating backward)
                     rings.RemoveAt(i);
                 }
             }
             return innerRings;
+        }
+
+        public static bool Contains(this LinearRing ring, Coordinate p)
+        {
+            if (!ring.IsValid)
+            {
+                return false;
+            }
+
+            if (!ring.EnvelopeInternal.Contains(p)) // Fast, but not precise.
+            {
+                return false;
+            }
+
+            return PointLocation.IsInRing(p, ring.CoordinateSequence);
         }
     }
 }

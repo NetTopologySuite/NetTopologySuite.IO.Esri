@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using NetTopologySuite.IO.Esri.Shapefiles.Writers;
 
 namespace NetTopologySuite.IO.Esri.Test.Deprecated.Attributes
 {

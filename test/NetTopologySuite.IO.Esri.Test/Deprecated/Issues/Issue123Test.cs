@@ -1,4 +1,5 @@
 ﻿using NetTopologySuite.Geometries;
+using NetTopologySuite.IO.Esri.Shapefiles.Readers;
 using NetTopologySuite.Operation.Union;
 using NetTopologySuite.Operation.Valid;
 using NUnit.Framework;
@@ -45,7 +46,11 @@ namespace NetTopologySuite.IO.Esri.Test.Deprecated.Issues
         [Test]
         public void CascadedUnionError2()
         {
-            var geomArr = Shapefile.ReadAllGeometries(TestShapefiles.PathTo("error_union.shp"));
+            var options = new ShapefileReaderOptions()
+            {
+                GeometryBuilderMode = GeometryBuilderMode.IgnoreInvalidShapes
+            };
+            var geomArr = Shapefile.ReadAllGeometries(TestShapefiles.PathTo("error_union.shp"), options);
             var geoms = new GeometryCollection(geomArr);
 
             var isValidOp = new IsValidOp(geoms);

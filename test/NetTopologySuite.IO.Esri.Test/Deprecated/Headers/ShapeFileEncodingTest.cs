@@ -1,5 +1,6 @@
 ﻿using NetTopologySuite.Features;
 using NetTopologySuite.Geometries;
+using NetTopologySuite.IO.Esri.Shapefiles.Writers;
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.Text;

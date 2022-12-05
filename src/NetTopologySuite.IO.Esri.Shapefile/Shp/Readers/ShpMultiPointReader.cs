@@ -1,4 +1,5 @@
 ﻿using NetTopologySuite.Geometries;
+using NetTopologySuite.IO.Esri.Shapefiles.Readers;
 using System.IO;
 
 namespace NetTopologySuite.IO.Esri.Shp.Readers
@@ -49,9 +50,14 @@ namespace NetTopologySuite.IO.Esri.Shp.Readers
             }
 
             geometry = Factory.CreateMultiPoint(coordinateSequence);
+
             if (!IsInMbr(geometry))
             {
                 return false;
+            }
+            if (GeometryBuilderMode == GeometryBuilderMode.FixInvalidShapes)
+            {
+                geometry.Normalize();
             }
             return true;
         }

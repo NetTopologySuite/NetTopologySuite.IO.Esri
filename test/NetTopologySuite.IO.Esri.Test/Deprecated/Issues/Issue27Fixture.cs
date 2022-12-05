@@ -4,6 +4,7 @@ using System.Linq;
 using System.IO;
 using NetTopologySuite.Features;
 using NetTopologySuite.Geometries;
+using NetTopologySuite.IO.Esri.Shapefiles.Readers;
 
 namespace NetTopologySuite.IO.Esri.Test.Deprecated.Issues
 {

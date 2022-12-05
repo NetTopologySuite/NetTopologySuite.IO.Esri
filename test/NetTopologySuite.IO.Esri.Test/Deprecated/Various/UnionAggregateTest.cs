@@ -1,4 +1,5 @@
 ﻿using NetTopologySuite.Geometries;
+using NetTopologySuite.IO.Esri.Shapefiles.Readers;
 using NetTopologySuite.Operation.Union;
 using NUnit.Framework;
 using System;

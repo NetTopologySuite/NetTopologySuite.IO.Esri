@@ -1,6 +1,7 @@
 ﻿using NetTopologySuite.Features;
 using NetTopologySuite.Geometries;
 using NetTopologySuite.IO.Esri.Dbf;
+using NetTopologySuite.IO.Esri.Shapefiles.Readers;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
@@ -71,6 +72,23 @@ namespace NetTopologySuite.IO.Esri.Test.Geometries
             TestShapefiles.DeleteShp(tempShpPath);
 
             Assert.IsTrue(shpMultiPolygon.EqualsExact(wktMultiPolygon), "SHP MultiPolygon is not equal to WKT MultiPolygon.");
+        }
+
+        //https://github.com/NetTopologySuite/NetTopologySuite.IO.ShapeFile/issues/70
+        [Test]
+        public void TestShapeFileIssue70()
+        {
+            var options = new ShapefileReaderOptions()
+            {
+                GeometryBuilderMode = GeometryBuilderMode.QuickFixInvalidShapes
+            };
+            var shpPath = TestShapefiles.PathTo("Example_70.shp");
+            var features = Shapefile.ReadAllFeatures(shpPath, options);
+            var problematicFeature = features.First(f => f.Attributes["FID"].Equals(481));
+            var multiPolygon = (MultiPolygon)problematicFeature.Geometry;
+            var normalizedMultiPolygon = (MultiPolygon)multiPolygon.Normalized();
+            Assert.AreEqual(1, 1);
+
         }
     }
 }

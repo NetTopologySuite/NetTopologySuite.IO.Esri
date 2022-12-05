@@ -4,7 +4,6 @@ using System.Linq;
 using NetTopologySuite.Geometries;
 using NetTopologySuite.Index.Strtree;
 using NetTopologySuite.IO.Esri.Shapefiles.Readers;
-using NetTopologySuite.IO.Esri;
 using NetTopologySuite.IO.Esri.Test;
 using NUnit.Framework;
 using NetTopologySuite.Features;

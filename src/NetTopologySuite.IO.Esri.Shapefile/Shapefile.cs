@@ -1,14 +1,12 @@
-﻿using NetTopologySuite.Features;
-using NetTopologySuite.Geometries;
-using NetTopologySuite.IO.Esri.Dbf.Fields;
-using NetTopologySuite.IO.Esri.Shapefiles.Readers;
-using NetTopologySuite.IO.Esri.Shapefiles.Writers;
-using NetTopologySuite.IO.Esri.Shp;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
+using NetTopologySuite.Features;
+using NetTopologySuite.Geometries;
+using NetTopologySuite.IO.Esri.Shapefiles.Readers;
+using NetTopologySuite.IO.Esri.Shapefiles.Writers;
+using NetTopologySuite.IO.Esri.Shp;
 
 namespace NetTopologySuite.IO.Esri
 {

@@ -9,6 +9,7 @@ using System.IO;
 using System.Text;
 using System.Collections.Generic;
 using NetTopologySuite.IO.Esri;
+using NetTopologySuite.IO.Esri.Shapefiles.Writers;
 
 namespace NetTopologySuite.IO.Esri.Test.Deprecated.Writers
 {

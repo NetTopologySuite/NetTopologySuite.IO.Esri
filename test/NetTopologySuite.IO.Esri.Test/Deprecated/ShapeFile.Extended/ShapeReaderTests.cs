@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using NetTopologySuite.Geometries;
+using NetTopologySuite.IO.Esri.Shapefiles.Readers;
 using NUnit.Framework;
 
 namespace NetTopologySuite.IO.Esri.Test.Deprecated.ShapeFile.Extended
@@ -346,7 +347,11 @@ namespace NetTopologySuite.IO.Esri.Test.Deprecated.ShapeFile.Extended
         {
             // Arrange.
             using var tempShp = new TempFileWriter(".shp", "polygon intersecting line");
-            var shp = Shp.Shp.OpenRead(tempShp.OpenRead());
+            var options = new ShapefileReaderOptions()
+            {
+                GeometryBuilderMode = GeometryBuilderMode.IgnoreInvalidShapes
+            };
+            var shp = Shp.Shp.OpenRead(tempShp.OpenRead(), options);
 
             bool[] expectedValidityResults = new bool[] { false, true };
 
@@ -354,10 +359,9 @@ namespace NetTopologySuite.IO.Esri.Test.Deprecated.ShapeFile.Extended
             Assert.IsNotNull(firstGeo);
             Assert.AreEqual(firstGeo.IsValid, false);
 
-            Assert.Catch<ArgumentException>(() =>
-            {
-                var secondGeo = shp.Skip(1).First();
-            });
+            var secondGeo = shp.Skip(1).First();
+            Assert.IsNotNull(secondGeo);
+            Assert.AreEqual(secondGeo.IsValid, false);
         }
 
         [Test]

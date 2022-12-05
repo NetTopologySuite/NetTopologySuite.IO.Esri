@@ -4,6 +4,7 @@ using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using NetTopologySuite.IO.Esri.Shapefiles.Readers;
 
 namespace NetTopologySuite.IO.Esri.Test.Deprecated.Various
 {

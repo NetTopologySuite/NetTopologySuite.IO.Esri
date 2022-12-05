@@ -2,6 +2,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using NetTopologySuite.IO.Esri.Shapefiles.Writers;
 
 namespace NetTopologySuite.IO.Esri.TestConsole.Tests
 {

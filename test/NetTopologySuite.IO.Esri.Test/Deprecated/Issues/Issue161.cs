@@ -1,4 +1,5 @@
 ﻿using NetTopologySuite.Geometries;
+using NetTopologySuite.IO.Esri.Shapefiles.Readers;
 using NUnit.Framework;
 using System.IO;
 
@@ -15,8 +16,13 @@ namespace NetTopologySuite.IO.Esri.Test.Deprecated.Issues
             string filePath = TestShapefiles.PathTo("LSOA_2011_EW_BGC.shp");
             if (!File.Exists(filePath)) Assert.Ignore("File '{0}' not present", filePath);
 
+            var options = new ShapefileReaderOptions()
+            {
+                GeometryBuilderMode = GeometryBuilderMode.IgnoreInvalidShapes
+            };
+
             //ATTEMPT
-            using (var reader = Shapefile.OpenRead(filePath))
+            using (var reader = Shapefile.OpenRead(filePath, options))
             {
                 while (reader.Read(out bool deleted))//&& count++ < 3)
                 {

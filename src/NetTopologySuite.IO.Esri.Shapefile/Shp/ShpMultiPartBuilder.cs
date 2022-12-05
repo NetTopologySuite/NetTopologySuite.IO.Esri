@@ -1,11 +1,12 @@
 ﻿using NetTopologySuite.Geometries;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 
 namespace NetTopologySuite.IO.Esri.Shp
 {
-    internal class ShpMultiPartBuilder
+    internal class ShpMultiPartBuilder : IEnumerable<CoordinateSequence>
     {
         private readonly List<CoordinateSequence> Parts;
         private readonly List<int> Offsets;
@@ -120,9 +121,61 @@ namespace NetTopologySuite.IO.Esri.Shp
             }
         }
 
+        public void CloseRings(Func<int, CoordinateSequence> createCoordinateSequence)
+        {
+            for (int i = 0; i < Parts.Count; i++)
+            {
+                Parts[i] = CloseRing(Parts[i], createCoordinateSequence);
+            }
+        }
+
+        private CoordinateSequence CloseRing(CoordinateSequence part, Func<int, CoordinateSequence> createCoordinateSequence)
+        {
+            if (part.Count < 3)
+            {
+                return part;
+            }
+
+            var firstCoordinate = part.GetCoordinate(0);
+            var lastCoordinate = part.GetCoordinate(part.Count - 1);
+
+            if (firstCoordinate.Equals(lastCoordinate))
+            {
+                return part;
+            }
+
+            var closedPart = createCoordinateSequence(part.Count + 1);
+            for (int i = 0; i < part.Count; i++)
+            {
+                CopyCoordinate(part, closedPart, i, i);
+            }
+            CopyCoordinate(part, closedPart, 0, closedPart.Count - 1);
+
+            return closedPart;
+        }
+
+        private void CopyCoordinate(CoordinateSequence part, CoordinateSequence closedPart, int partCoordinateIndex, int closedPartCoordinateIndex)
+        {
+            for (int ordinateIndex = 0; ordinateIndex < part.Dimension; ordinateIndex++)
+            {
+                var ordinate = part.GetOrdinate(partCoordinateIndex, ordinateIndex);
+                closedPart.SetOrdinate(closedPartCoordinateIndex, ordinateIndex, ordinate);
+            }
+        }
+
         public void UpdateExtent(ShpExtent extent)
         {
             extent.Expand(Extent);
+        }
+
+        public IEnumerator<CoordinateSequence> GetEnumerator()
+        {
+            return Parts.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return Parts.GetEnumerator();
         }
     }
 }
