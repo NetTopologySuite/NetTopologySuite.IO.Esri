@@ -85,8 +85,6 @@ namespace NetTopologySuite.IO.Esri
         MultiPointZM = 18,
 
 
-
-
         /// <summary>
         /// Measured Point in the X, Y space.
         /// </summary>
@@ -110,49 +108,7 @@ namespace NetTopologySuite.IO.Esri
         /// <summary>
         /// MultiPatch
         /// </summary>
-        [Obsolete("This shape type is not supported.")]
         MultiPatch = 31,
-
-
-
-        // GeoTools
-
-        /// <summary>
-        /// Point in the X, Y, Z space.
-        /// </summary>
-        /// <remarks>
-        /// This shape type is not conformant with ESRI Shapefile Technical Description. Use PointZM instead.
-        /// </remarks>
-        [Obsolete("This shape type is not conformant with ESRI Shapefile Technical Description. Use PointZM instead.")]
-        PointZ = 9,
-
-        /// <summary>
-        /// PolyLine in the X, Y, Z space.
-        /// </summary>
-        /// <remarks>
-        /// This shape type is not conformant with ESRI Shapefile Technical Description. Use PointZM instead.
-        /// </remarks>
-        [Obsolete("This shape type is not conformant with ESRI Shapefile Technical Description. Use PolyLineZM instead.")]
-        PolyLineZ = 10,
-
-        /// <summary>
-        /// Polygon in the X, Y, Z space.
-        /// </summary>
-        /// <remarks>
-        /// This shape type is not conformant with ESRI Shapefile Technical Description. Use PolygonZM instead.
-        /// </remarks>
-        [Obsolete("This shape type is not conformant with ESRI Shapefile Technical Description. Use PointZM instead.")]
-        PolygonZ = 19,
-
-        /// <summary>
-        /// MultiPoint in the X, Y, Z space.
-        /// </summary>
-        /// <remarks>
-        /// This shape type is not conformant with ESRI Shapefile Technical Description. Use MultiPointZM instead.
-        /// </remarks>
-        [Obsolete("This shape type is not conformant with ESRI Shapefile Technical Description. Use PointZM instead.")]
-        MultiPointZ = 20,
-
     }
 
 
@@ -169,12 +125,7 @@ namespace NetTopologySuite.IO.Esri
         /// </summary>
         public static bool HasZ(this ShapeType type)
         {
-            return type == ShapeType.PointZ
-                || type == ShapeType.MultiPointZ
-                || type == ShapeType.PolyLineZ
-                || type == ShapeType.PolygonZ
-
-                || type == ShapeType.PointZM
+            return type == ShapeType.PointZM
                 || type == ShapeType.MultiPointZM
                 || type == ShapeType.PolyLineZM
                 || type == ShapeType.PolygonZM;
@@ -204,8 +155,7 @@ namespace NetTopologySuite.IO.Esri
         {
             return type == ShapeType.Point
                 || type == ShapeType.PointM
-                || type == ShapeType.PointZM
-                || type == ShapeType.PointZ;
+                || type == ShapeType.PointZM;
         }
 
         /// <summary>
@@ -215,8 +165,7 @@ namespace NetTopologySuite.IO.Esri
         {
             return type == ShapeType.MultiPoint
                 || type == ShapeType.MultiPointM
-                || type == ShapeType.MultiPointZM
-                || type == ShapeType.MultiPointZ;
+                || type == ShapeType.MultiPointZM;
         }
 
         /// <summary>
@@ -226,8 +175,7 @@ namespace NetTopologySuite.IO.Esri
         {
             return type == ShapeType.PolyLine
                 || type == ShapeType.PolyLineM
-                || type == ShapeType.PolyLineZM
-                || type == ShapeType.PolyLineZ;
+                || type == ShapeType.PolyLineZM;
         }
 
         /// <summary>
@@ -237,8 +185,7 @@ namespace NetTopologySuite.IO.Esri
         {
             return type == ShapeType.Polygon
                 || type == ShapeType.PolygonM
-                || type == ShapeType.PolygonZM
-                || type == ShapeType.PolygonZ;
+                || type == ShapeType.PolygonZM;
         }
 
         internal static int Dimension(this ShapeType shpType)
