@@ -46,10 +46,13 @@ namespace NetTopologySuite.IO.Esri.Test.Deprecated.ShapeFile.Extended
         [Test]
         public void Ctor_SendNonExistantFilePath_ShouldThrowException()
         {
+            string path = Path.Combine("this", "is", "sheker", "path", "should", "never", "exist", "on", "ur", "pc");
+            path = (Environment.OSVersion.Platform == PlatformID.Win32NT ? "C:\\" : "/") + path;
+
             // Act.
-            Assert.Catch<DirectoryNotFoundException>(() =>
+            Assert.Catch<IOException>(() =>
             {
-                using var shapefileReader = Shapefile.OpenRead(@"C:\this\is\sheker\path\should\never\exist\on\ur\pc");
+                using var shapefileReader = Shapefile.OpenRead(path);
             });
         }
 
