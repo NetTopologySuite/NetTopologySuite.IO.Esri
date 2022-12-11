@@ -32,6 +32,20 @@ namespace NetTopologySuite.IO.Esri.Shp.Writers
             partsBuilder.WriteParts(stream, HasZ, HasM);
             partsBuilder.UpdateExtent(Extent);
         }
+
+        internal override MultiLineString GetShapeGeometry(Geometry geometry)
+        {
+            if (geometry is MultiLineString multiLineString)
+            {
+                return multiLineString;
+            }
+            if (geometry is LineString lineString)
+            {
+                return new MultiLineString(new LineString[] { lineString });
+            }
+
+            return ThrowIvalidShapeGeometry(geometry);
+        }
     }
 
 

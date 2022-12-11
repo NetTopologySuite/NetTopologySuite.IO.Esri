@@ -40,6 +40,20 @@ namespace NetTopologySuite.IO.Esri.Shp.Writers
             partsBuilder.WriteParts(stream, HasZ, HasM);
             partsBuilder.UpdateExtent(Extent);
         }
+
+        internal override MultiPolygon GetShapeGeometry(Geometry geometry)
+        {
+            if (geometry is MultiPolygon multiPolygon)
+            {
+                return multiPolygon;
+            }
+            if (geometry is Polygon polygon)
+            {
+                return new MultiPolygon(new Polygon[] { polygon });
+            }
+
+            return ThrowIvalidShapeGeometry(geometry);
+        }
     }
 
 

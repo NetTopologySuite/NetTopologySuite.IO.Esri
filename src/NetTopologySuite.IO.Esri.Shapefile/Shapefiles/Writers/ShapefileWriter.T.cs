@@ -114,7 +114,7 @@ namespace NetTopologySuite.IO.Esri.Shapefiles.Writers
                     field.Value = feature.Attributes[field.Name];
                 }
             }
-            Geometry = (T)feature.Geometry;
+            Geometry = ShpWriter.GetShapeGeometry(feature.Geometry);
             Write();
         }
 
