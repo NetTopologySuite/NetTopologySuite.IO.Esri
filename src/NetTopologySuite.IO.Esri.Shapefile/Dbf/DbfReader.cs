@@ -1,4 +1,4 @@
-using NetTopologySuite.Features;
+﻿using NetTopologySuite.Features;
 using NetTopologySuite.IO.Esri.Dbf.Fields;
 using System;
 using System.Collections;
@@ -225,6 +225,8 @@ namespace NetTopologySuite.IO.Esri.Dbf
             }
 
             Buffer.AssignFrom(DbfStream, RecordSize);
+            WriteRecordBytes(CurrentIndex, Buffer);
+
             var deletedFlag = Buffer.ReadByte();
             deleted = deletedFlag == Dbf.DeletedRecordMark;
 
@@ -235,6 +237,28 @@ namespace NetTopologySuite.IO.Esri.Dbf
 
             CurrentIndex++;
             return true;
+        }
+
+        [Conditional("DEBUG_DBF")]
+        private void WriteRecordBytes(int recordIndex, MemoryStream recordData)
+        {
+            var data = recordData.ToArray();
+            Debug.WriteLine($"Record {recordIndex}");
+
+            var deletedName = "<deleted>";
+            var deletedFlag = Encoding.GetString(data, 0, 1);
+            Debug.WriteLine($"{deletedName,32}: `{deletedFlag}`");
+
+            int dataIndex = 1;
+            for (int i = 0; i < Fields.Count; i++)
+            {
+                var field = Fields[i];
+                var fieldData = Encoding
+                    .GetString(data, dataIndex, field.Length)
+                    .Replace(char.MinValue, '▬'); // Make NULL visible
+
+                Debug.WriteLine($"{field.Name,32}: `{fieldData}`");
+            }
         }
 
 
