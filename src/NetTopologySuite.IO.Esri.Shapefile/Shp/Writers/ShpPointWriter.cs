@@ -21,6 +21,16 @@ namespace NetTopologySuite.IO.Esri.Shp.Writers
             shapeBinary.WritePoint(point.CoordinateSequence);
             Extent.Expand(point.CoordinateSequence);
         }
+
+        internal override Point GetShapeGeometry(Geometry geometry)
+        {
+            if (geometry is Point point)
+            {
+                return point;
+            }
+
+            return ThrowIvalidShapeGeometry(geometry);
+        }
     }
 
 

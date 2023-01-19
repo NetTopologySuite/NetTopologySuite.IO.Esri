@@ -42,6 +42,20 @@ namespace NetTopologySuite.IO.Esri.Shp.Writers
             Extent.Expand(geometryExtent);
         }
 
+        internal override MultiPoint GetShapeGeometry(Geometry geometry)
+        {
+            if (geometry is MultiPoint multiPoint)
+            {
+                return multiPoint;
+            }
+            if (geometry is Point point)
+            {
+                return new MultiPoint(new Point[] { point });
+            }
+
+            return ThrowIvalidShapeGeometry(geometry);
+        }
+
     }
 
 

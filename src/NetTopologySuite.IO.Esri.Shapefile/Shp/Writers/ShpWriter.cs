@@ -93,6 +93,8 @@ namespace NetTopologySuite.IO.Esri.Shp.Writers
             stream.WriteShpFileHeader(ShapeType, (int)stream.Length, Extent, HasZ, HasM);
         }
 
+        internal abstract T GetShapeGeometry(Geometry geometry);
+
         /// <inheritdoc/>
         protected override void DisposeManagedResources()
         {
@@ -102,6 +104,11 @@ namespace NetTopologySuite.IO.Esri.Shp.Writers
                 WriteFileHeader(ShxStream);
             }
             base.DisposeManagedResources(); // This will dispose owned ShpStream and ShxStream.
+        }
+
+        protected private static T ThrowIvalidShapeGeometry(Geometry geometry)
+        {
+            throw new ShapefileException($"Invalid geometry type provided ({geometry.GetType().Name}). Expected: {typeof(T).Name}.");
         }
     }
 
