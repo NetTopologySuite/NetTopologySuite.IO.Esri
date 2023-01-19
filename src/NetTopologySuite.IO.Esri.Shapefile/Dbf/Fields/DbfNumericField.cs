@@ -89,8 +89,11 @@ namespace NetTopologySuite.IO.Esri.Dbf.Fields
 
         internal override void ReadValue(Stream stream)
         {
-            var valueText = stream.ReadString(Length, Encoding.ASCII)?.Trim();
-            if (string.IsNullOrEmpty(valueText))
+            var valueText = stream
+                .ReadString(Length, Encoding.ASCII)?
+                .Trim('*');
+
+            if (string.IsNullOrWhiteSpace(valueText))
             {
                 NumericValue = null;
                 return;
