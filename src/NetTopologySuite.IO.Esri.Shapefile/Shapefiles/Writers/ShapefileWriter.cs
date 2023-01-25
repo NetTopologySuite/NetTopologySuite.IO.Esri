@@ -56,6 +56,13 @@ namespace NetTopologySuite.IO.Esri.Shapefiles.Writers
                 Write(feature);
             }
         }
+
+        /// <inheritdoc/>
+        protected override void DisposeManagedResources()
+        {
+            DbfWriter?.Dispose();
+            base.DisposeManagedResources(); // This will dispose streams used by DbfReader. Do it at the end. We need to store DBF header first.
+        }
     }
 
 

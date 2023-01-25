@@ -1,11 +1,11 @@
-﻿using NetTopologySuite.Features;
-using NetTopologySuite.Geometries;
-using NetTopologySuite.IO.Esri.Dbf;
-using NetTopologySuite.IO.Esri.Dbf.Fields;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using NetTopologySuite.Features;
+using NetTopologySuite.Geometries;
+using NetTopologySuite.IO.Esri.Dbf;
+using NetTopologySuite.IO.Esri.Dbf.Fields;
 
 namespace NetTopologySuite.IO.Esri.Shapefiles.Readers
 {
@@ -106,6 +106,13 @@ namespace NetTopologySuite.IO.Esri.Shapefiles.Readers
                 return Read();
             }
             return read;
+        }
+
+        /// <inheritdoc/>
+        protected override void DisposeManagedResources()
+        {
+            DbfReader?.Dispose();
+            base.DisposeManagedResources(); 
         }
 
         #region *** Enumerator ***
