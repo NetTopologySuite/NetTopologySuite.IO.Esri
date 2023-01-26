@@ -235,6 +235,7 @@ namespace NetTopologySuite.IO.Esri.Dbf
                 Fields[i].ReadValue(Buffer);
             }
 
+            PrintRecordBytes(CurrentIndex, Buffer);
             CurrentIndex++;
             return true;
         }
@@ -301,6 +302,28 @@ namespace NetTopologySuite.IO.Esri.Dbf
             CurrentIndex = index;
             Read(out var _);
             return Fields.ToAttributesTable();
+        }
+
+        [Conditional("DEBUG_DBF")]
+        private void PrintRecordBytes(int recordIndex, MemoryStream recordData)
+        {
+            var data = recordData.ToArray();
+            Debug.WriteLine($"Record {recordIndex}");
+
+            var deletedName = "<deleted>";
+            var deletedFlag = Encoding.GetString(data, 0, 1);
+            Debug.WriteLine($"{deletedName,32}: `{deletedFlag}`");
+
+            int dataIndex = 1;
+            for (int i = 0; i < Fields.Count; i++)
+            {
+                var field = Fields[i];
+                var fieldData = Encoding
+                    .GetString(data, dataIndex, field.Length)
+                    .Replace(char.MinValue, '▬'); // Make NULL visible
+
+                Debug.WriteLine($"{field.Name,32}: `{fieldData}`");
+            }
         }
 
         #region IEnumerable

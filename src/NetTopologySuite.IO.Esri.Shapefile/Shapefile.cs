@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using NetTopologySuite.Features;
 using NetTopologySuite.Geometries;
 using NetTopologySuite.IO.Esri.Shapefiles.Readers;
@@ -190,7 +191,9 @@ namespace NetTopologySuite.IO.Esri
         /// </summary>
         /// <param name="features">Features to be written.</param>
         /// <param name="shpPath">Path to shapefile.</param>
-        public static void WriteAllFeatures(IEnumerable<IFeature> features, string shpPath)
+        /// <param name="projection">Projection metadata for the shapefile (content of the PRJ file).</param>
+        /// <param name="encoding">DBF file encoding (if not set UTF8 is used).</param>
+        public static void WriteAllFeatures(IEnumerable<IFeature> features, string shpPath, string projection = null, Encoding encoding = null)
         {
             if (features == null)
                 throw new ArgumentNullException(nameof(features));
@@ -201,7 +204,11 @@ namespace NetTopologySuite.IO.Esri
 
             var fields = firstFeature.Attributes.GetDbfFields();
             var shapeType = features.FindNonEmptyGeometry().GetShapeType();
-            var options = new ShapefileWriterOptions(shapeType, fields);
+            var options = new ShapefileWriterOptions(shapeType, fields)
+            {
+                Projection = projection,
+                Encoding = encoding
+            };
 
             using (var shpWriter = OpenWrite(shpPath, options))
             {

@@ -1,10 +1,9 @@
-using NetTopologySuite.IO.Esri.Dbf.Fields;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using NetTopologySuite.IO.Esri.Dbf.Fields;
 
 namespace NetTopologySuite.IO.Esri.Dbf
 {
@@ -54,7 +53,8 @@ namespace NetTopologySuite.IO.Esri.Dbf
         {
             Encoding = encoding ?? Encoding.UTF8;
             IntializeFields(fields);
-            WriteHeader(stream);
+            DbfStream = stream ?? throw new ArgumentNullException("Uninitialized dBASE stream.", nameof(stream));
+            WriteHeader();
         }
 
 
@@ -71,7 +71,8 @@ namespace NetTopologySuite.IO.Esri.Dbf
             WriteCpgEncoding(dbfPath, encoding);
             try
             {
-                WriteHeader(OpenManagedFileStream(dbfPath, ".dbf", FileMode.Create));
+                DbfStream = OpenManagedFileStream(dbfPath, ".dbf", FileMode.Create);
+                WriteHeader();
             }
             catch
             {
@@ -118,9 +119,8 @@ namespace NetTopologySuite.IO.Esri.Dbf
             Fields.Add(field);
         }
 
-        private void WriteHeader(Stream stream)
+        private void WriteHeader()
         {
-            DbfStream = stream ?? throw new ArgumentNullException("Uninitialized dBASE stream.", nameof(stream));
             if (DbfStream.Position != 0)
                 DbfStream.Seek(0, SeekOrigin.Begin);
 
@@ -131,24 +131,24 @@ namespace NetTopologySuite.IO.Esri.Dbf
             RecordSize = Fields.Sum(f => f.Length) + 1;  // Sum of lengths of all fields + 1 (deletion flag)
 
             // Table descriptor
-            stream.WriteDbfVersion(Dbf.Dbase3Version);
-            stream.WriteDbfLastUpdateDate(DateTime.Now); //.WriteBytes(GetLastUpdateDate());
+            DbfStream.WriteDbfVersion(Dbf.Dbase3Version);
+            DbfStream.WriteDbfLastUpdateDate(DateTime.Now); //.WriteBytes(GetLastUpdateDate());
 
-            stream.WriteDbfRecordCount(1);  // Write dummy recordCount. This will be replaced at the end of writing.
-            stream.WriteDbfHeaderSize(headerSize);
-            stream.WriteDbfRecordSize(RecordSize);
-            stream.WriteNullBytes(17);
-            stream.WriteDbfEncoding(Encoding);
-            stream.WriteNullBytes(2);
+            DbfStream.WriteDbfRecordCount(1);  // Write dummy recordCount. This will be replaced at the end of writing.
+            DbfStream.WriteDbfHeaderSize(headerSize);
+            DbfStream.WriteDbfRecordSize(RecordSize);
+            DbfStream.WriteNullBytes(17);
+            DbfStream.WriteDbfEncoding(Encoding);
+            DbfStream.WriteNullBytes(2);
 
             // write field description array
             foreach (var field in Fields)
             {
-                stream.WriteDbaseFieldDescriptor(field, Encoding);
+                DbfStream.WriteDbaseFieldDescriptor(field, Encoding);
             }
 
             // Now header BinaryDataWriter should be at last byte position
-            stream.WriteByte(Dbf.HeaderTerminatorMark);
+            DbfStream.WriteByte(Dbf.HeaderTerminatorMark);
         }
 
 

@@ -1,11 +1,8 @@
-﻿using NetTopologySuite.Features;
+﻿using System.IO;
+using NetTopologySuite.Features;
 using NetTopologySuite.Geometries;
 using NetTopologySuite.IO.Esri.Dbf;
-using NetTopologySuite.IO.Esri.Dbf.Fields;
 using NetTopologySuite.IO.Esri.Shp.Readers;
-using System;
-using System.IO;
-using System.Text;
 
 namespace NetTopologySuite.IO.Esri.Shapefiles.Readers
 {
@@ -139,9 +136,7 @@ namespace NetTopologySuite.IO.Esri.Shapefiles.Readers
         protected override void DisposeManagedResources()
         {
             ShpReader?.Dispose();
-            DbfReader?.Dispose();
-
-            base.DisposeManagedResources(); // This will dispose streams used by ShpReader and DbfReader. Do it at the end.
+            base.DisposeManagedResources(); 
         }
 
         internal abstract ShpReader<T> CreateShpReader(Stream shpStream, ShapefileReaderOptions options);
