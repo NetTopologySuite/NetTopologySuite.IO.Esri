@@ -17,7 +17,7 @@ namespace NetTopologySuite.IO.Esri.Shp.Readers
 
         internal override MultiLineString GetEmptyGeometry()
         {
-            return MultiLineString.Empty;
+            return Factory.CreateMultiLineString();
         }
 
         internal override bool ReadGeometry(Stream stream, out MultiLineString geometry)

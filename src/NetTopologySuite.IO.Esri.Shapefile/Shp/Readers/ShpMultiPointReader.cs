@@ -21,7 +21,7 @@ namespace NetTopologySuite.IO.Esri.Shp.Readers
 
         internal override MultiPoint GetEmptyGeometry()
         {
-            return MultiPoint.Empty;
+            return Factory.CreateMultiPoint();
         }
 
         internal override bool ReadGeometry(Stream stream, out MultiPoint geometry)

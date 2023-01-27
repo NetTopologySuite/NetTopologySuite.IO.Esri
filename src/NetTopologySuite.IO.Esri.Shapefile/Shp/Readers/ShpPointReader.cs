@@ -20,7 +20,7 @@ namespace NetTopologySuite.IO.Esri.Shp.Readers
 
         internal override Point GetEmptyGeometry()
         {
-            return Point.Empty;
+            return Factory.CreatePoint();
         }
 
         internal override bool ReadGeometry(Stream shapeBinary, out Point geometry)
