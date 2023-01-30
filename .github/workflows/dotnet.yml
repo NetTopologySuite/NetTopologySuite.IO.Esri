@@ -44,10 +44,10 @@ jobs:
     if: github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main')
 
     steps:
-    - name: Setup .NET Core 3.1
+    - name: Setup .NET 6.0
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 3.1.406
+        dotnet-version: 6.0.306
 
     - name: Download Package Files
       uses: actions/download-artifact@v2
