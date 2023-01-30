@@ -4,6 +4,12 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>NetTopologySuite.IO.Esri</RootNamespace>
     <SignAssembly>true</SignAssembly>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RepositoryUrl>https://github.com/NetTopologySuite/NetTopologySuite.IO.Esri.git</RepositoryUrl>
+    <Authors>KubaSzostak, nettopologysuite-team</Authors>
+    <Description>This library provides forward-only readers and writers for Esri shapefiles.</Description>
+    <PackageProjectUrl>https://github.com/NetTopologySuite/NetTopologySuite.IO.Esri</PackageProjectUrl>
+    <PackageLicenseExpression>BSD-3-Clause</PackageLicenseExpression>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -14,6 +20,13 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <DefineConstants>TRACE;DEBUG</DefineConstants>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="NetTopologySuite" Version="2.0.0" />
