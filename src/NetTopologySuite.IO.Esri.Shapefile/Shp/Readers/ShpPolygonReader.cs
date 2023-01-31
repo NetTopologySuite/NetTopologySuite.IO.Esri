@@ -1,13 +1,9 @@
 ﻿using NetTopologySuite.Algorithm;
 using NetTopologySuite.Geometries;
 using NetTopologySuite.IO.Esri.Shapefiles.Readers;
-using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Net.NetworkInformation;
 
 namespace NetTopologySuite.IO.Esri.Shp.Readers
 {
@@ -31,7 +27,7 @@ namespace NetTopologySuite.IO.Esri.Shp.Readers
 
         internal override MultiPolygon GetEmptyGeometry()
         {
-            return MultiPolygon.Empty;
+            return Factory.CreateMultiPolygon();
         }
 
         internal override bool ReadGeometry(Stream stream, out MultiPolygon geometry)
