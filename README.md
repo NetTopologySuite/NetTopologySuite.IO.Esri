@@ -101,35 +101,11 @@ desktop but not in .NET Core, you need to do the following:
 2. Put the following  line somewhere in your code:
    `Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);`
 
-## Validation
+## Install using NuGet package manager
 
-For performance reasons this library does not provide any kind of validation
-during reading or writing shapefiles. If you write new shapefile it is your
-responsibility to write properly formated data.
+Stable releases are hosted on the default NuGet feed. You can install them using the following command on the package manager command line
 
-## Tests
-
-This library was tested with shapefiles created by ArcMap 10.6.
-TestConsole application read those files to memory and write it back to file system.
-Then output files are checked byte by byte for differences.
-
-At the moment inconsistency spoted is related to Date fields.
-ArcMap 10.6 can create different null date representation in one .shp file!
-Test file pt_utf8.shp have field named 'date' with such binary data:
+```console
+PM> NuGet\Install-Package NetTopologySuite.IO.Esri.Shapefile
 ```
-=== record 0     Stream.Position: 673
-...
-date    Record.Position: 191
-ReadString: '▬▬▬▬▬▬▬▬'                  // '▬' == char.MinValue == (char)0
-=== record 1     Stream.Position: 1145
-...
-date    Record.Position: 191
-ReadString: '        '
-```
-According to [Esri documentation](https://desktop.arcgis.com/en/arcmap/latest/manage-data/shapefiles/geoprocessing-considerations-for-shapefile-output.htm)
-Null value substitution for Date field is *'Stored as zero'*. So this library saves null dates as zero (null) bytes which is also consistent with Numeric and Float fields.
 
-Another inconsistency is related to polygons. When reading polygons containing
-multiple parts [additional pre-processing](https://gis.stackexchange.com/a/147971/26684) is needed.
-This can change internal rings order. This in turn may lead to different output files than
-original ArcMap files.
