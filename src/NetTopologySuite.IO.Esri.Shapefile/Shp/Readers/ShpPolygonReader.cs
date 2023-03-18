@@ -77,7 +77,7 @@ namespace NetTopologySuite.IO.Esri.Shp.Readers
             }
             else if (GeometryBuilderMode == GeometryBuilderMode.IgnoreInvalidShapes || GeometryBuilderMode == GeometryBuilderMode.SkipInvalidShapes)
             {
-                return BuildMultiPolygonIgnoringInvalidShapes(parts, true);
+                return BuildMultiPolygonIgnoringInvalidShapes(parts, GeometryBuilderMode == GeometryBuilderMode.IgnoreInvalidShapes);
             }
             else if (GeometryBuilderMode == GeometryBuilderMode.QuickFixInvalidShapes)
             {
