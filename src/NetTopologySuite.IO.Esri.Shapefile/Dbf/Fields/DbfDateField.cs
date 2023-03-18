@@ -42,7 +42,7 @@ namespace NetTopologySuite.IO.Esri.Dbf.Fields
         internal override void ReadValue(Stream stream)
         {
             var valueText = stream.ReadString(Length, Encoding.ASCII)?.Trim();
-            if (string.IsNullOrEmpty(valueText))
+            if (string.IsNullOrEmpty(valueText) || valueText == "00000000")
             {
                 DateValue = null;
             }
@@ -68,6 +68,8 @@ namespace NetTopologySuite.IO.Esri.Dbf.Fields
                 // === record 1     Stream.Position: 1145
                 // date    BinaryBuffer.Position: 183
                 // ReadString(191): '        '
+
+                // Some libraries, instead of zeros (null) values use '00000000', so the #48 ASCII code used for represening zero.
 
                 // According to https://desktop.arcgis.com/en/arcmap/latest/manage-data/shapefiles/geoprocessing-considerations-for-shapefile-output.htm
                 // Null value substitution for Date field is 'Stored as zero'. Storing zero (null) values is also consistent with Numeric and Float field. 
