@@ -91,7 +91,7 @@ namespace NetTopologySuite.IO.Esri
         }
 
         /// <summary>
-        /// 
+        /// Opens shapefile reader.
         /// </summary>
         /// <param name="shpStream">shp stream.</param>
         /// <param name="dbfStream">dbf stream.</param>
