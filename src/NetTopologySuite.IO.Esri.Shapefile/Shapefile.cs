@@ -91,6 +91,40 @@ namespace NetTopologySuite.IO.Esri
         }
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="shpStream">shp stream.</param>
+        /// <param name="dbfStream">dbf stream.</param>
+        /// <param name="options">Reader options.</param>
+        /// <returns></returns>
+        /// <exception cref="ShapefileException"></exception>
+        public static ShapefileReader OpenStreamRead(Stream shpStream, Stream dbfStream, ShapefileReaderOptions options = null)
+        {
+            var shapeType = GetShapeType(shpStream);
+
+            if (shapeType.IsPoint())
+            {
+                return new ShapefilePointReader(shpStream, dbfStream, options);
+            }
+            else if (shapeType.IsMultiPoint())
+            {
+                return new ShapefileMultiPointReader(shpStream, dbfStream, options);
+            }
+            else if (shapeType.IsPolyLine())
+            {
+                return new ShapefilePolyLineReader(shpStream, dbfStream, options);
+            }
+            else if (shapeType.IsPolygon())
+            {
+                return new ShapefilePolygonReader(shpStream, dbfStream, options);
+            }
+            else
+            {
+                throw new ShapefileException("Unsupported shape file stream");
+            }
+        }
+
+        /// <summary>
         /// Opens shapefile reader.
         /// </summary>
         /// <param name="shpPath">Path to shapefile.</param>
@@ -125,6 +159,21 @@ namespace NetTopologySuite.IO.Esri
         /// <summary>
         /// Reads all features from shapefile.
         /// </summary>
+        /// <param name="shpStream">shp stream.</param>
+        /// <param name="dbfStream">dbf stream.</param>
+        /// <param name="options">Reader options.</param>
+        /// <returns></returns>
+        public static Feature[] ReadAllFeatures(Stream shpStream, Stream dbfStream, ShapefileReaderOptions options = null)
+        {
+            using (var shp = OpenStreamRead(shpStream, dbfStream, options))
+            {
+                return shp.ToArray();
+            }
+        }
+
+        /// <summary>
+        /// Reads all features from shapefile.
+        /// </summary>
         /// <param name="shpPath">Path to shapefile.</param>
         /// <param name="options">Reader options.</param>
         /// <returns>Shapefile features.</returns>
@@ -135,7 +184,6 @@ namespace NetTopologySuite.IO.Esri
                 return shp.ToArray();
             }
         }
-
 
         /// <summary>
         /// Reads all geometries from SHP file.
