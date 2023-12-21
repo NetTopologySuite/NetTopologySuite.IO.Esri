@@ -28,7 +28,7 @@ namespace NetTopologySuite.IO.Esri.Dbf
             // Encoding.RegisterProvider(CodePagesEncodingProvider.Instance); // Kepp this library clear. Do not include unnecessary dependices.
 
             // https://support.esri.com/en/technical-article/000013192
-
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             AddLanguageDriverId(0, Encoding.UTF8);        // For unknown LDID
             AddLanguageDriverId(0x03, Encoding.Default);  // OS Default
             AddLanguageDriverId(0x57, Encoding.Default);  // OS Default
@@ -137,7 +137,7 @@ namespace NetTopologySuite.IO.Esri.Dbf
         /// <param name="ldid">Language Driver ID</param>
         /// <returns>Encoding</returns>
         public static Encoding GetEncodingForLanguageDriverId(byte ldid)
-        {
+        { 
             if (LanguageDriverIdToEncoding.TryGetValue(ldid, out var encoding))
                 return encoding;
 
