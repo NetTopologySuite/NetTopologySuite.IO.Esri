@@ -93,12 +93,12 @@ namespace NetTopologySuite.IO.Esri
         /// <summary>
         /// Opens shapefile reader.
         /// </summary>
-        /// <param name="shpStream">shp stream.</param>
-        /// <param name="dbfStream">dbf stream.</param>
+        /// <param name="shpStream">SHP stream.</param>
+        /// <param name="dbfStream">DBF stream.</param>
         /// <param name="options">Reader options.</param>
-        /// <returns></returns>
+        /// <returns>Shapefile reader.</returns>
         /// <exception cref="ShapefileException"></exception>
-        public static ShapefileReader OpenStreamRead(Stream shpStream, Stream dbfStream, ShapefileReaderOptions options = null)
+        public static ShapefileReader OpenRead(Stream shpStream, Stream dbfStream, ShapefileReaderOptions options = null)
         {
             var shapeType = GetShapeType(shpStream);
 
@@ -120,7 +120,7 @@ namespace NetTopologySuite.IO.Esri
             }
             else
             {
-                throw new ShapefileException("Unsupported shape file stream");
+                throw new ShapefileException("Unsupported shapefile stream.");
             }
         }
 
@@ -165,7 +165,7 @@ namespace NetTopologySuite.IO.Esri
         /// <returns></returns>
         public static Feature[] ReadAllFeatures(Stream shpStream, Stream dbfStream, ShapefileReaderOptions options = null)
         {
-            using (var shp = OpenStreamRead(shpStream, dbfStream, options))
+            using (var shp = OpenRead(shpStream, dbfStream, options))
             {
                 return shp.ToArray();
             }
