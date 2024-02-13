@@ -205,6 +205,40 @@ namespace NetTopologySuite.IO.Esri
         /// <summary>
         /// Opens shapefile writer.
         /// </summary>
+        /// <param name="shpStream">SHP stream.</param>
+        /// <param name="shxStream">SHX stream.</param>
+        /// <param name="dbfStream">DBF stream.</param>
+        /// <param name="options">Writer options.</param>
+        /// <returns>Shapefile writer.</returns>
+        public static ShapefileWriter OpenWrite(Stream shpStream, Stream shxStream, Stream dbfStream, ShapefileWriterOptions options)
+        {
+            options = options ?? throw new ArgumentNullException(nameof(options));
+            if (options.ShapeType.IsPoint())
+            {
+                return new ShapefilePointWriter(shpStream, shxStream, dbfStream, options);
+            }
+            else if (options.ShapeType.IsMultiPoint())
+            {
+                return new ShapefileMultiPointWriter(shpStream, shxStream, dbfStream, options);
+            }
+            else if (options.ShapeType.IsPolyLine())
+            {
+                return new ShapefilePolyLineWriter(shpStream, shxStream, dbfStream, options);
+            }
+            else if (options.ShapeType.IsPolygon())
+            {
+                return new ShapefilePolygonWriter(shpStream, shxStream, dbfStream, options);
+            }
+            else
+            {
+                throw new ShapefileException("Unsupported shapefile type: " + options.ShapeType);
+            }
+        }
+
+
+        /// <summary>
+        /// Opens shapefile writer.
+        /// </summary>
         /// <param name="shpPath">Path to shapefile.</param>
         /// <param name="options">Writer options.</param>
         /// <returns>Shapefile writer.</returns>
@@ -230,6 +264,39 @@ namespace NetTopologySuite.IO.Esri
             else
             {
                 throw new ShapefileException("Unsupported shapefile type: " + options.ShapeType, shpPath);
+            }
+        }
+
+
+        /// <summary>
+        /// Writes features to the shapefile.
+        /// </summary>
+        /// <param name="features">Features to be written.</param>
+        /// <param name="shpStream">SHP stream.</param>
+        /// <param name="shxStream">SHX stream.</param>
+        /// <param name="dbfStream">DBF stream.</param>
+        /// <param name="projection">Projection metadata for the shapefile (content of the PRJ file).</param>
+        /// <param name="encoding">DBF file encoding (if not set UTF8 is used).</param>
+        public static void WriteAllFeatures(IEnumerable<IFeature> features, Stream shpStream, Stream shxStream, Stream dbfStream, string projection = null, Encoding encoding = null)
+        {
+            if (features == null)
+                throw new ArgumentNullException(nameof(features));
+
+            var firstFeature = features.FirstOrDefault();
+            if (firstFeature == null)
+                throw new ArgumentException(nameof(ShapefileWriter) + " requires at least one feature to be written.");
+
+            var fields = firstFeature.Attributes.GetDbfFields();
+            var shapeType = features.FindNonEmptyGeometry().GetShapeType();
+            var options = new ShapefileWriterOptions(shapeType, fields)
+            {
+                Projection = projection,
+                Encoding = encoding
+            };
+
+            using (var shpWriter = OpenWrite(shpStream, shxStream, dbfStream, options))
+            {
+                shpWriter.Write(features);
             }
         }
 
