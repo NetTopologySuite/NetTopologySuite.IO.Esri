@@ -208,26 +208,27 @@ namespace NetTopologySuite.IO.Esri
         /// <param name="shpStream">SHP stream.</param>
         /// <param name="shxStream">SHX stream.</param>
         /// <param name="dbfStream">DBF stream.</param>
+        /// <param name="prjStream">PRJ stream.</param>
         /// <param name="options">Writer options.</param>
         /// <returns>Shapefile writer.</returns>
-        public static ShapefileWriter OpenWrite(Stream shpStream, Stream shxStream, Stream dbfStream, ShapefileWriterOptions options)
+        public static ShapefileWriter OpenWrite(Stream shpStream, Stream shxStream, Stream dbfStream, Stream prjStream, ShapefileWriterOptions options)
         {
             options = options ?? throw new ArgumentNullException(nameof(options));
             if (options.ShapeType.IsPoint())
             {
-                return new ShapefilePointWriter(shpStream, shxStream, dbfStream, options);
+                return new ShapefilePointWriter(shpStream, shxStream, dbfStream, prjStream, options);
             }
             else if (options.ShapeType.IsMultiPoint())
             {
-                return new ShapefileMultiPointWriter(shpStream, shxStream, dbfStream, options);
+                return new ShapefileMultiPointWriter(shpStream, shxStream, dbfStream, prjStream, options);
             }
             else if (options.ShapeType.IsPolyLine())
             {
-                return new ShapefilePolyLineWriter(shpStream, shxStream, dbfStream, options);
+                return new ShapefilePolyLineWriter(shpStream, shxStream, dbfStream, prjStream, options);
             }
             else if (options.ShapeType.IsPolygon())
             {
-                return new ShapefilePolygonWriter(shpStream, shxStream, dbfStream, options);
+                return new ShapefilePolygonWriter(shpStream, shxStream, dbfStream, prjStream, options);
             }
             else
             {
@@ -275,17 +276,16 @@ namespace NetTopologySuite.IO.Esri
         /// <param name="shpStream">SHP stream.</param>
         /// <param name="shxStream">SHX stream.</param>
         /// <param name="dbfStream">DBF stream.</param>
+        /// <param name="prjStream">PRJ stream.</param>
         /// <param name="projection">Projection metadata for the shapefile (content of the PRJ file).</param>
         /// <param name="encoding">DBF file encoding (if not set UTF8 is used).</param>
-        public static void WriteAllFeatures(IEnumerable<IFeature> features, Stream shpStream, Stream shxStream, Stream dbfStream, string projection = null, Encoding encoding = null)
+        public static void WriteAllFeatures(IEnumerable<IFeature> features, Stream shpStream, Stream shxStream, Stream dbfStream, Stream prjStream = null, string projection = null, Encoding encoding = null)
         {
             if (features == null)
                 throw new ArgumentNullException(nameof(features));
 
-            var firstFeature = features.FirstOrDefault();
-            if (firstFeature == null)
-                throw new ArgumentException(nameof(ShapefileWriter) + " requires at least one feature to be written.");
-
+            var firstFeature = features.FirstOrDefault()
+                ?? throw new ArgumentException(nameof(ShapefileWriter) + " requires at least one feature to be written.");
             var fields = firstFeature.Attributes.GetDbfFields();
             var shapeType = features.FindNonEmptyGeometry().GetShapeType();
             var options = new ShapefileWriterOptions(shapeType, fields)
@@ -294,7 +294,7 @@ namespace NetTopologySuite.IO.Esri
                 Encoding = encoding
             };
 
-            using (var shpWriter = OpenWrite(shpStream, shxStream, dbfStream, options))
+            using (var shpWriter = OpenWrite(shpStream, shxStream, dbfStream, prjStream, options))
             {
                 shpWriter.Write(features);
             }
@@ -313,10 +313,8 @@ namespace NetTopologySuite.IO.Esri
             if (features == null)
                 throw new ArgumentNullException(nameof(features));
 
-            var firstFeature = features.FirstOrDefault();
-            if (firstFeature == null)
-                throw new ArgumentException(nameof(ShapefileWriter) + " requires at least one feature to be written.");
-
+            var firstFeature = features.FirstOrDefault()
+                ?? throw new ArgumentException(nameof(ShapefileWriter) + " requires at least one feature to be written.");
             var fields = firstFeature.Attributes.GetDbfFields();
             var shapeType = features.FindNonEmptyGeometry().GetShapeType();
             var options = new ShapefileWriterOptions(shapeType, fields)

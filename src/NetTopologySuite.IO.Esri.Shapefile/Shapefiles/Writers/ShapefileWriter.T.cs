@@ -1,12 +1,9 @@
 ﻿using NetTopologySuite.Features;
 using NetTopologySuite.Geometries;
 using NetTopologySuite.IO.Esri.Dbf;
-using NetTopologySuite.IO.Esri.Dbf.Fields;
 using NetTopologySuite.IO.Esri.Shp.Writers;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Text;
 
 namespace NetTopologySuite.IO.Esri.Shapefiles.Writers
 {
@@ -45,8 +42,9 @@ namespace NetTopologySuite.IO.Esri.Shapefiles.Writers
         /// <param name="shpStream">SHP file stream.</param>
         /// <param name="shxStream">SHX file stream.</param>
         /// <param name="dbfStream">DBF file stream.</param>
+        /// <param name="prjStream">PRJ file stream.</param>
         /// <param name="options">Writer options.</param>
-        internal ShapefileWriter(Stream shpStream, Stream shxStream, Stream dbfStream, ShapefileWriterOptions options)
+        internal ShapefileWriter(Stream shpStream, Stream shxStream, Stream dbfStream, Stream prjStream, ShapefileWriterOptions options)
             : base(new DbfWriter(dbfStream, options?.Fields, options?.Encoding))
         {
             try
@@ -54,6 +52,14 @@ namespace NetTopologySuite.IO.Esri.Shapefiles.Writers
                 options = options ?? throw new ArgumentNullException(nameof(options));
                 ShapeType = options.ShapeType;
                 ShpWriter = CreateShpWriter(shpStream, shxStream);
+
+                if (!string.IsNullOrWhiteSpace(options.Projection) && prjStream != null)
+                {
+                    using (var writer = new StreamWriter(prjStream))
+                    {
+                        writer.Write(options.Projection);
+                    }
+                }
             }
             catch
             {
