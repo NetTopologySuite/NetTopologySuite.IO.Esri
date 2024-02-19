@@ -139,7 +139,7 @@ internal class Issue041
         using (var shpStream = File.OpenWrite(shpPath))
         using (var shxStream = File.OpenWrite(shxPath))
         using (var dbfStream = File.OpenWrite(dbfPath))
-        using (var shpWriter = Shapefile.OpenWrite(shpStream, shxStream, dbfStream, options))
+        using (var shpWriter = Shapefile.OpenWrite(shpStream, shxStream, dbfStream, null, options))
         {
             for (int i = 1; i <= 10; i++)
             {
@@ -175,7 +175,7 @@ internal class Issue041
         using (var shpStream = File.OpenWrite(shpPath))
         using (var shxStream = File.OpenWrite(shxPath))
         using (var dbfStream = File.OpenWrite(dbfPath))
-        using (var shpWriter = Shapefile.OpenWrite(shpStream, shxStream, dbfStream, options))
+        using (var shpWriter = Shapefile.OpenWrite(shpStream, shxStream, dbfStream, null, options))
         {
             for (int i = 1; i <= 10; i++)
             {
@@ -212,7 +212,7 @@ internal class Issue041
         using (var shpStream = File.OpenWrite(shpPath))
         using (var shxStream = File.OpenWrite(shxPath))
         using (var dbfStream = File.OpenWrite(dbfPath))
-        using (var shpWriter = Shapefile.OpenWrite(shpStream, shxStream, dbfStream, options))
+        using (var shpWriter = Shapefile.OpenWrite(shpStream, shxStream, dbfStream, null, options))
         {
             for (int i = 1; i <= 10; i++)
             {
