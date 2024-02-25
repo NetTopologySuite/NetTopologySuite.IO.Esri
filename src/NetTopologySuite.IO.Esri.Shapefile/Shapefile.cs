@@ -93,6 +93,40 @@ namespace NetTopologySuite.IO.Esri
         /// <summary>
         /// Opens shapefile reader.
         /// </summary>
+        /// <param name="shpStream">SHP stream.</param>
+        /// <param name="dbfStream">DBF stream.</param>
+        /// <param name="options">Reader options.</param>
+        /// <returns>Shapefile reader.</returns>
+        /// <exception cref="ShapefileException"></exception>
+        public static ShapefileReader OpenRead(Stream shpStream, Stream dbfStream, ShapefileReaderOptions options = null)
+        {
+            var shapeType = GetShapeType(shpStream);
+
+            if (shapeType.IsPoint())
+            {
+                return new ShapefilePointReader(shpStream, dbfStream, options);
+            }
+            else if (shapeType.IsMultiPoint())
+            {
+                return new ShapefileMultiPointReader(shpStream, dbfStream, options);
+            }
+            else if (shapeType.IsPolyLine())
+            {
+                return new ShapefilePolyLineReader(shpStream, dbfStream, options);
+            }
+            else if (shapeType.IsPolygon())
+            {
+                return new ShapefilePolygonReader(shpStream, dbfStream, options);
+            }
+            else
+            {
+                throw new ShapefileException("Unsupported shapefile stream.");
+            }
+        }
+
+        /// <summary>
+        /// Opens shapefile reader.
+        /// </summary>
         /// <param name="shpPath">Path to shapefile.</param>
         /// <param name="options">Reader options.</param>
         /// <returns>Shapefile reader.</returns>
@@ -125,6 +159,21 @@ namespace NetTopologySuite.IO.Esri
         /// <summary>
         /// Reads all features from shapefile.
         /// </summary>
+        /// <param name="shpStream">shp stream.</param>
+        /// <param name="dbfStream">dbf stream.</param>
+        /// <param name="options">Reader options.</param>
+        /// <returns></returns>
+        public static Feature[] ReadAllFeatures(Stream shpStream, Stream dbfStream, ShapefileReaderOptions options = null)
+        {
+            using (var shp = OpenRead(shpStream, dbfStream, options))
+            {
+                return shp.ToArray();
+            }
+        }
+
+        /// <summary>
+        /// Reads all features from shapefile.
+        /// </summary>
         /// <param name="shpPath">Path to shapefile.</param>
         /// <param name="options">Reader options.</param>
         /// <returns>Shapefile features.</returns>
@@ -135,7 +184,6 @@ namespace NetTopologySuite.IO.Esri
                 return shp.ToArray();
             }
         }
-
 
         /// <summary>
         /// Reads all geometries from SHP file.
@@ -150,6 +198,41 @@ namespace NetTopologySuite.IO.Esri
             {
                 var shp = Shp.Shp.OpenRead(shpStream, options);
                 return shp.ToArray();
+            }
+        }
+
+
+        /// <summary>
+        /// Opens shapefile writer.
+        /// </summary>
+        /// <param name="shpStream">SHP stream.</param>
+        /// <param name="shxStream">SHX stream.</param>
+        /// <param name="dbfStream">DBF stream.</param>
+        /// <param name="prjStream">PRJ stream.</param>
+        /// <param name="options">Writer options.</param>
+        /// <returns>Shapefile writer.</returns>
+        public static ShapefileWriter OpenWrite(Stream shpStream, Stream shxStream, Stream dbfStream, Stream prjStream, ShapefileWriterOptions options)
+        {
+            options = options ?? throw new ArgumentNullException(nameof(options));
+            if (options.ShapeType.IsPoint())
+            {
+                return new ShapefilePointWriter(shpStream, shxStream, dbfStream, prjStream, options);
+            }
+            else if (options.ShapeType.IsMultiPoint())
+            {
+                return new ShapefileMultiPointWriter(shpStream, shxStream, dbfStream, prjStream, options);
+            }
+            else if (options.ShapeType.IsPolyLine())
+            {
+                return new ShapefilePolyLineWriter(shpStream, shxStream, dbfStream, prjStream, options);
+            }
+            else if (options.ShapeType.IsPolygon())
+            {
+                return new ShapefilePolygonWriter(shpStream, shxStream, dbfStream, prjStream, options);
+            }
+            else
+            {
+                throw new ShapefileException("Unsupported shapefile type: " + options.ShapeType);
             }
         }
 
@@ -190,6 +273,38 @@ namespace NetTopologySuite.IO.Esri
         /// Writes features to the shapefile.
         /// </summary>
         /// <param name="features">Features to be written.</param>
+        /// <param name="shpStream">SHP stream.</param>
+        /// <param name="shxStream">SHX stream.</param>
+        /// <param name="dbfStream">DBF stream.</param>
+        /// <param name="prjStream">PRJ stream.</param>
+        /// <param name="projection">Projection metadata for the shapefile (content of the PRJ file).</param>
+        /// <param name="encoding">DBF file encoding (if not set UTF8 is used).</param>
+        public static void WriteAllFeatures(IEnumerable<IFeature> features, Stream shpStream, Stream shxStream, Stream dbfStream, Stream prjStream = null, string projection = null, Encoding encoding = null)
+        {
+            if (features == null)
+                throw new ArgumentNullException(nameof(features));
+
+            var firstFeature = features.FirstOrDefault()
+                ?? throw new ArgumentException(nameof(ShapefileWriter) + " requires at least one feature to be written.");
+            var fields = firstFeature.Attributes.GetDbfFields();
+            var shapeType = features.FindNonEmptyGeometry().GetShapeType();
+            var options = new ShapefileWriterOptions(shapeType, fields)
+            {
+                Projection = projection,
+                Encoding = encoding
+            };
+
+            using (var shpWriter = OpenWrite(shpStream, shxStream, dbfStream, prjStream, options))
+            {
+                shpWriter.Write(features);
+            }
+        }
+
+
+        /// <summary>
+        /// Writes features to the shapefile.
+        /// </summary>
+        /// <param name="features">Features to be written.</param>
         /// <param name="shpPath">Path to shapefile.</param>
         /// <param name="projection">Projection metadata for the shapefile (content of the PRJ file).</param>
         /// <param name="encoding">DBF file encoding (if not set UTF8 is used).</param>
@@ -198,10 +313,8 @@ namespace NetTopologySuite.IO.Esri
             if (features == null)
                 throw new ArgumentNullException(nameof(features));
 
-            var firstFeature = features.FirstOrDefault();
-            if (firstFeature == null)
-                throw new ArgumentException(nameof(ShapefileWriter) + " requires at least one feature to be written.");
-
+            var firstFeature = features.FirstOrDefault()
+                ?? throw new ArgumentException(nameof(ShapefileWriter) + " requires at least one feature to be written.");
             var fields = firstFeature.Attributes.GetDbfFields();
             var shapeType = features.FindNonEmptyGeometry().GetShapeType();
             var options = new ShapefileWriterOptions(shapeType, fields)
