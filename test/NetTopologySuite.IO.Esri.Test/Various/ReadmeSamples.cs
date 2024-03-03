@@ -1,6 +1,8 @@
 ﻿using NetTopologySuite.Features;
 using NetTopologySuite.Geometries;
 using NetTopologySuite.IO.Esri.Dbf;
+using NetTopologySuite.IO.Esri.Dbf.Fields;
+using NetTopologySuite.IO.Esri.Shapefiles.Writers;
 using NetTopologySuite.IO.Esri.Shp.Readers;
 using NUnit.Framework;
 using System;
@@ -91,6 +93,45 @@ namespace NetTopologySuite.IO.Esri.Test.Various
             }
             Shapefile.WriteAllFeatures(features, shpPath);
 
+            TestShapefiles.DeleteShp(shpPath);
+        }
+
+        [Test]
+        public void WriteNullValues()
+        {
+var fields = new List<DbfField>();
+var dateField = fields.AddDateField("date");
+var floatField = fields.AddFloatField("float");
+var intField = fields.AddNumericInt32Field("int");
+var logicalField = fields.AddLogicalField("logical");
+var textField = fields.AddCharacterField("text");
+
+var options = new ShapefileWriterOptions(ShapeType.PolyLine, fields.ToArray());
+var shpPath = TestShapefiles.GetTempShpPath();
+using (var shpWriter = Shapefile.OpenWrite(shpPath, options))
+{
+    for (var i = 1; i < 5; i++)
+    {
+        var lineCoords = new List<Coordinate>
+        {
+            new(i, i + 1),
+            new(i, i),
+            new(i + 1, i)
+        };
+        var line = new LineString(lineCoords.ToArray());
+        var mline = new MultiLineString(new LineString[] { line });
+
+        int? nullIntValue = null;
+
+        shpWriter.Geometry = mline;
+        dateField.DateValue = DateTime.Now;
+        floatField.NumericValue = i * 0.1;
+        intField.NumericValue = nullIntValue;
+        logicalField.LogicalValue = i % 2 == 0;
+        textField.StringValue = i.ToString("0.00");
+        shpWriter.Write();
+    }
+}
             TestShapefiles.DeleteShp(shpPath);
         }
 
