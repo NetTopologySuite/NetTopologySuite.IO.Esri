@@ -1,0 +1,11 @@
+stroke=stroke
+texto=texto
+FONTROTATI=fontRotati
+srcFoto=srcFoto
+pointSize=pointSize
+fontSize=fontSize
+FONTSIZEUN=fontSizeUn
+FONTROTAT1=fontRotate
+zIndex=zIndex
+layer=layer
+fontRotat2=fontRotateWithView
