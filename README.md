@@ -61,6 +61,8 @@ foreach (var feature in Shapefile.ReadAllFeatures(shpPath))
 
 ### Writing shapefiles using c# code
 
+The most common variant of writing shapefiles is to use `Shapefile.WriteAllFeatures` method.
+
 ```c#
 var features = new List<Feature>();
 for (int i = 1; i < 5; i++)
@@ -87,6 +89,44 @@ for (int i = 1; i < 5; i++)
     features.Add(feature);
 }
 Shapefile.WriteAllFeatures(features, shpPath);
+```
+
+The most efficient way to write large shapefiles is to use `ShapefileWriter` class.
+This variant should also be used when you need to write a shapefile with a attributes containing `null` values.
+
+```c#
+var fields = new List<DbfField>();
+var dateField = fields.AddDateField("date");
+var floatField = fields.AddFloatField("float");
+var intField = fields.AddNumericInt32Field("int");
+var logicalField = fields.AddLogicalField("logical");
+var textField = fields.AddCharacterField("text");
+
+var options = new ShapefileWriterOptions(ShapeType.PolyLine, fields.ToArray());
+using (var shpWriter = Shapefile.OpenWrite(shpPath, options))
+{
+    for (var i = 1; i < 5; i++)
+    {
+        var lineCoords = new List<Coordinate>
+        {
+            new(i, i + 1),
+            new(i, i),
+            new(i + 1, i)
+        };
+        var line = new LineString(lineCoords.ToArray());
+        var mline = new MultiLineString(new LineString[] { line });
+
+        int? nullIntValue = null;
+
+        shpWriter.Geometry = mline;
+        dateField.DateValue = DateTime.Now;
+        floatField.NumericValue = i * 0.1;
+        intField.NumericValue = nullIntValue;
+        logicalField.LogicalValue = i % 2 == 0;
+        textField.StringValue = i.ToString("0.00");
+        shpWriter.Write();
+    }
+}
 ```
 
 ## Encoding

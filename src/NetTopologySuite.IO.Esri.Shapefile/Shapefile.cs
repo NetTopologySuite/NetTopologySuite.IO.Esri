@@ -313,9 +313,12 @@ namespace NetTopologySuite.IO.Esri
             if (features == null)
                 throw new ArgumentNullException(nameof(features));
 
-            var firstFeature = features.FirstOrDefault()
-                ?? throw new ArgumentException(nameof(ShapefileWriter) + " requires at least one feature to be written.");
-            var fields = firstFeature.Attributes.GetDbfFields();
+            if (!features.Any())
+            {
+                throw new ArgumentException(nameof(ShapefileWriter) + " requires at least one feature to be written.");
+            }
+
+            var fields = features.GetDbfFields();
             var shapeType = features.FindNonEmptyGeometry().GetShapeType();
             var options = new ShapefileWriterOptions(shapeType, fields)
             {
