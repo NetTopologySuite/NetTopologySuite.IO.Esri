@@ -70,6 +70,9 @@ namespace NetTopologySuite.IO.Esri.Shp.Writers
             ShpStream.WriteShpRecordHeader(RecordNumber, (int)Buffer.Length);
             ShpStream.WriteAllBytes(Buffer);
 
+            Shapefile.ValidateComponentSize(ShxStream.Length);
+            Shapefile.ValidateComponentSize(ShpStream.Length);
+
             RecordNumber++;
         }
 
