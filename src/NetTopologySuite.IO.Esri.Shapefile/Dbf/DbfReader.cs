@@ -123,7 +123,8 @@ namespace NetTopologySuite.IO.Esri.Dbf
             Fields = new DbfFieldCollection(fieldCount);
             for (int i = 0; i < fieldCount; i++)
             {
-                Fields.Add(Buffer.ReadDbaseFieldDescriptor(Encoding));
+                var field = Buffer.ReadDbaseFieldDescriptor(Encoding);
+                Fields.Add(field);
                 //Binary.TraceToConsole("Field Header: " + Fields[Fields.Count -1].Name, i * Dbf.FieldDescriptorSize, Dbf.FieldDescriptorSize);
             }
 

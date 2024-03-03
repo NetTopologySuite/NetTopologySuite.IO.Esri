@@ -10,19 +10,21 @@ namespace NetTopologySuite.IO.Esri.Dbf.Fields
     /// </summary>
     public class DbfCharacterField : DbfField
     {
-        private static readonly int MaxFieldLength = 254;
+        // DBASE Limits -> Size of character fields: 254 (https://www.dbase.com/Knowledgebase/faq/dBASE_Limits_FAQ.html)
+        // DBF limitations inherited by ArcIMS -> The maximum size of a string (or text) field in a .DBF file is 254 (https://support.esri.com/en-us/knowledge-base/what-are-some-of-the-dbf-limitations-inherited-by-arcim-000007920)
+        private const int MaxFieldLength = 254;
 
         /// <summary>
         ///  Initializes a new instance of the field class.
         /// </summary>
         /// <param name="name">Field name.</param>
         /// <param name="length">Field length.</param>
-        public DbfCharacterField(string name, int length = 254) : this(name, length, null)
+        public DbfCharacterField(string name, int length = MaxFieldLength) : this(name, length, null)
         {
         }
 
         internal DbfCharacterField(string name, int length, Encoding encoding)
-            : base(name, DbfType.Character, Math.Min(length, MaxFieldLength), 0)
+            : base(name, DbfType.Character, length, 0)
         {
             _encoding = encoding;
         }
