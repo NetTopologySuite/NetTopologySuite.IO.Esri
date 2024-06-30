@@ -13,6 +13,7 @@ namespace NetTopologySuite.IO.Esri.Shapefiles.Writers
     /// </summary>
     public abstract class ShapefileWriter<T> : ShapefileWriter where T : Geometry
     {
+        private const int StreamBufferSize = 1024;
         private readonly ShpWriter<T> ShpWriter;
 
         /// <inheritdoc/>
@@ -55,7 +56,7 @@ namespace NetTopologySuite.IO.Esri.Shapefiles.Writers
 
                 if (!string.IsNullOrWhiteSpace(options.Projection) && prjStream != null)
                 {
-                    using (var writer = new StreamWriter(prjStream))
+                    using (var writer = new StreamWriter(prjStream, options.Encoding, StreamBufferSize, true))
                     {
                         writer.Write(options.Projection);
                     }
