@@ -74,6 +74,78 @@ namespace NetTopologySuite.IO.Esri
         }
 
 
+        internal static DbfField[] GetDbfFields(this IEnumerable<IFeature> features)
+        {
+            if (features == null || !features.Any())
+            {
+                return null;
+            }
+
+            var allAttributeNames = new HashSet<string>();
+            var resolvedAttributeNames = new List<string>(); // preserve order of fields
+            var attributeTypes = new Dictionary<string, Type>();
+
+            foreach (var feature in features)
+            {
+                AddAttributes(allAttributeNames, resolvedAttributeNames, attributeTypes, feature.Attributes);
+                if (allAttributeNames.Count == resolvedAttributeNames.Count)
+                {
+                    return GetDbfFields(resolvedAttributeNames, attributeTypes);
+                }
+            }
+
+            var missingAttributeNames = allAttributeNames.Except(resolvedAttributeNames);
+            throw new ShapefileException("Cannot determine DBF attribut type for following attributes: " + string.Join(", ", missingAttributeNames));
+        }
+
+
+        private static void AddAttributes(HashSet<string> allAttributeNames, List<string> resolvedAttributeNames, Dictionary<string, Type> attributeTypes, IAttributesTable attributes)
+        {
+            if (attributes == null)
+            {
+                return;
+            }
+
+            foreach (var attributeName in attributes.GetNames())
+            {
+                if (attributeTypes.ContainsKey(attributeName))
+                {
+                    continue;
+                }
+
+                allAttributeNames.Add(attributeName);
+
+                var attributeType = attributes.GetType(attributeName);
+                if (attributeType != typeof(object))
+                {
+                    resolvedAttributeNames.Add(attributeName); // preserve order of fields
+                    attributeTypes.Add(attributeName, attributeType);
+                }
+            }
+        }
+
+
+        private static DbfField[] GetDbfFields(List<string> attributeNames, Dictionary<string, Type> attributeTypes)
+        {
+            if (attributeNames.Count == 0 || attributeTypes.Count == 0)
+            {
+                return null;
+            }
+
+            var fields = new DbfField[attributeNames.Count];
+
+            for (int i = 0; i < attributeNames.Count; i++)
+            {
+                var name = attributeNames[i];
+                var type = attributeTypes[name];
+                fields[i] = DbfField.Create(name, type);
+            }
+
+            return fields;
+        }
+
+
+
         private static Geometry FindNonEmptyGeometry(Geometry geometry)
         {
             if (geometry == null || geometry.IsEmpty)
