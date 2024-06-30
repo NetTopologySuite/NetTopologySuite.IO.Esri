@@ -24,6 +24,10 @@ namespace NetTopologySuite.IO.Esri
         internal const int FileHeaderSize = 100;
         internal const int RecordHeaderSize = 2 * sizeof(int);
 
+        // There is a 2 GB size limit for any shapefile component file
+        // https://desktop.arcgis.com/en/arcmap/latest/manage-data/shapefiles/geoprocessing-considerations-for-shapefile-output.htm
+        private const long GB = 1024 * 1024 * 1024;
+        private const long MaxComponentSize = 2 * GB; 
 
         /// <summary>
         /// Minimal Measure value considered as not "no-data".
@@ -329,6 +333,19 @@ namespace NetTopologySuite.IO.Esri
             using (var shpWriter = OpenWrite(shpPath, options))
             {
                 shpWriter.Write(features);
+            }
+        }
+
+        /// <summary>
+        /// Validates a 2 GB size limit for any shapefile component file.
+        /// </summary>
+        /// <param name="size">Shapefile component file size.</param>
+        /// <exception cref="ShapefileException"></exception>
+        internal static void ValidateComponentSize(long size)
+        {
+            if (size > MaxComponentSize)
+            {
+                throw new ShapefileException($"Shapefile component file size exceeded 2GB limit.");
             }
         }
 
