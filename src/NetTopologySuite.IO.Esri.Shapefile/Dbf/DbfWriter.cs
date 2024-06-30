@@ -179,6 +179,7 @@ namespace NetTopologySuite.IO.Esri.Dbf
             {
                 Fields[i].WriteValue(DbfStream);
             }
+            Shapefile.ValidateComponentSize(DbfStream.Length);
             RecordCount++;
         }
 
