@@ -37,12 +37,17 @@ namespace NetTopologySuite.IO.Esri.Dbf.Fields
                 return new DbfNumericInt32Field(name, length);
             }
 
-            if (precision <= 0)
+            if (precision <= 0 && length <= DbfNumericInt64Field.DefaultFieldLength)
             {
                 return new DbfNumericInt64Field(name, length);
             }
 
-            return new DbfNumericDoubleField(name, length, precision);
+            if (length <= DbfNumericDoubleField.DefaultFieldLength)
+            {
+                return new DbfNumericDoubleField(name, length, precision);
+            }
+
+            return new DbfNumericDecimalField(name, length, precision);
         }
 
     }

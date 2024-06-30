@@ -8,17 +8,16 @@ namespace NetTopologySuite.IO.Esri.Dbf.Fields
     /// <summary>
     /// Int64 field definition.
     /// </summary>
-    public class DbfNumericInt64Field : DbfNumericField<long>
+    public class DbfNumericDecimalField : DbfNumericField<decimal>
     {
-        internal static readonly int DefaultFieldLength = 18; // -9223372036854775808 to 9223372036854775807 (20..19 digits)
-
         /// <summary>
         /// Intializes new instance of the numerif field class.
         /// </summary>
         /// <param name="name">Field name.</param>
-        /// <param name="length">The number of digits.</param>
-        public DbfNumericInt64Field(string name, int length)
-            : base(name, DbfType.Numeric, length, 0)
+        /// <param name="length">The number of significant digits (including decimal separator).</param>
+        /// <param name="precision">The number of fractional digits.</param>
+        public DbfNumericDecimalField(string name, int length, int precision)
+            : base(name, DbfType.Numeric, length, precision)
         {
         }
 
@@ -26,14 +25,14 @@ namespace NetTopologySuite.IO.Esri.Dbf.Fields
         ///  Initializes a new instance of the field class.
         /// </summary>
         /// <param name="name">Field name.</param>
-        public DbfNumericInt64Field(string name) : this(name, MaxFieldLength)
+        public DbfNumericDecimalField(string name) : this(name, MaxFieldLength, MaxFieldPrecision)
         {
         }
 
         /// <inheritdoc/>
-        protected override long StringToNumber(string s)
+        protected override decimal StringToNumber(string s)
         {
-            return long.Parse(s, CultureInfo.InvariantCulture);
+            return decimal.Parse(s, CultureInfo.InvariantCulture);
         }
     }
 }

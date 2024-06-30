@@ -10,7 +10,7 @@ namespace NetTopologySuite.IO.Esri.Dbf.Fields
     /// </summary>
     public class DbfNumericInt32Field : DbfNumericField<int>
     {
-        internal static readonly int DefaultFieldLength = 10; //-2147483648..2147483647 => 11, but Esri uses 10
+        internal static readonly int DefaultFieldLength = 9; //-2147483648..2147483647 (11..10 digits)
 
         /// <summary>
         /// Intializes new instance of the numerif field class.
