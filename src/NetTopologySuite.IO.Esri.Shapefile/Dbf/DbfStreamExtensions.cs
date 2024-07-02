@@ -115,7 +115,7 @@ namespace NetTopologySuite.IO.Esri.Dbf
             }
             else if (type == DbfType.Date)
             {
-                return new DbfDateField(name);
+                return new DbfDateField(name, length);
             }
             else if (type == DbfType.Numeric)
             {
@@ -127,7 +127,7 @@ namespace NetTopologySuite.IO.Esri.Dbf
             }
             else if (type == DbfType.Logical)
             {
-                return new DbfLogicalField(name);
+                return new DbfLogicalField(name, length);
             }
             else
             {

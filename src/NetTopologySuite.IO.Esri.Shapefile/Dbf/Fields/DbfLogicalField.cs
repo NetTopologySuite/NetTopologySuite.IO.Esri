@@ -12,7 +12,7 @@ namespace NetTopologySuite.IO.Esri.Dbf.Fields
         private readonly static byte DefaultValue = (byte)' '; // (byte)'?'; Initialized to 0x20 (space) otherwise T or F (http://www.dbase.com/KnowledgeBase/int/db7_file_fmt.htm)
         private readonly static byte TrueValue = (byte)'T';
         private readonly static byte FalseValue = (byte)'F';
-        private readonly static int FieldLength = 1;        // This width is fixed and cannot be changed
+        private const int FieldLength = 1;        // This width is fixed and cannot be changed
 
         private readonly static string TrueValues = "TtYy";
         private readonly static string FalseValues = "FfNn";
@@ -22,8 +22,9 @@ namespace NetTopologySuite.IO.Esri.Dbf.Fields
         ///  Initializes a new instance of the field class.
         /// </summary>
         /// <param name="name">Field name.</param>
-        public DbfLogicalField(string name)
-            : base(name, DbfType.Logical, FieldLength, 0)
+        /// <param name="length">Field length.</param>
+        public DbfLogicalField(string name, int length = FieldLength)
+            : base(name, DbfType.Logical, length, 0)
         {
         }
 
@@ -45,7 +46,7 @@ namespace NetTopologySuite.IO.Esri.Dbf.Fields
         internal override void ReadValue(Stream stream)
         {
             var logicalValue = stream.ReadByteChar();
-
+            stream.Seek(stream.Position + Length - 1, SeekOrigin.Begin);
             if (TrueValues.Contains(logicalValue))
             {
                 LogicalValue = true;

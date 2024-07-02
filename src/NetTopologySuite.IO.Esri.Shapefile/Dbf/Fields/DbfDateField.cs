@@ -11,15 +11,16 @@ namespace NetTopologySuite.IO.Esri.Dbf.Fields
     /// </summary>
     public class DbfDateField : DbfField
     {
-        private static readonly int FieldLength = 8;           // This width is fixed and cannot be changed
+        private const int FieldLength = 8;           // This width is fixed and cannot be changed
         private static readonly string DateFormat = "yyyyMMdd";
 
         /// <summary>
         ///  Initializes a new instance of the field class.
         /// </summary>
         /// <param name="name">Field name.</param>
-        public DbfDateField(string name)
-            : base(name, DbfType.Date, FieldLength, 0)
+        /// <param name="length">Field length.</param>
+        public DbfDateField(string name, int length = FieldLength)
+            : base(name, DbfType.Date, length, 0)
         {
         }
 
