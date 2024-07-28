@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Text;
 
 namespace NetTopologySuite.IO.Esri.Dbf.Fields
 {
@@ -45,13 +46,22 @@ namespace NetTopologySuite.IO.Esri.Dbf.Fields
 
         internal override void ReadValue(Stream stream)
         {
-            var logicalValue = stream.ReadByteChar();
-            stream.Seek(stream.Position + Length - 1, SeekOrigin.Begin);
-            if (TrueValues.Contains(logicalValue))
+            // Logic column should have a Length of 1. However, some data providers produce shapfiles with a length greater than 1.
+            // Handle also those not specification compliant cases.
+            var logicalValueString = stream.ReadString(Length, Encoding.ASCII)?.Trim();
+            if (string.IsNullOrEmpty(logicalValueString))
+            {
+                LogicalValue = null;
+                return;
+            }
+
+            var logicalValueChar = logicalValueString[0];
+
+            if (TrueValues.Contains(logicalValueChar))
             {
                 LogicalValue = true;
             }
-            else if (FalseValues.Contains(logicalValue))
+            else if (FalseValues.Contains(logicalValueChar))
             {
                 LogicalValue = false;
             }
@@ -79,7 +89,4 @@ namespace NetTopologySuite.IO.Esri.Dbf.Fields
         }
 
     }
-
-
-
 }
