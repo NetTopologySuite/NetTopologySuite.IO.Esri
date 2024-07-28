@@ -10,6 +10,8 @@ namespace NetTopologySuite.IO.Esri.Dbf.Fields
     /// </summary>
     public class DbfNumericDoubleField : DbfNumericField<double>
     {
+        internal static readonly int DefaultFieldLength = 19; // 17 digits + decimal separator + sign https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/floating-point-numeric-types#characteristics-of-the-floating-point-types
+
         /// <summary>
         /// Intializes new instance of the numerif field class.
         /// </summary>
