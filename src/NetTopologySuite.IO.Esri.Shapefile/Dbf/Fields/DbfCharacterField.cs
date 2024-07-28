@@ -71,7 +71,7 @@ namespace NetTopologySuite.IO.Esri.Dbf.Fields
         private Encoding _encoding = null;
         internal Encoding Encoding
         {
-            get { return _encoding ?? Encoding.UTF8; }
+            get { return _encoding ?? Dbf.DefaultEncoding; }
             set
             {
                 if (value == null)

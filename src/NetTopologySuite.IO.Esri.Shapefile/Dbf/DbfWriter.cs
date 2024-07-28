@@ -51,7 +51,7 @@ namespace NetTopologySuite.IO.Esri.Dbf
         /// <param name="encoding">DBF file encoding. Defaults to UTF8.</param>
         public DbfWriter(Stream stream, IReadOnlyList<DbfField> fields, Encoding encoding = null)
         {
-            Encoding = encoding ?? Encoding.UTF8;
+            Encoding = encoding ?? Dbf.DefaultEncoding;
             IntializeFields(fields);
             DbfStream = stream ?? throw new ArgumentNullException("Uninitialized dBASE stream.", nameof(stream));
             WriteHeader();
@@ -66,7 +66,7 @@ namespace NetTopologySuite.IO.Esri.Dbf
         /// <param name="encoding">DBF file encoding. Defaults to UTF8.</param>
         public DbfWriter(string dbfPath, IReadOnlyList<DbfField> fields, Encoding encoding = null)
         {
-            Encoding = encoding ?? Encoding.UTF8;
+            Encoding = encoding ?? Dbf.DefaultEncoding;
             IntializeFields(fields);
             WriteCpgEncoding(dbfPath, encoding);
             try

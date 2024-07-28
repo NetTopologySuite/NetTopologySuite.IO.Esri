@@ -29,7 +29,7 @@ namespace NetTopologySuite.IO.Esri.Dbf
 
             // https://support.esri.com/en/technical-article/000013192
 
-            AddLanguageDriverId(0, Encoding.UTF8);        // For unknown LDID
+            AddLanguageDriverId(0, Dbf.DefaultEncoding);  // For unknown LDID
             AddLanguageDriverId(0x03, Encoding.Default);  // OS Default
             AddLanguageDriverId(0x57, Encoding.Default);  // OS Default
 

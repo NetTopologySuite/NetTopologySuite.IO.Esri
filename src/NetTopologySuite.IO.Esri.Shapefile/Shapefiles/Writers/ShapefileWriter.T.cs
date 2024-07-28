@@ -88,7 +88,10 @@ namespace NetTopologySuite.IO.Esri.Shapefiles.Writers
                 ShpWriter = CreateShpWriter(shpStream, shxStream); // It calls this.ShapeType
 
                 if (!string.IsNullOrWhiteSpace(options.Projection))
-                    File.WriteAllText(Path.ChangeExtension(shpPath, ".prj"), options.Projection);
+                {
+                    var prjPath = Path.ChangeExtension(shpPath, ".prj");
+                    File.WriteAllText(prjPath, options.Projection, options.Encoding);
+                }
             }
             catch
             {

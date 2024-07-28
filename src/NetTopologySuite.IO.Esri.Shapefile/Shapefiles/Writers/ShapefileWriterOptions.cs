@@ -21,14 +21,14 @@ namespace NetTopologySuite.IO.Esri.Shapefiles.Writers
         /// </summary>
         public List<DbfField> Fields { get; } = new List<DbfField>();
 
-        private Encoding _encoding = Encoding.UTF8;
+        private Encoding _encoding = Dbf.Dbf.DefaultEncoding;
         /// <summary>
         /// DBF file encoding.
         /// </summary>
         public Encoding Encoding
         {
             get => _encoding;
-            set => _encoding = value ?? Encoding.UTF8;
+            set => _encoding = value ?? Dbf.Dbf.DefaultEncoding;
         }
 
         /// <summary>

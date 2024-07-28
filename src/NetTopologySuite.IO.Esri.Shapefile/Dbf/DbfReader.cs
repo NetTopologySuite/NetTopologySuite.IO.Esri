@@ -106,7 +106,7 @@ namespace NetTopologySuite.IO.Esri.Dbf
             RecordSize = Buffer.ReadDbfRecordSize();
             Buffer.Advance(17);
 
-            Encoding = encoding ?? Buffer.ReadDbfEncoding() ?? Encoding.UTF8; // null => Try to read encoding from DBF's reserved bytes
+            Encoding = encoding ?? Buffer.ReadDbfEncoding() ?? Dbf.DefaultEncoding; // null => Try to read encoding from DBF's reserved bytes
             Buffer.Advance(2);
 
             // --- File header is done, read field descriptor header now ---
