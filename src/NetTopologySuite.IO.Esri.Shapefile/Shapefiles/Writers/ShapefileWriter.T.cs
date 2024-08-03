@@ -33,7 +33,7 @@ namespace NetTopologySuite.IO.Esri.Shapefiles.Writers
         public override Geometry Geometry
         {
             get => ShpWriter.Geometry;
-            set => ShpWriter.Geometry = (T)value;
+            set => ShpWriter.Geometry = ShpWriter.GetShapeGeometry(value);
         }
 
 

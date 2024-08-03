@@ -111,7 +111,7 @@ namespace NetTopologySuite.IO.Esri.Shp.Writers
 
         protected private static T ThrowIvalidShapeGeometry(Geometry geometry)
         {
-            throw new ShapefileException($"Invalid geometry type provided ({geometry.GetType().Name}). Expected: {typeof(T).Name}.");
+            throw new InvalidCastException($"Invalid geometry type provided ({geometry.GetType().Name}). Expected: {typeof(T).Name}.");
         }
     }
 

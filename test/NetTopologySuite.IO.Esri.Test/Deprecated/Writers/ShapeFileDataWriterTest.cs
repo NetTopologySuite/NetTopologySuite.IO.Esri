@@ -195,8 +195,7 @@ namespace NetTopologySuite.IO.Esri.Test.Deprecated.Writers
             try
             {
 
-                fileName = Path.GetTempFileName();
-                fileName = Path.ChangeExtension(fileName, "shp");
+                fileName = TestShapefiles.GetTempShpPath(); 
                 WriteGeometryCollection(fileName, geomsWrite);
                 var geomsRead = new GeometryCollection(Shapefile.ReadAllGeometries(fileName));
 
@@ -264,9 +263,7 @@ namespace NetTopologySuite.IO.Esri.Test.Deprecated.Writers
                 }
 
                 // delete sample files
-                File.Delete(fileName);
-                File.Delete(Path.ChangeExtension(fileName, "shx"));
-                File.Delete(Path.ChangeExtension(fileName, "dbf"));
+                TestShapefiles.DeleteShp(fileName);
             }
             catch (AssertionException ex)
             {
@@ -605,11 +602,11 @@ namespace NetTopologySuite.IO.Esri.Test.Deprecated.Writers
             attrs.Add("Simulation name", "FOO");
 
             var features = new[] { new Feature(mls, attrs) };
+            string tempPath = TestShapefiles.GetTempShpPath();
             Assert.Throws<ArgumentException>(
-                () => Shapefile.WriteAllFeatures(features, "invalid_field_name")
+                () => Shapefile.WriteAllFeatures(features, tempPath)
             );
-
-            //Assert.Throws<ArgumentException>(() => shp_writer.Write(features));
+            TestShapefiles.DeleteShp(tempPath);
         }
 
         [Test/*, ExpectedException(typeof(ArgumentException))*/]
@@ -629,6 +626,7 @@ namespace NetTopologySuite.IO.Esri.Test.Deprecated.Writers
             Assert.Throws<InvalidCastException>(
                 () => WriteGeometryCollection(tempPath, geometries)
             );
+            TestShapefiles.DeleteShp(tempPath);
         }
 
         [Test/*, ExpectedException(typeof(ArgumentException))*/]
@@ -649,6 +647,7 @@ namespace NetTopologySuite.IO.Esri.Test.Deprecated.Writers
             Assert.Throws<InvalidCastException>(
                 () => WriteGeometryCollection(tempPath, geometries)
             );
+            TestShapefiles.DeleteShp(tempPath);
         }
 
         [Test/*, ExpectedException(typeof(ArgumentException))*/]
@@ -674,6 +673,7 @@ namespace NetTopologySuite.IO.Esri.Test.Deprecated.Writers
             Assert.Throws<InvalidCastException>(
                 () => WriteGeometryCollection(tempPath, geometries)
             );
+            TestShapefiles.DeleteShp(tempPath);
         }
 
         [Test/*, ExpectedException(typeof(ArgumentException))*/]
@@ -701,6 +701,7 @@ namespace NetTopologySuite.IO.Esri.Test.Deprecated.Writers
             Assert.Throws<InvalidCastException>(
                 () => WriteGeometryCollection(tempPath, geometries)
             );
+            TestShapefiles.DeleteShp(tempPath);
         }
 
         // ESRI spec says index file is mandatory, but we do allow writing a
