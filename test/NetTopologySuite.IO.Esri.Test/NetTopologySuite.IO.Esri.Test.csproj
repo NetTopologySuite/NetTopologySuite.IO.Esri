@@ -1,9 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <!-- GitHub Actions: Build (ubuntu-latest) -> The current .NET SDK does not support targeting .NET 8.0. Either target .NET 6.0 or lower, or use a version of the .NET SDK that supports .NET 8.0.  -->
-    <TargetFramework>net6.0</TargetFramework>
-    
+    <TargetFramework>net8.0</TargetFramework>    
     <IsPackable>false</IsPackable>
     <SignAssembly>true</SignAssembly>
   </PropertyGroup>
