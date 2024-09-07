@@ -32,7 +32,7 @@ namespace NetTopologySuite.IO.Esri.Dbf.Fields
         /// <inheritdoc/>
         protected override decimal StringToNumber(string s)
         {
-            return decimal.Parse(s, CultureInfo.InvariantCulture);
+            return decimal.Parse(s, NumberStyles.Float, CultureInfo.InvariantCulture);
         }
     }
 }
