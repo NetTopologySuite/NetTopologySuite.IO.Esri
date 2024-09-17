@@ -121,10 +121,15 @@ namespace NetTopologySuite.IO.Esri.Dbf
 
             Buffer.AssignFrom(DbfStream, fieldsHeaderSize);
             Fields = new DbfFieldCollection(fieldCount);
+            var duplicates = new Dictionary<string, int>();
             for (int i = 0; i < fieldCount; i++)
             {
                 var field = Buffer.ReadDbaseFieldDescriptor(Encoding);
+                string originalName = field.Name;
+                duplicates.TryGetValue(originalName, out int duplicateCount);
+                field.DuplicateCount = duplicateCount;
                 Fields.Add(field);
+                duplicates[originalName] = ++duplicateCount;
                 //Binary.TraceToConsole("Field Header: " + Fields[Fields.Count -1].Name, i * Dbf.FieldDescriptorSize, Dbf.FieldDescriptorSize);
             }
 

@@ -14,11 +14,18 @@ namespace NetTopologySuite.IO.Esri.Dbf.Fields
     public abstract class DbfField
     {
         // TODO: Spit DbfField into DbfFieldDefinition (Without Value property) and DbfFieldValue
-
+        private readonly string _name;
         /// <summary>
         /// Field Name.
         /// </summary>
-        public string Name { get; }
+        public string Name
+        {
+            get
+            {
+                string suffix = DuplicateCount > 0 ? $"_{DuplicateCount}" : string.Empty;
+                return $"{_name}{suffix}";
+            }
+        }
 
         /// <summary>
         /// Field Type.
@@ -75,7 +82,7 @@ namespace NetTopologySuite.IO.Esri.Dbf.Fields
                 throw new ArgumentException($"Ivalid dBASE field precision: {precision}.", nameof(precision));
             }
 
-            Name = name;
+            _name = name;
             FieldType = type;
             Length = length;
             NumericScale = precision;
@@ -113,7 +120,7 @@ namespace NetTopologySuite.IO.Esri.Dbf.Fields
         /// </summary>
         public virtual bool IsNull => Value == null;
 
-
+        internal int DuplicateCount { get; set; }
 
         internal static readonly IAttributesTable EmptyFieldValues = new AttributesTable();
 

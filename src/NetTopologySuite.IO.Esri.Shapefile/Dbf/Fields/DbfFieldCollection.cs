@@ -59,6 +59,8 @@ namespace NetTopologySuite.IO.Esri.Dbf.Fields
 
         internal void Add(DbfField field)
         {
+            if (FieldDictionary.ContainsKey(field.Name))
+                throw new ArgumentException($"Field with name '{field.Name}' already defined.");
             Fields.Add(field);
             FieldDictionary.Add(field.Name, field);
         }
