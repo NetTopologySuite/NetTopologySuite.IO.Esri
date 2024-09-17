@@ -84,8 +84,7 @@ namespace NetTopologySuite.IO.Esri.Dbf
         public static void WriteDbaseFieldDescriptor(this Stream stream, DbfField field, Encoding encoding)
         {
             encoding = encoding ?? Dbf.DefaultEncoding;
-            var name = field.Name.PadRight(Dbf.MaxFieldNameLength, char.MinValue); // Field name must have empty space zero-filled 
-
+            var name = field.OriginalName.PadRight(Dbf.MaxFieldNameLength, char.MinValue); // Field name must have empty space zero-filled 
 
             stream.WriteString(name, Dbf.MaxFieldNameLength, encoding);
             stream.WriteNullBytes(1);

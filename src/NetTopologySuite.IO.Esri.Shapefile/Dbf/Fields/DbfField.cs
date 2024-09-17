@@ -14,7 +14,12 @@ namespace NetTopologySuite.IO.Esri.Dbf.Fields
     public abstract class DbfField
     {
         // TODO: Spit DbfField into DbfFieldDefinition (Without Value property) and DbfFieldValue
-        private readonly string _name;
+
+        /// <summary>
+        /// Original field name
+        /// </summary>
+        internal string OriginalName { get; }
+
         /// <summary>
         /// Field Name.
         /// </summary>
@@ -23,7 +28,7 @@ namespace NetTopologySuite.IO.Esri.Dbf.Fields
             get
             {
                 string suffix = DuplicateCount > 0 ? $"_{DuplicateCount}" : string.Empty;
-                return $"{_name}{suffix}";
+                return $"{OriginalName}{suffix}";
             }
         }
 
@@ -82,15 +87,10 @@ namespace NetTopologySuite.IO.Esri.Dbf.Fields
                 throw new ArgumentException($"Ivalid dBASE field precision: {precision}.", nameof(precision));
             }
 
-            _name = name;
+            OriginalName = name;
             FieldType = type;
             Length = length;
             NumericScale = precision;
-        }
-
-        private bool IsValidFieldNameChar(char c)
-        {
-            return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_' || (c >= '0' && c <= '9');
         }
 
         /// <inheritdoc/>
