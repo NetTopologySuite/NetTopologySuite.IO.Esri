@@ -152,6 +152,7 @@ namespace NetTopologySuite.IO.Esri.Dbf
         internal void Restart()
         {
             DbfStream.Seek(HeaderSize, SeekOrigin.Begin);
+            CurrentIndex = 0;
         }
 
 
